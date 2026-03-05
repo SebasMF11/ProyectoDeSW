@@ -1,17 +1,17 @@
 const express = require('express');
 const cors = require('cors');
 
+const semesterRoutes = require('./routes/SemesterRoutes');
+
 const app = express();
 
-// Middlewares
 app.use(cors());
 app.use(express.json());
 
-// Ruta de prueba
 app.get('/', (req, res) => {
-
-
   res.send('Backend funcionando 🚀');
 });
+
+app.use('/api/semesters', semesterRoutes);
 
 module.exports = app;
