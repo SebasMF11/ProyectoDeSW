@@ -6,6 +6,6 @@ exports.getSemesters = async (req, res) => {
     res.json(semesters);
   } catch (error) {
     res.status(500).json({ error: 'Error obteniendo semestres' });
-    console.log('Mentiras', error);
+    console.log('que no mi rey', error);
   }
 };
