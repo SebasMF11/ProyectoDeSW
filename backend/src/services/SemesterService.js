@@ -1,7 +1,30 @@
+const supabase = require('../config/supabase');
+
 exports.getAll = async () => {
-  return [
-    { id: 1, name: "2026-1" },
-    { id: 2, name: "2026-2" }
-  ];
+
+  const { data, error } = await supabase
+    .from('semester')
+    .select('*');
+
+  if (error) {
+    console.error(error);
+    throw error;
+  }
+
+  return data;
 };
-// SIMULANDO DATOS, PORQ NO HEMOS CONECTADO SUPABASE AUN
+
+exports.create = async (semester) => {
+
+  const { data, error } = await supabase
+    .from('semester')
+    .insert([semester])
+    .select();
+
+  if (error) {
+    console.error(error);
+    throw error;
+  }
+
+  return data;
+};
