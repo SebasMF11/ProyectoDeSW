@@ -1,17 +1,21 @@
+require("dotenv").config();
 const express = require('express');
 const cors = require('cors');
-
-const semesterRoutes = require('./routes/SemesterRoutes');
-
 const app = express();
 
 app.use(cors());
 app.use(express.json());
 
+const semesterRoutes = require('./routes/SemesterRoutes');
+
+const studentRoutes = require('./routes/StudentRoutes');
+
+app.use("/semester", semesterRoutes);
+
+app.use('/student', studentRoutes);
+
 app.get('/', (req, res) => {
   res.send('Backend funcionando 🚀');
 });
-
-app.use('/api/semesters', semesterRoutes);
 
 module.exports = app;
