@@ -11,7 +11,7 @@ const semesterRoutes = require('./routes/SemesterRoutes');
 const studentRoutes = require('./routes/StudentRoutes');
 
 app.use("/semester", semesterRoutes);
-
+app.use(cors({origin: 'http://localhost:5173'}));
 app.use('/student', studentRoutes);
 
 app.get('/', (req, res) => {
