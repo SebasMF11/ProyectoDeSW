@@ -1,13 +1,13 @@
 import { useNavigate } from "react-router";
 import { useForm } from "react-hook-form";
-import { registerRequest } from "../api/auth";
+import { authRequest } from "../api/auth";
 
 const Registre = () => {
   const navigate = useNavigate();
   const { register, handleSubmit } = useForm();
   const onSubmit = handleSubmit(async (values) => {
     console.log(values);
-    const res = await registerRequest(values);
+    const res = await authRequest(values);
     console.log(res);
     if (false) {
       setTimeout(() => navigate("/home"), 1000);

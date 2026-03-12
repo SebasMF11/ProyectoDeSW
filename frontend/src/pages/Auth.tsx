@@ -1,12 +1,11 @@
 import React, { useEffect } from "react";
 import { useNavigate } from "react-router";
-import { supabase } from "../integrations/supabase";
+import { useForm } from "react-hook-form";
+import { registerRequest } from "../api/auth";
 import useAuth from "../hooks/useAuth";
 
 const Auth = () => {
   const navigate = useNavigate();
-  const [email, setEmail] = React.useState("");
-  const [password, setPassword] = React.useState("");
   const [loading, setLoading] = React.useState(false);
 
   useEffect(() => {
@@ -14,30 +13,19 @@ const Auth = () => {
     if (session) navigate("/home");
   }, []);
 
-  const handleSubmit = async () => {
-    setLoading(true);
-    try {
-      if (email === "" || password === "") {
-        alert("Por favor, completa todos los campos");
-        setLoading(false);
-        return;
+  const Registre = () => {
+    const navigate = useNavigate();
+    const { register, handleSubmit } = useForm();
+    const onSubmit = handleSubmit(async (values) => {
+      console.log(values);
+      const res = await registerRequest(values);
+      console.log(res);
+      if (false) {
+        setTimeout(() => navigate("/home"), 1000);
       }
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-      if (error) {
-        alert(error.message);
-        setLoading(false);
-        return;
-      }
+    });
       setTimeout(() => navigate("/home"), 1000);
-    } catch (error) {
-      alert((error as Error).message);
-      setLoading(false);
-    } finally {
-      setLoading(false);
-    }
+   
   };
   return (
     <div>
@@ -51,26 +39,19 @@ const Auth = () => {
         </div>
         <h1>Login</h1>
       </div>
-      <form>
-        <label htmlFor="name">Email</label>
+      <form onSubmit={onSubmit}>
         <input
+          placeholder="email"
           type="email"
-          placeholder="Email"
-          name="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          {...register("email", { required: true })}
         />
-        <label htmlFor="password">Password</label>
         <input
+          placeholder="password"
           type="password"
-          placeholder="Password"
-          name="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
+          {...register("password", { required: true })}
         />
-        <button type="button" onClick={handleSubmit}>
-          Login
-        </button>
+        
+        <button type="submit">Registre</button>
       </form>
     </div>
   );
