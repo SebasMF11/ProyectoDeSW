@@ -1,17 +1,24 @@
 const supabase = require('../config/supabase');
 
-exports.createStudent = async (student) => {
+exports.createStudent = async (email,password) => {
+ 
+  const password= password
+  const email = email
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password
+    });
+    const student = data;
+    if (error) {
+      console.error(error);
+    }
+  
+ console.log("Datos del estudiante autenticado:", student);
+    const { errori } = await supabase
+      .from('student')
+      .insert({ id: student.id, name: student.name, lastname: student.lastname, email: student.email, password });
+    return data;
 
-  const { data, error } = await supabase
-    .from('student')
-    .insert([student])
-    .select();
-
-  if (error) {
-    throw error;
-  }
-
-  return data;
 };
 
 exports.authStudent = async (student) => {
@@ -28,11 +35,9 @@ exports.authStudent = async (student) => {
       }
     }
   });
-
   if (error) {
     throw error;
   }
-
   return data;
 };
 
