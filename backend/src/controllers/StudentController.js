@@ -1,6 +1,7 @@
 const { options } = require('../app');
 const studentService = require('../services/StudentService');
-exports.createStudent = async (req, res) => {
+
+exports.authStudent = async (req, res) => {
 
   try {
 
@@ -29,8 +30,7 @@ const authResult = await studentService.authStudent({
   password
 });
 
-const userId = authResult.user.id;
-
+/*
 const student = await studentService.createStudent({
   idstudent: userId,
   name,
@@ -39,10 +39,18 @@ const student = await studentService.createStudent({
 });
 
   res.status(201).json(student);
-
+*/
   } catch (error) {
   console.error(error);
-  res.status(500).json({ error: "Error creando estudiante" });
+  res.status(500).json({ error: "Error autenticando estudiante" });
 }
 
+exports.createStudent = async (req, res) => {
+  try {
+    //validaciones
+    
+    
+}catch (error) {
+  console.error(error);
+  res.status(500).json({ error: "Error creando estudiante" });}}
 };
