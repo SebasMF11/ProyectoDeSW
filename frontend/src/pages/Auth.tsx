@@ -32,7 +32,7 @@ const Auth = () => {
         <div>
           <p>Si no tienes cuenta </p>
           <button type="button" onClick={() => navigate("/register")}>
-            REGISTRESE
+            REGISTRATE
           </button>
         </div>
         <h1>Login</h1>
