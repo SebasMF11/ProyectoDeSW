@@ -1,35 +1,33 @@
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import { useNavigate } from "react-router";
 import { useForm } from "react-hook-form";
-import { registerRequest } from "../api/auth";
 import useAuth from "../hooks/useAuth";
-
+import { loginRequest } from "../api/auth";
+import { supabase } from "../integrations/supabase";
 const Auth = () => {
   const navigate = useNavigate();
-  const [loading, setLoading] = React.useState(false);
-
+  const session = useAuth();
   useEffect(() => {
-    const session = useAuth();
     if (session) navigate("/home");
   }, []);
-
-  const Registre = () => {
-    const navigate = useNavigate();
-    const { register, handleSubmit } = useForm();
-    const onSubmit = handleSubmit(async (values) => {
-      console.log(values);
-      const res = await registerRequest(values);
-      console.log(res);
-      if (false) {
-        setTimeout(() => navigate("/home"), 1000);
-      }
+  const { register, handleSubmit } = useForm();
+  const onSubmit = handleSubmit(async (values) => {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: values.email,
+      password: values.password,
     });
-      setTimeout(() => navigate("/home"), 1000);
-   
-  };
+    if (error) {
+      console.error(error);
+      // Aquí puedes mostrar un mensaje de error al usuario
+      return;
+    }
+    // Enviar el usuario al backend para almacenar
+    const res = await loginRequest(data.user);
+    console.log(res);
+    navigate("/home");
+  });
   return (
     <div>
-      {loading && <p>Cargando...</p>}
       <div>
         <div>
           <p>Si no tienes cuenta </p>
@@ -38,21 +36,20 @@ const Auth = () => {
           </button>
         </div>
         <h1>Login</h1>
+        <form onSubmit={onSubmit}>
+          <input
+            placeholder="email"
+            type="email"
+            {...register("email", { required: true })}
+          />
+          <input
+            placeholder="password"
+            type="password"
+            {...register("password", { required: true })}
+          />
+          <button type="submit">Login</button>
+        </form>
       </div>
-      <form onSubmit={onSubmit}>
-        <input
-          placeholder="email"
-          type="email"
-          {...register("email", { required: true })}
-        />
-        <input
-          placeholder="password"
-          type="password"
-          {...register("password", { required: true })}
-        />
-        
-        <button type="submit">Registre</button>
-      </form>
     </div>
   );
 };

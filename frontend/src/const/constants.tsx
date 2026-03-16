@@ -1,1 +1,1 @@
-export const KEY_STORAGE = "sb-tufddawawqqdehzwngtl-auth-token";
+export const KEY_STORAGE = "sb-msjtzxhtoqydtzovrvyu-auth-token";
