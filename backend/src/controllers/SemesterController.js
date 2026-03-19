@@ -1,21 +1,19 @@
-const semesterService = require('../services/SemesterService');
+const semesterService = require("../services/SemesterService");
 
 exports.getSemester = async (req, res) => {
   try {
     const semesters = await semesterService.getAll();
     res.json(semesters);
   } catch (error) {
-    res.status(500).json({ error: 'Error obteniendo semestres' });
-    console.log('que no mi rey', error);
-
+    res.status(500).json({ error: "Error obteniendo semestres" });
+    console.log("que no mi rey", error);
   }
 };
 
 exports.createSemester = async (req, res) => {
-
   try {
-
-    const { semestername, startdate, enddate, midtermweek, student_id } = req.body;
+    const { semestername, startdate, enddate, midtermweek, student_id } =
+      req.body;
 
     const end = new Date(enddate);
     const finalExam = new Date(end);
@@ -29,19 +27,15 @@ exports.createSemester = async (req, res) => {
       enddate,
       midtermweek,
       finalexamweek,
-      student_id
+      student_id,
     });
 
     res.status(201).json({
-  message: "Semestre creado correctamente",
-  semester: semester
-});
-
-
+      message: "Semestre creado correctamente",
+      semester: semester,
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Error interno del servidor" });
   }
-
 };
-

@@ -13,6 +13,7 @@ const Registre = () => {
   const onSubmit = handleSubmit(async (values) => {
     const res = await authRequest(values);
     console.log(res);
+    navigate("/auth");
     if (false) {
       setTimeout(() => navigate("/home"), 1000);
     }
