@@ -19,13 +19,13 @@ function Home() {
   };
 
   return (
-    <div>
+    <div> 
       <h1 className="text-3xl font-bold text-blue-600">Hola</h1>
       <button
         className="bg-blue-500 text-white p-2 rounded"
         onClick={handleSession}
       >
-        Ver Session
+        View Session
       </button>
       <button onClick={handleLogout}>Cerrar Sesión</button>
       <BigCalendar />
