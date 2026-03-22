@@ -2,7 +2,8 @@ const semesterService = require("../services/SemesterService");
 
 exports.getSemester = async (req, res) => {
   try {
-    const semesters = await semesterService.getAll();
+    const student_id = req.student.id;
+    const semesters = await semesterService.getAll(student_id);
     res.json(semesters);
   } catch (error) {
     res.status(500).json({ error: "Error obteniendo semestres" });
@@ -12,8 +13,8 @@ exports.getSemester = async (req, res) => {
 
 exports.createSemester = async (req, res) => {
   try {
-    const { semestername, startdate, enddate, midtermweek, student_id } =
-      req.body;
+    const { semestername, startdate, enddate, midtermweek } = req.body;
+    const student_id = req.student.id;
 
     const end = new Date(enddate);
     const finalExam = new Date(end);
@@ -32,6 +33,36 @@ exports.createSemester = async (req, res) => {
 
     res.status(201).json({
       message: "Semestre creado correctamente",
+      semester: semester,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Error interno del servidor" });
+  }
+};
+
+exports.updateSemester = async (req, res) => {
+  try {
+    const { idsemester } = req.params;
+    const { semestername, startdate, enddate, midtermweek } = req.body;
+    const student_id = req.student.id;
+
+    // Recalcula finalexamweek si cambia enddate
+    const end = new Date(enddate);
+    const finalExam = new Date(end);
+    finalExam.setDate(end.getDate() - 6);
+    const finalexamweek = finalExam.toISOString().split("T")[0];
+
+    const semester = await semesterService.update(idsemester, student_id, {
+      semestername,
+      startdate,
+      enddate,
+      midtermweek,
+      finalexamweek,
+    });
+
+    res.status(200).json({
+      message: "Semestre actualizado correctamente",
       semester: semester,
     });
   } catch (error) {
