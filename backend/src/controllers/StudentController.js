@@ -1,40 +1,55 @@
-const { options } = require("../app");
 const studentService = require("../services/StudentService");
 
 exports.authStudent = async (req, res) => {
   try {
     const { name, lastname, email, password, password2 } = req.body;
-    console.log(password2);
+
     if (!name || !lastname || !email || !password || !password2) {
-      return res.status(400).json({
-        error: "Todos los campos son obligatorios",
-      });
+      return res
+        .status(400)
+        .json({ error: "Todos los campos son obligatorios" });
     }
     if (password !== password2) {
-      return res.status(400).json({
-        error: "Las contraseñas no coinciden",
-      });
+      return res.status(400).json({ error: "Las contraseñas no coinciden" });
     }
 
-    const authResult = await studentService.authStudent({
-      name,
-      lastname,
-      email,
-      password,
-    });
-    res.status(201).json(authResult);
+    await studentService.authStudent({ name, lastname, email, password });
+
+    res
+      .status(201)
+      .json({
+        message: "Correo de confirmación enviado, revisa tu bandeja 📧",
+      });
   } catch (error) {
-    console.log(this.authStudent);
-    res.status(500).json({ error: "Error autenticando estudiante" });
+    console.error("Error registro:", error);
+    res.status(500).json({ error: error.message });
   }
 };
 
-exports.createStudent = async (req, res) => {
+exports.loginStudent = async (req, res) => {
   try {
-    const user = req.body;
-    const result = await studentService.createStudent(user);
-    res.status(201).json(result);
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res
+        .status(400)
+        .json({ error: "Email y contraseña son obligatorios" });
+    }
+
+    const result = await studentService.loginStudent({ email, password });
+
+    // Si el correo no fue confirmado, Supabase no dejará hacer login
+    res.status(200).json({
+      token: result.session.access_token,
+      student: {
+        id: result.user.id,
+        email: result.user.email,
+        name: result.user.user_metadata.name,
+        lastname: result.user.user_metadata.lastname,
+      },
+    });
   } catch (error) {
-    res.status(500).json({ error: "Error creando estudiante" });
+    console.error("Error login:", error);
+    res.status(401).json({ error: error.message });
   }
 };
