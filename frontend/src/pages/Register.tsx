@@ -4,7 +4,7 @@ import { authRequest } from "../api/auth";
 import { useEffect } from "react";
 import useAuth from "../hooks/useAuth";
 import fondo from "../assets/FondoDePantalla.jpg";
-
+import logo from "../assets/logo.png";
 const Registre = () => {
   const navigate = useNavigate();
   useEffect(() => {
@@ -36,19 +36,10 @@ const Registre = () => {
       <div className="relative z-10 w-[90%] max-w-md bg-white/40 sm:bg-white/30 backdrop-blur-md sm:backdrop-blur-lg rounded-3xl p-6 sm:p-8 shadow-lg text-center">
         <div className="flex flex-col items-center gap-4">
           {/* Logo */}
-          <img src="/logo.png" alt="logo" className="w-16" />
+          <img src={logo} alt="logo" className="w-44" />
 
           {/* Títulos */}
-          <h2 className="text-sm sm:text-base text-gray-700">Crear cuenta</h2>
-
-          {/* Botón volver */}
-          <button
-            type="button"
-            onClick={() => navigate("/auth")}
-            className="text-sm underline text-gray-700"
-          >
-            Volver
-          </button>
+          <h2 className="text-sm sm:text-base text-black">Crear cuenta</h2>
 
           {/* FORMULARIO */}
           <form onSubmit={onSubmit} className="w-full flex flex-col gap-3">
@@ -83,6 +74,17 @@ const Registre = () => {
               {...register("password2", { required: true })}
               className="w-full px-4 py-3 rounded-full bg-white/70 outline-none"
             />
+
+            {/* Para volver al login */}
+            <p className="text-sm text-gray-700">
+              ¿Ya tienes cuenta?{" "}
+              <span
+                className="underline cursor-pointer"
+                onClick={() => navigate("/auth")}
+              >
+                Inicia sesión aquí
+              </span>
+            </p>
 
             {/* Botón */}
             <button
