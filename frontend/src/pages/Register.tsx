@@ -3,6 +3,7 @@ import { useForm } from "react-hook-form";
 import { authRequest } from "../api/auth";
 import { useEffect } from "react";
 import useAuth from "../hooks/useAuth";
+import fondo from "../assets/FondoDePantalla.jpg";
 const Registre = () => {
   const navigate = useNavigate();
   useEffect(() => {
@@ -19,7 +20,7 @@ const Registre = () => {
     }
   });
   return (
-    <div>
+    <div className="relative min-h-screen flex items-center justify-center">
       <div>
         <button type="button" onClick={() => navigate("/auth")}>
           Volver
