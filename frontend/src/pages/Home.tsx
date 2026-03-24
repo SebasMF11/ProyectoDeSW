@@ -19,7 +19,7 @@ function Home() {
   };
 
   return (
-    <div> 
+    <div className="relative w-full min-h-screen flex items-center justify-center">
       <h1 className="text-3xl font-bold text-blue-600">Hola</h1>
       <button
         className="bg-blue-500 text-white p-2 rounded"
