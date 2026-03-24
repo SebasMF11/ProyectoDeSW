@@ -47,18 +47,18 @@ exports.updateSemester = async (req, res) => {
     const { semestername, startdate, enddate, midtermweek } = req.body;
     const student_id = req.student.id;
 
-    // Recalcula finalexamweek si cambia enddate
+    // Recalcula finalexamweek
     const end = new Date(enddate);
     const finalExam = new Date(end);
     finalExam.setDate(end.getDate() - 6);
     const finalexamweek = finalExam.toISOString().split("T")[0];
 
     const semester = await semesterService.update(idsemester, student_id, {
-      semestername,
-      startdate,
-      enddate,
-      midtermweek,
-      finalexamweek,
+      ...(semestername && { semestername }),
+      ...(startdate && { startdate }),
+      ...(enddate && { enddate }),
+      ...(midtermweek && { midtermweek }),
+      ...(enddate && { finalexamweek }),
     });
 
     res.status(200).json({

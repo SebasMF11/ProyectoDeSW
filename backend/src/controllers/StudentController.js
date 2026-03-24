@@ -15,11 +15,9 @@ exports.authStudent = async (req, res) => {
 
     await studentService.authStudent({ name, lastname, email, password });
 
-    res
-      .status(201)
-      .json({
-        message: "Correo de confirmación enviado, revisa tu bandeja 📧",
-      });
+    res.status(201).json({
+      message: "Correo de confirmación enviado, revisa tu bandeja 📧",
+    });
   } catch (error) {
     console.error("Error registro:", error);
     res.status(500).json({ error: error.message });
@@ -51,5 +49,16 @@ exports.loginStudent = async (req, res) => {
   } catch (error) {
     console.error("Error login:", error);
     res.status(401).json({ error: error.message });
+  }
+};
+
+exports.getStudent = async (req, res) => {
+  try {
+    const student_id = req.student.id;
+    const student = await studentService.getStudent(student_id);
+    res.status(200).json({ student });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Error interno del servidor" });
   }
 };
