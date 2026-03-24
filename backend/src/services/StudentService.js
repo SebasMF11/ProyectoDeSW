@@ -40,3 +40,18 @@ exports.loginStudent = async ({ email, password }) => {
 
   return data;
 };
+
+exports.getStudent = async (student_id) => {
+  const { data, error } = await supabase
+    .from("student")
+    .select("name, lastname, email")
+    .eq("idstudent", student_id)
+    .single();
+
+  if (error) {
+    console.error(error);
+    throw error;
+  }
+
+  return data;
+};
