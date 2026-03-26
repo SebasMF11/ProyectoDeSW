@@ -58,7 +58,7 @@ exports.createCourse = async (req, res) => {
         .json({ error: "coursename, credits y semestername son obligatorios" });
     }
 
-    // Convertir color de nombre a hex
+    // Convertir el color al codigo
     const colorHex = colorMap[color?.toLowerCase()];
     if (!colorHex) {
       return res.status(400).json({
@@ -140,11 +140,9 @@ exports.updateCourse = async (req, res) => {
     });
 
     if (!result) {
-      return res
-        .status(404)
-        .json({
-          error: "Materia no encontrada o no tienes permiso para editarla",
-        });
+      return res.status(404).json({
+        error: "Materia no encontrada o no tienes permiso para editarla",
+      });
     }
 
     res.status(200).json({
