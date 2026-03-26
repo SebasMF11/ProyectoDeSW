@@ -12,6 +12,9 @@ const studentRoutes = require("./routes/StudentRoutes");
 
 const courseRoutes = require("./routes/CourseRoutes");
 
+const assessmentRoutes = require("./routes/AssessmentRoutes");
+
+app.use("/assessment", assessmentRoutes);
 app.use("/course", courseRoutes);
 app.use("/semester", semesterRoutes);
 app.use(cors({ origin: "http://localhost:5173" }));

@@ -16,9 +16,19 @@ exports.createSemester = async (req, res) => {
     const { semestername, startdate, enddate, midtermweek } = req.body;
     const student_id = req.student.id;
 
-    const end = new Date(enddate);
+    const end = new Date(enddate + "T00:00:00");
     const finalExam = new Date(end);
     finalExam.setDate(end.getDate() - 6);
+
+    const midDate = new Date(midtermweek + "T00:00:00");
+    const start = new Date(startdate + "T00:00:00");
+
+    if (midDate < start || midDate > end) {
+      return res.status(400).json({
+        error:
+          "La semana de parcial debe estar entre la fecha de inicio y fin del semestre",
+      });
+    }
 
     const finalexamweek = finalExam.toISOString().split("T")[0];
 
@@ -47,18 +57,20 @@ exports.updateSemester = async (req, res) => {
     const { semestername, startdate, enddate, midtermweek } = req.body;
     const student_id = req.student.id;
 
-    // Recalcula finalexamweek
-    const end = new Date(enddate);
-    const finalExam = new Date(end);
-    finalExam.setDate(end.getDate() - 6);
-    const finalexamweek = finalExam.toISOString().split("T")[0];
+    let finalexamweek;
+    if (enddate) {
+      const end = new Date(enddate);
+      const finalExam = new Date(end);
+      finalExam.setDate(end.getDate() - 6);
+      finalexamweek = finalExam.toISOString().split("T")[0];
+    }
 
     const semester = await semesterService.update(idsemester, student_id, {
       ...(semestername && { semestername }),
       ...(startdate && { startdate }),
       ...(enddate && { enddate }),
       ...(midtermweek && { midtermweek }),
-      ...(enddate && { finalexamweek }),
+      ...(finalexamweek && { finalexamweek }),
     });
 
     res.status(200).json({

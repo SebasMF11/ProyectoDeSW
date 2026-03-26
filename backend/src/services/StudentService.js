@@ -23,7 +23,6 @@ exports.loginStudent = async ({ email, password }) => {
 
   if (error) throw error;
 
-  // Inserta en tabla student si aún no existe 👇
   const { data: existing } = await supabase
     .from("student")
     .select("*")

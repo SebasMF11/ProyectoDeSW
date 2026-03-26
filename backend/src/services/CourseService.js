@@ -35,7 +35,7 @@ exports.getSemesterByName = async (semestername, student_id) => {
     .from("semester")
     .select("*")
     .eq("semestername", semestername)
-    .eq("student_id", student_id) // 👈 seguridad: solo sus semestres
+    .eq("student_id", student_id)
     .single();
 
   if (error) return null;
