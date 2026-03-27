@@ -5,7 +5,8 @@ import { useEffect } from "react";
 import useAuth from "../hooks/useAuth";
 import fondo from "../assets/FondoDePantalla.jpg";
 import logo from "../assets/logo.png";
-const Registre = () => {
+
+const Register = () => {
   const navigate = useNavigate();
   useEffect(() => {
     const session = useAuth();
@@ -39,13 +40,13 @@ const Registre = () => {
           <img src={logo} alt="logo" className="w-44" />
 
           {/* Títulos */}
-          <h2 className="text-sm sm:text-base text-black">Crear cuenta</h2>
+          <h2 className="text-sm sm:text-base text-black">Sign up</h2>
 
           {/* FORMULARIO */}
           <form onSubmit={onSubmit} className="w-full flex flex-col gap-3">
             {/* Nombre */}
             <input
-              placeholder="Nombre Completo"
+              placeholder="Name"
               type="text"
               {...register("name", { required: true })}
               className="w-full px-4 py-3 rounded-full bg-white/70 outline-none"
@@ -53,7 +54,7 @@ const Registre = () => {
 
             {/* Correo */}
             <input
-              placeholder="Correo"
+              placeholder="Email"
               type="email"
               {...register("email", { required: true })}
               className="w-full px-4 py-3 rounded-full bg-white/70 outline-none"
@@ -61,7 +62,7 @@ const Registre = () => {
 
             {/* Contraseña */}
             <input
-              placeholder="Contraseña"
+              placeholder="Password"
               type="password"
               {...register("password", { required: true })}
               className="w-full px-4 py-3 rounded-full bg-white/70 outline-none"
@@ -69,7 +70,7 @@ const Registre = () => {
 
             {/* Confirmar contraseña */}
             <input
-              placeholder="Confirmar Contraseña"
+              placeholder="Confirm Password"
               type="password"
               {...register("password2", { required: true })}
               className="w-full px-4 py-3 rounded-full bg-white/70 outline-none"
@@ -77,12 +78,12 @@ const Registre = () => {
 
             {/* Para volver al login */}
             <p className="text-sm text-gray-700">
-              ¿Ya tienes cuenta?{" "}
+              Do you already have an account?{" "}
               <span
                 className="underline cursor-pointer"
                 onClick={() => navigate("/auth")}
               >
-                Inicia sesión aquí
+                Sign in here
               </span>
             </p>
 
@@ -99,4 +100,4 @@ const Registre = () => {
     </div>
   );
 };
-export default Registre;
+export default Register;
