@@ -6,12 +6,12 @@ function BigCalendar() {
   const localizer = momentLocalizer(moment);
 
   return (
-    <div>
+    <div className="w-full calendar-container">
       <Calendar
         localizer={localizer}
         startAccessor="start"
         endAccessor="end"
-        style={{ height: 500 }}
+        style={{ height: 500, color: "gray" }}
       />
     </div>
   );
