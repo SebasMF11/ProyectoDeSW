@@ -9,7 +9,6 @@ import { IoIosLogOut } from "react-icons/io";
 
 function navbar() {
   const navigate = useNavigate();
-
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
     if (error) throw error;
