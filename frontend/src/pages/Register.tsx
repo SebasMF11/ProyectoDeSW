@@ -39,9 +39,6 @@ const Registre = () => {
           <img src={logo} alt="logo" className="w-44" />
 
           {/* Títulos */}
-          {/* <p className="text-4xl sm:text-base text-black font-bold ">
-            Crear cuenta
-          </p>*/}
           <p className="text-2xl font-bold text-black">Crear cuenta</p>
 
           {/* FORMULARIO */}
@@ -78,8 +75,16 @@ const Registre = () => {
               className="w-full px-4 py-3 rounded-full bg-white/70 outline-none text-black"
             />
 
+            {/* Botón */}
+            <button
+              type="submit"
+              className="bg-green-500 hover:bg-green-600 text-white rounded-full px-6 py-4 font-semibold transition mx-auto block"
+            >
+              Registrarse
+            </button>
+
             {/* Para volver al login */}
-            <p className="text-sm text-gray-700">
+            <p className="text-sm text-gray-800">
               ¿Ya tienes cuenta?{" "}
               <span
                 className="underline cursor-pointer"
@@ -88,14 +93,6 @@ const Registre = () => {
                 Inicia sesión aquí
               </span>
             </p>
-
-            {/* Botón */}
-            <button
-              type="submit"
-              className="w-full bg-green-500 hover:bg-green-600 text-white py-3 rounded-full font-semibold transition"
-            >
-              Registrarse
-            </button>
           </form>
         </div>
       </div>
