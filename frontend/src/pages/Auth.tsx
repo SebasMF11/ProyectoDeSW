@@ -21,10 +21,8 @@ const Auth = () => {
     });
     if (error) {
       console.error(error);
-      // Aquí puedes mostrar un mensaje de error al usuario
       return;
     }
-    // Enviar el usuario al backend para almacenar
     const res = await loginRequest(data.user);
     console.log(res);
     navigate("/home");
