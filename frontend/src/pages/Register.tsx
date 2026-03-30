@@ -39,7 +39,10 @@ const Registre = () => {
           <img src={logo} alt="logo" className="w-44" />
 
           {/* Títulos */}
-          <h2 className="text-sm sm:text-base text-black">Crear cuenta</h2>
+          {/* <p className="text-4xl sm:text-base text-black font-bold ">
+            Crear cuenta
+          </p>*/}
+          <p className="text-2xl font-bold text-black">Crear cuenta</p>
 
           {/* FORMULARIO */}
           <form onSubmit={onSubmit} className="w-full flex flex-col gap-3">
@@ -48,7 +51,7 @@ const Registre = () => {
               placeholder="Nombre Completo"
               type="text"
               {...register("name", { required: true })}
-              className="w-full px-4 py-3 rounded-full bg-white/70 outline-none"
+              className="w-full px-4 py-3 rounded-full bg-white/70 outline-none text-black"
             />
 
             {/* Correo */}
@@ -56,7 +59,7 @@ const Registre = () => {
               placeholder="Correo"
               type="email"
               {...register("email", { required: true })}
-              className="w-full px-4 py-3 rounded-full bg-white/70 outline-none"
+              className="w-full px-4 py-3 rounded-full bg-white/70 outline-none text-black"
             />
 
             {/* Contraseña */}
@@ -64,7 +67,7 @@ const Registre = () => {
               placeholder="Contraseña"
               type="password"
               {...register("password", { required: true })}
-              className="w-full px-4 py-3 rounded-full bg-white/70 outline-none"
+              className="w-full px-4 py-3 rounded-full bg-white/70 outline-none text-black"
             />
 
             {/* Confirmar contraseña */}
@@ -72,7 +75,7 @@ const Registre = () => {
               placeholder="Confirmar Contraseña"
               type="password"
               {...register("password2", { required: true })}
-              className="w-full px-4 py-3 rounded-full bg-white/70 outline-none"
+              className="w-full px-4 py-3 rounded-full bg-white/70 outline-none text-black"
             />
 
             {/* Para volver al login */}
