@@ -1,5 +1,5 @@
 import { supabase } from "../integrations/supabase";
-import Calendar from "../components/Calendar";
+import Calendar from "../components/calendar/Calendar";
 import Navbar from "../components/navbar";
 
 function Home() {
