@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router";
 import { useForm } from "react-hook-form";
-import { authRequest } from "../api/auth";
+import { authRequest } from "../api/students.api";
 import { useEffect } from "react";
 import useAuth from "../hooks/useAuth";
 import fondo from "../assets/FondoDePantalla.jpg";

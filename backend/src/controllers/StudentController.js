@@ -3,9 +3,10 @@ const studentService = require("../services/StudentService");
 
 exports.authStudent = async (req, res) => {
   try {
-    const { name, lastname, email, password, password2 } = req.body;
+    const { name, lastName, email, password, password2 } = req.body;
     console.log(password2);
-    if (!name || !lastname || !email || !password || !password2) {
+    console.log(lastName);
+    if (!name || !lastName || !email || !password || !password2) {
       return res.status(400).json({
         error: "Todos los campos son obligatorios",
       });
@@ -18,7 +19,7 @@ exports.authStudent = async (req, res) => {
 
     const authResult = await studentService.authStudent({
       name,
-      lastname,
+      lastName,
       email,
       password,
     });
