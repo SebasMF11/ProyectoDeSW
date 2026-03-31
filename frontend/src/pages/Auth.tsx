@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router";
 import { useForm } from "react-hook-form";
 import useAuth from "../hooks/useAuth";
-import { loginRequest } from "../api/auth";
+import { loginRequest } from "../api/students.api";
 import { supabase } from "../integrations/supabase";
 import fondo from "../assets/FondoDePantalla.jpg";
 import logo from "../assets/logo.png";
@@ -21,10 +21,8 @@ const Auth = () => {
     });
     if (error) {
       console.error(error);
-      // Aquí puedes mostrar un mensaje de error al usuario
       return;
     }
-    // Enviar el usuario al backend para almacenar
     const res = await loginRequest(data.user);
     console.log(res);
     navigate("/home");
