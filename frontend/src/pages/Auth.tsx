@@ -28,55 +28,50 @@ const Auth = () => {
     navigate("/home");
   });
   return (
-    <div className="relative w-full min-h-screen flex items-center justify-center">
-      {/* Fondo */}
+    <div className="relative min-h-screen flex items-center justify-center">
       <img
         src={fondo}
+        alt="fondo"
         className="absolute inset-0 w-full h-full object-cover"
       />
 
-      {/* Overlay */}
       <div className="absolute inset-0 bg-black/40"></div>
-
-      {/* Card */}
-      <div className="relative z-10 w-[90%] max-w-md bg-white/40 backdrop-blur-md rounded-3xl p-6 sm:p-8 shadow-lg text-center">
+      <div className="relative z-10 w-[90%] max-w-md bg-white/40 sm:bg-white/30 backdrop-blur-md sm:backdrop-blur-lg rounded-3xl p-6 sm:p-8 shadow-lg text-center">
         <div className="flex flex-col items-center gap-4">
           <img src={logo} alt="logo" className="w-44" />
 
-          <p className="text-2xl font-bold text-black">Iniciar Sesión</p>
+          <h2 className="text-sm sm:text-base text-black">Login</h2>
 
           <form onSubmit={onSubmit} className="w-full flex flex-col gap-3">
             <input
-              placeholder="Correo"
+              placeholder="Email"
               type="email"
               {...register("email", { required: true })}
-              className="w-full px-4 py-3 rounded-full bg-white/70 outline-none text-black"
+              className="w-full px-4 text-gray-700 py-3 rounded-full bg-white/70 outline-none"
             />
-
             <input
-              placeholder="Contraseña"
+              placeholder="Password"
               type="password"
               {...register("password", { required: true })}
-              className="w-full px-4 py-3 rounded-full bg-white/70 outline-none text-black"
+              className="w-full px-4 text-gray-700 py-3 rounded-full bg-white/70 outline-none"
             />
 
+            <p className="text-sm text-gray-900">
+              Dont have an account?{" "}
+              <span
+                className="underline cursor-pointer"
+                onClick={() => navigate("/register")}
+              >
+                Sign up here.
+              </span>
+            </p>
             <button
               type="submit"
-              className="bg-green-500 hover:bg-green-600 text-white rounded-full px-6 py-4 font-semibold transition mx-auto block"
+              className="w-full bg-green-500 hover:bg-green-600 text-white py-3 rounded-full font-semibold transition"
             >
-              Ingresar
+              Login
             </button>
           </form>
-
-          <p className="text-sm text-gray-800">
-            ¿No tienes cuenta?{" "}
-            <span
-              className="underline cursor-pointer"
-              onClick={() => navigate("/register")}
-            >
-              Regístrate aquí
-            </span>
-          </p>
         </div>
       </div>
     </div>
