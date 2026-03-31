@@ -4,7 +4,7 @@ exports.createStudent = async (user) => {
   const { data: existing, error: checkError } = await supabase
     .from("student")
     .select("*")
-    .eq("idstudent", user.id);
+    .eq("student_id", user.id);
 
   if (checkError) {
     console.error(checkError);
@@ -13,9 +13,9 @@ exports.createStudent = async (user) => {
 
   if (!existing || existing.length === 0) {
     const { error } = await supabase.from("student").insert({
-      idstudent: user.id,
+      student_id: user.id,
       name: user.user_metadata.name,
-      lastname: user.user_metadata.lastname,
+      last_name: user.user_metadata.lastName,
       email: user.email,
     });
     if (error) {
@@ -27,7 +27,7 @@ exports.createStudent = async (user) => {
 };
 
 exports.authStudent = async (student) => {
-  const { name, lastname, email, password } = student;
+  const { name, lastName, email, password } = student;
 
   const { data, error } = await supabase.auth.signUp({
     email,
@@ -35,7 +35,7 @@ exports.authStudent = async (student) => {
     options: {
       data: {
         name,
-        lastname,
+        lastName,
       },
     },
   });

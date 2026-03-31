@@ -1,11 +1,11 @@
 import { useNavigate } from "react-router";
 import { useForm } from "react-hook-form";
-import { authRequest } from "../api/auth";
+import { courseRequest } from "../api/course";
 const course = () => {
   const navigate = useNavigate();
   const { register, handleSubmit } = useForm();
   const onSubmit = handleSubmit(async (values) => {
-    const res = await authRequest(values);
+    const res = await courseRequest(values);
     console.log(res);
     navigate("/");
   });

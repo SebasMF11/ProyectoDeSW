@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router";
 import { useForm } from "react-hook-form";
-import { authRequest } from "../api/auth";
+import { authRequest } from "../api/students.api";
 const settings = () => {
   const navigate = useNavigate();
   const { register, handleSubmit } = useForm();
