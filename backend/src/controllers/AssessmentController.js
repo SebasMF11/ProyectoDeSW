@@ -1,12 +1,12 @@
 const assessmentService = require("../services/AssessmentService");
 
 const validTypes = [
-  "parcial",
+  "midterm",
   "quiz",
-  "taller",
-  "proyecto",
-  "exposicion",
-  "laboratorio",
+  "workshop",
+  "project",
+  "presentation",
+  "lab",
 ];
 const daysOfWeek = [
   "sunday",
@@ -20,29 +20,35 @@ const daysOfWeek = [
 
 exports.createAssessment = async (req, res) => {
   try {
-    const { name, type, month, day, coursename, percentage } = req.body;
+    const { nameAssessment, type, month, day, courseName, percentage } =
+      req.body;
     const student_id = req.student.id;
 
-    if (!name || !type || !month || !day || !coursename || !percentage) {
-      return res
-        .status(400)
-        .json({ error: "Todos los campos son obligatorios" });
+    if (
+      !nameAssessment ||
+      !type ||
+      !month ||
+      !day ||
+      !courseName ||
+      !percentage
+    ) {
+      return res.status(400).json({ error: "All fields are required" });
     }
 
     if (!validTypes.includes(type.toLowerCase())) {
-      return res.status(400).json({
-        error: `Tipo no válido. Usa: ${validTypes.join(", ")}`,
-      });
+      return res
+        .status(400)
+        .json({ error: `Invalid type. Use: ${validTypes.join(", ")}` });
     }
 
     const course = await assessmentService.getCourseByName(
-      coursename,
+      courseName,
       student_id,
     );
     if (!course) {
       return res
         .status(404)
-        .json({ error: `No se encontró la asignatura "${coursename}"` });
+        .json({ error: `Course "${courseName}" not found` });
     }
 
     const year = new Date().getFullYear();
@@ -50,13 +56,13 @@ exports.createAssessment = async (req, res) => {
     const duedateObj = new Date(duedateStr + "T00:00:00");
 
     if (isNaN(duedateObj)) {
-      return res.status(400).json({ error: "Fecha inválida" });
+      return res.status(400).json({ error: "Invalid date" });
     }
 
     /*
     //validacion MUY diabolica para validar los dias de clase
     const duedayOfWeek = daysOfWeek[duedateObj.getDay()];
-    const courseDays = await assessmentService.getDaysByCourse(course.idcourse);
+    const courseDays = await assessmentService.getDaysByCourse(course.course_id); 
 
     if (!courseDays || courseDays.length === 0) {
       return res
@@ -65,47 +71,45 @@ exports.createAssessment = async (req, res) => {
     }
 
     const hasClass = courseDays.some(
-      (d) => d.dayofweek.toLowerCase() === duedayOfWeek,
+      (d) => d.day_of_week.toLowerCase() === duedayOfWeek, 
     );
     if (!hasClass) {
-      const validDays = courseDays.map((d) => d.dayofweek).join(", ");
+      const validDays = courseDays.map((d) => d.day_of_week).join(", "); 
       return res.status(400).json({
-        error: `No tienes clase de "${coursename}" ese día. Los días de clase son: ${validDays}`,
+        error: `No tienes clase de "${courseName}" ese día. Los días de clase son: ${validDays}`,
       });
     }
     */
 
     if (type.toLowerCase() === "parcial") {
       const semester = await assessmentService.getSemesterByCourse(
-        course.idcourse,
+        course.course_id,
       );
       if (!semester) {
         return res
           .status(404)
-          .json({ error: "No se encontró el semestre de la asignatura" });
+          .json({ error: "Semester for the course not found" });
       }
 
-      const midtermStart = new Date(semester.midtermweek + "T00:00:00");
+      const midtermStart = new Date(semester.midterm_week + "T00:00:00");
       const midtermEnd = new Date(midtermStart);
       midtermEnd.setDate(midtermStart.getDate() + 6);
 
       if (duedateObj < midtermStart || duedateObj > midtermEnd) {
         return res.status(400).json({
-          error: `Los parciales deben programarse entre el ${midtermStart.toLocaleDateString()} y el ${midtermEnd.toLocaleDateString()}`,
+          error: `Midterm assessments must be scheduled between ${midtermStart.toLocaleDateString()} and ${midtermEnd.toLocaleDateString()}`,
         });
       }
     }
 
-    // que una actividad no supere el 25%
     if (percentage > 25) {
       return res.status(400).json({
-        error: "El porcentaje de una actividad no puede superar el 25%",
+        error: "The percentage of an assessment cannot exceed 25%",
       });
     }
 
-    // que la suma no pase del 100%
     const existingAssessments = await assessmentService.getTotalPercentage(
-      course.idcourse,
+      course.course_id,
     );
     if (existingAssessments) {
       const totalPercentage = existingAssessments.reduce(
@@ -114,36 +118,35 @@ exports.createAssessment = async (req, res) => {
       );
       if (totalPercentage + percentage > 100) {
         return res.status(400).json({
-          error: `La suma de porcentajes superaría el 100%. Porcentaje disponible: ${100 - totalPercentage}%`,
+          error: `The sum of percentages would exceed 100%. Available percentage: ${100 - totalPercentage}%`,
         });
       }
     }
 
     const conflict = await assessmentService.checkAssessmentConflict(
-      course.idcourse,
+      course.course_id,
       duedateStr,
     );
     if (conflict && conflict.length > 0) {
       return res.status(400).json({
-        error: `Ya tienes una actividad de "${coursename}" agendada para ese día`,
+        error: `You already have an assessment for "${courseName}" scheduled for that day`,
       });
     }
 
     const assessment = await assessmentService.create({
-      name,
+      name_assessment: nameAssessment,
       type: type.toLowerCase(),
-      duedate: duedateStr,
-      course_id: course.idcourse,
+      due_date: duedateStr,
+      course_id: course.course_id,
       percentage,
     });
 
-    res.status(201).json({
-      message: "Actividad creada correctamente",
-      assessment,
-    });
+    res
+      .status(201)
+      .json({ message: "Assessment created successfully", assessment });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Error interno del servidor" });
+    res.status(500).json({ error: "Internal server error" });
   }
 };
 
@@ -154,103 +157,100 @@ exports.getAssessments = async (req, res) => {
     res.status(200).json({ assessments });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Error interno del servidor" });
+    res.status(500).json({ error: "Internal server error" });
   }
 };
 
 exports.getAssessmentsByCourse = async (req, res) => {
   try {
-    const { course_id } = req.params;
+    const { courseId } = req.params;
     const student_id = req.student.id;
     const assessments = await assessmentService.getByCourse(
-      course_id,
+      courseId,
       student_id,
     );
     res.status(200).json({ assessments });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Error interno del servidor" });
+    res.status(500).json({ error: "Internal server error" });
   }
 };
 
 exports.getAssessmentsBySemester = async (req, res) => {
   try {
-    const { semester_id } = req.params;
+    const { semesterId } = req.params;
     const student_id = req.student.id;
     const assessments = await assessmentService.getBySemester(
-      semester_id,
+      semesterId,
       student_id,
     );
     res.status(200).json({ assessments });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Error interno del servidor" });
+    res.status(500).json({ error: "Internal server error" });
   }
 };
 
 exports.updateAssessment = async (req, res) => {
   try {
-    const { idassessment } = req.params;
-    const { name, type, month, day, percentage } = req.body;
+    const { assessmentId } = req.params;
+    const { nameAssessment, type, month, day, percentage } = req.body;
     const student_id = req.student.id;
 
     if (type && !validTypes.includes(type.toLowerCase())) {
-      return res.status(400).json({
-        error: `Tipo no válido. Usa: ${validTypes.join(", ")}`,
-      });
+      return res
+        .status(400)
+        .json({ error: `Invalid type. Use: ${validTypes.join(", ")}` });
     }
 
     let duedateStr;
-    let duedateObj;
     if (month && day) {
       const year = new Date().getFullYear();
       duedateStr = `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-      duedateObj = new Date(duedateStr + "T00:00:00");
-
+      const duedateObj = new Date(duedateStr + "T00:00:00");
       if (isNaN(duedateObj)) {
-        return res.status(400).json({ error: "Fecha inválida" });
+        return res.status(400).json({ error: "Invalid date" });
       }
     }
 
-    const result = await assessmentService.update(idassessment, student_id, {
-      ...(name && { name }),
+    const result = await assessmentService.update(assessmentId, student_id, {
+      ...(nameAssessment && { name_assessment: nameAssessment }),
       ...(type && { type: type.toLowerCase() }),
-      ...(duedateStr && { duedate: duedateStr }),
+      ...(duedateStr && { due_date: duedateStr }),
       ...(percentage && { percentage }),
     });
 
     if (!result) {
       return res.status(404).json({
-        error: "Actividad no encontrada o no tienes permiso para editarla",
+        error: "Assessment not found or you don't have permission to edit it",
       });
     }
 
     res.status(200).json({
-      message: "Actividad actualizada correctamente",
+      message: "Assessment updated successfully",
       assessment: result,
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Error interno del servidor" });
+    res.status(500).json({ error: "Internal server error" });
   }
 };
 
 exports.deleteAssessment = async (req, res) => {
   try {
-    const { idassessment } = req.params;
+    const { assessmentId } = req.params;
     const student_id = req.student.id;
 
-    const result = await assessmentService.delete(idassessment, student_id);
-
+    const result = await assessmentService.delete(assessmentId, student_id);
     if (!result) {
       return res.status(404).json({
-        error: "Actividad no encontrada o no tienes permiso para eliminarla",
+        error: "Assessment not found or you don't have permission to delete it",
       });
     }
 
-    res.status(200).json({ message: "Actividad eliminada correctamente" });
+    res.status(200).json({ message: "Assessment deleted successfully" });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Error interno del servidor" });
+    res.status(500).json({ error: "Internal server error" });
   }
 };

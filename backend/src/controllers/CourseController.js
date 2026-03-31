@@ -1,16 +1,16 @@
 const courseService = require("../services/CourseService");
 
 const colorMap = {
-  rojo: "#FF5733",
-  azul: "#3380FF",
-  verde: "#33FF57",
-  amarillo: "#FFD700",
-  naranja: "#FFA500",
-  morado: "#800080",
-  rosado: "#FF69B4",
-  negro: "#000000",
-  blanco: "#FFFFFF",
-  gris: "#808080",
+  red: "#FF5733",
+  blue: "#3380FF",
+  green: "#33FF57",
+  yellow: "#FFD700",
+  orange: "#FFA500",
+  purple: "#800080",
+  pink: "#FF69B4",
+  black: "#000000",
+  white: "#FFFFFF",
+  gray: "#808080",
 };
 
 exports.getCourses = async (req, res) => {
@@ -20,106 +20,103 @@ exports.getCourses = async (req, res) => {
     res.status(200).json({ courses });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Error interno del servidor" });
+    res.status(500).json({ error: "Internal server error" });
   }
 };
 
 exports.getCoursesBySemester = async (req, res) => {
   try {
-    const { semestername } = req.params;
+    const { semesterName } = req.params;
     const student_id = req.student.id;
 
     const semester = await courseService.getSemesterByName(
-      semestername,
+      semesterName,
       student_id,
     );
     if (!semester) {
       return res
         .status(404)
-        .json({ error: `No se encontró el semestre "${semestername}"` });
+        .json({ error: `Semester "${semesterName}" not found` });
     }
 
-    const courses = await courseService.getBySemester(semester.idsemester);
+    const courses = await courseService.getBySemester(semester.semester_id);
     res.status(200).json({ courses });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Error interno del servidor" });
+    res.status(500).json({ error: "Internal server error" });
   }
 };
 
 exports.createCourse = async (req, res) => {
   try {
-    const { coursename, credits, teacher, color, semestername } = req.body;
+    const { courseName, credits, teacher, color, semesterName } = req.body;
     const student_id = req.student.id;
 
-    if (!coursename || !credits || !semestername) {
+    if (!courseName || !credits || !semesterName) {
       return res
         .status(400)
-        .json({ error: "coursename, credits y semestername son obligatorios" });
+        .json({ error: "courseName, credits and semesterName are required" });
     }
 
-    // Convertir el color al codigo
     const colorHex = colorMap[color?.toLowerCase()];
     if (!colorHex) {
       return res.status(400).json({
-        error: `Color no válido. Usa: ${Object.keys(colorMap).join(", ")}`,
+        error: `Invalid color. Use: ${Object.keys(colorMap).join(", ")}`,
       });
     }
 
-    // Buscar semester_id por nombre
     const semester = await courseService.getSemesterByName(
-      semestername,
+      semesterName,
       student_id,
     );
     if (!semester) {
       return res
         .status(404)
-        .json({ error: `No se encontró el semestre "${semestername}"` });
+        .json({ error: `Semester "${semesterName}" not found` });
     }
 
     const course = await courseService.create({
-      coursename,
+      course_name: courseName,
       credits,
       teacher,
       color: colorHex,
       status: true,
-      semester_id: semester.idsemester,
+      semester_id: semester.semester_id,
     });
 
     res.status(201).json({
-      message: "Materia creada correctamente",
-      course: course,
+      message: "Course created successfully",
+      course,
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Error interno del servidor" });
+    res.status(500).json({ error: "Internal server error" });
   }
 };
 
 exports.deleteCourse = async (req, res) => {
   try {
-    const { idcourse } = req.params;
+    const { courseId } = req.params;
     const student_id = req.student.id;
 
-    const result = await courseService.deleteCourse(idcourse, student_id);
-
+    const result = await courseService.deleteCourse(courseId, student_id);
     if (!result) {
       return res.status(404).json({
-        error: "Materia no encontrada o no tienes permiso para eliminarla",
+        error: "Course not found or you don't have permission to delete it",
       });
     }
 
-    res.status(200).json({ message: "Materia eliminada correctamente" });
+    res.status(200).json({ message: "Course deleted successfully" });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Error interno del servidor" });
+    res.status(500).json({ error: "Internal server error" });
   }
 };
 
 exports.updateCourse = async (req, res) => {
   try {
-    const { idcourse } = req.params;
-    const { coursename, credits, teacher, color } = req.body;
+    const { courseId } = req.params;
+    const { courseName, credits, teacher, color } = req.body;
     const student_id = req.student.id;
 
     let colorHex;
@@ -127,13 +124,13 @@ exports.updateCourse = async (req, res) => {
       colorHex = colorMap[color?.toLowerCase()];
       if (!colorHex) {
         return res.status(400).json({
-          error: `Color no válido. Usa: ${Object.keys(colorMap).join(", ")}`,
+          error: `Invalid color. Use: ${Object.keys(colorMap).join(", ")}`,
         });
       }
     }
 
-    const result = await courseService.updateCourse(idcourse, student_id, {
-      ...(coursename && { coursename }),
+    const result = await courseService.updateCourse(courseId, student_id, {
+      ...(courseName && { course_name: courseName }),
       ...(credits && { credits }),
       ...(teacher && { teacher }),
       ...(colorHex && { color: colorHex }),
@@ -141,16 +138,16 @@ exports.updateCourse = async (req, res) => {
 
     if (!result) {
       return res.status(404).json({
-        error: "Materia no encontrada o no tienes permiso para editarla",
+        error: "Course not found or you don't have permission to edit it",
       });
     }
 
     res.status(200).json({
-      message: "Materia actualizada correctamente",
+      message: "Course updated successfully",
       course: result,
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Error interno del servidor" });
+    res.status(500).json({ error: "Internal server error" });
   }
 };

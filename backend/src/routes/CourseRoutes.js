@@ -5,8 +5,16 @@ const authMiddleware = require("../middlewares/authMiddleware");
 
 router.post("/create", authMiddleware, courseController.createCourse);
 router.get("/view", authMiddleware, courseController.getCourses);
-router.get("/view/:semestername", authMiddleware, courseController.getCoursesBySemester);
-router.delete("/delete/:idcourse", authMiddleware, courseController.deleteCourse);
-router.put("/update/:idcourse", authMiddleware, courseController.updateCourse);
+router.get(
+  "/view/:semesterName",
+  authMiddleware,
+  courseController.getCoursesBySemester,
+);
+router.delete(
+  "/delete/:courseId",
+  authMiddleware,
+  courseController.deleteCourse,
+);
+router.put("/update/:courseId", authMiddleware, courseController.updateCourse);
 
 module.exports = router;

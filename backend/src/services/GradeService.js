@@ -1,10 +1,10 @@
 const supabase = require("../config/supabase");
 
-exports.getAssessmentById = async (idassessment, student_id) => {
+exports.getAssessmentById = async (assessmentId, student_id) => {
   const { data, error } = await supabase
     .from("assessment")
-    .select("idassessment, course!inner(semester!inner(student_id))")
-    .eq("idassessment", idassessment)
+    .select("assessment_id, course!inner(semester!inner(student_id))")
+    .eq("assessment_id", assessmentId)
     .eq("course.semester.student_id", student_id)
     .single();
 
@@ -12,11 +12,11 @@ exports.getAssessmentById = async (idassessment, student_id) => {
   return data;
 };
 
-exports.checkGradeExists = async (assessment_id) => {
+exports.checkGradeExists = async (assessmentId) => {
   const { data, error } = await supabase
     .from("grade")
-    .select("idgrade")
-    .eq("assessment_id", assessment_id)
+    .select("grade_id")
+    .eq("assessment_id", assessmentId)
     .single();
 
   if (error) return null;
@@ -34,13 +34,13 @@ exports.create = async (grade) => {
   return data;
 };
 
-exports.getByCourse = async (course_id, student_id) => {
+exports.getByCourse = async (courseId, student_id) => {
   const { data, error } = await supabase
     .from("grade")
     .select(
-      "idgrade, value, assessment!inner(name, type, percentage, duedate, course_id, course!inner(coursename, semester!inner(student_id)))",
+      "grade_id, value, assessment!inner(name_assessment, type, percentage, due_date, course_id, course!inner(course_name, semester!inner(student_id)))",
     )
-    .eq("assessment.course_id", course_id)
+    .eq("assessment.course_id", courseId)
     .eq("assessment.course.semester.student_id", student_id);
 
   if (error) {
@@ -48,17 +48,26 @@ exports.getByCourse = async (course_id, student_id) => {
     throw error;
   }
 
-  return data;
+  return data.map((g) => ({
+    gradeId: g.grade_id,
+    value: g.value,
+    assessment: {
+      name: g.assessment.name_assessment,
+      type: g.assessment.type,
+      percentage: g.assessment.percentage,
+      dueDate: g.assessment.due_date,
+      courseName: g.assessment.course.course_name,
+    },
+  }));
 };
 
-exports.update = async (idgrade, student_id, value) => {
-  // Verificar que la nota pertenece al estudiante
+exports.update = async (gradeId, student_id, value) => {
   const { data: grade, error: findError } = await supabase
     .from("grade")
     .select(
-      "idgrade, assessment!inner(course!inner(semester!inner(student_id)))",
+      "grade_id, assessment!inner(course!inner(semester!inner(student_id)))",
     )
-    .eq("idgrade", idgrade)
+    .eq("grade_id", gradeId)
     .eq("assessment.course.semester.student_id", student_id)
     .single();
 
@@ -67,7 +76,7 @@ exports.update = async (idgrade, student_id, value) => {
   const { data, error } = await supabase
     .from("grade")
     .update({ value })
-    .eq("idgrade", idgrade)
+    .eq("grade_id", gradeId)
     .select();
 
   if (error) {
@@ -78,14 +87,13 @@ exports.update = async (idgrade, student_id, value) => {
   return data;
 };
 
-exports.delete = async (idgrade, student_id) => {
-  // Verificar que la nota pertenece al estudiante
+exports.delete = async (gradeId, student_id) => {
   const { data: grade, error: findError } = await supabase
     .from("grade")
     .select(
-      "idgrade, assessment!inner(course!inner(semester!inner(student_id)))",
+      "grade_id, assessment!inner(course!inner(semester!inner(student_id)))",
     )
-    .eq("idgrade", idgrade)
+    .eq("grade_id", gradeId)
     .eq("assessment.course.semester.student_id", student_id)
     .single();
 
@@ -94,7 +102,7 @@ exports.delete = async (idgrade, student_id) => {
   const { error } = await supabase
     .from("grade")
     .delete()
-    .eq("idgrade", idgrade);
+    .eq("grade_id", gradeId);
 
   if (error) {
     console.error(error);

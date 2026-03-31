@@ -3,7 +3,7 @@ const supabase = require("../config/supabase");
 exports.getAll = async (course_id) => {
   const { data, error } = await supabase
     .from("day")
-    .select("idday, dayofweek, starttime, endtime, classroom")
+    .select("day_id, day_of_week, start_time, end_time, classroom")
     .eq("course_id", course_id);
 
   if (error) {
@@ -25,24 +25,29 @@ exports.create = async (day) => {
   return data;
 };
 
-exports.checkConflict = async (dayofweek, starttime, endtime, student_id) => {
+exports.checkConflict = async (
+  day_of_week,
+  start_time,
+  end_time,
+  student_id,
+) => {
   const { data, error } = await supabase
     .from("day")
     .select("*, course!inner(semester!inner(student_id))")
-    .eq("dayofweek", dayofweek)
+    .eq("day_of_week", day_of_week)
     .eq("course.semester.student_id", student_id)
-    .lt("starttime", endtime)
-    .gt("endtime", starttime);
+    .lt("start_time", end_time)
+    .gt("end_time", start_time);
 
   if (error) return null;
   return data;
 };
 
-exports.update = async (idday, student_id, fields) => {
+exports.update = async (dayId, student_id, fields) => {
   const { data: day, error: findError } = await supabase
     .from("day")
-    .select("idday, course!inner(semester!inner(student_id))")
-    .eq("idday", idday)
+    .select("day_id, course!inner(semester!inner(student_id))")
+    .eq("day_id", dayId)
     .eq("course.semester.student_id", student_id)
     .single();
 
@@ -51,7 +56,7 @@ exports.update = async (idday, student_id, fields) => {
   const { data, error } = await supabase
     .from("day")
     .update(fields)
-    .eq("idday", idday)
+    .eq("day_id", dayId)
     .select();
 
   if (error) {
@@ -62,17 +67,17 @@ exports.update = async (idday, student_id, fields) => {
   return data;
 };
 
-exports.delete = async (idday, student_id) => {
+exports.delete = async (dayId, student_id) => {
   const { data: day, error: findError } = await supabase
     .from("day")
-    .select("idday, course!inner(semester!inner(student_id))")
-    .eq("idday", idday)
+    .select("day_id, course!inner(semester!inner(student_id))")
+    .eq("day_id", dayId)
     .eq("course.semester.student_id", student_id)
     .single();
 
   if (findError || !day) return null;
 
-  const { error } = await supabase.from("day").delete().eq("idday", idday);
+  const { error } = await supabase.from("day").delete().eq("day_id", dayId);
 
   if (error) {
     console.error(error);

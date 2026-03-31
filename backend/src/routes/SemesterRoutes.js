@@ -6,7 +6,7 @@ const authMiddleware = require("../middlewares/authMiddleware");
 router.get("/view", authMiddleware, semesterController.getSemester);
 router.post("/create", authMiddleware, semesterController.createSemester);
 router.put(
-  "/update/:idsemester",
+  "/update/:semesterId",
   authMiddleware,
   semesterController.updateSemester,
 );
