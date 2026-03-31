@@ -3,9 +3,12 @@ const studentService = require("../services/StudentService");
 exports.authStudent = async (req, res) => {
   try {
     const { name, lastName, email, password, password2 } = req.body;
-
+    console.log(password2);
+    console.log(lastName);
     if (!name || !lastName || !email || !password || !password2) {
-      return res.status(400).json({ error: "All fields are required" });
+      return res.status(400).json({
+        error: "Todos los campos son obligatorios",
+      });
     }
     if (password !== password2) {
       return res.status(400).json({ error: "Passwords do not match" });
@@ -30,17 +33,11 @@ exports.loginStudent = async (req, res) => {
       return res.status(400).json({ error: "Email and password are required" });
     }
 
-    const result = await studentService.loginStudent({ email, password });
-
-    // Si el correo no fue confirmado, Supabase no dejará hacer login
-    res.status(200).json({
-      token: result.session.access_token,
-      student: {
-        id: result.user.id,
-        email: result.user.email,
-        name: result.user.user_metadata.name,
-        lastName: result.user.user_metadata.lastName,
-      },
+    const authResult = await studentService.authStudent({
+      name,
+      lastName,
+      email,
+      password,
     });
   } catch (error) {
     console.error("Error login:", error);
