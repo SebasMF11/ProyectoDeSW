@@ -49,16 +49,16 @@ const Auth = () => {
               placeholder="Email"
               type="email"
               {...register("email", { required: true })}
-              className="w-full px-4 py-3 rounded-full bg-white/70 outline-none"
+              className="w-full px-4 text-gray-700 py-3 rounded-full bg-white/70 outline-none"
             />
             <input
               placeholder="Password"
               type="password"
               {...register("password", { required: true })}
-              className="w-full px-4 py-3 rounded-full bg-white/70 outline-none"
+              className="w-full px-4 text-gray-700 py-3 rounded-full bg-white/70 outline-none"
             />
 
-            <p className="text-sm text-gray-700">
+            <p className="text-sm text-gray-900">
               Dont have an account?{" "}
               <span
                 className="underline cursor-pointer"

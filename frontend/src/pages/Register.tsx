@@ -49,7 +49,13 @@ const Register = () => {
               placeholder="Name"
               type="text"
               {...register("name", { required: true })}
-              className="w-full px-4 py-3 rounded-full bg-white/70 outline-none"
+              className="w-full px-4 py-3 rounded-full text-gray-700 bg-white/70 outline-none"
+            />
+            <input
+              placeholder="Last Name"
+              type="text"
+              {...register("lastName", { required: true })}
+              className="w-full px-4 py-3 rounded-full text-gray-700 bg-white/70 outline-none"
             />
 
             {/* Correo */}
@@ -57,7 +63,7 @@ const Register = () => {
               placeholder="Email"
               type="email"
               {...register("email", { required: true })}
-              className="w-full px-4 py-3 rounded-full bg-white/70 outline-none"
+              className="w-full px-4 py-3 rounded-full text-gray-700 bg-white/70 outline-none"
             />
 
             {/* Contraseña */}
@@ -65,7 +71,7 @@ const Register = () => {
               placeholder="Password"
               type="password"
               {...register("password", { required: true })}
-              className="w-full px-4 py-3 rounded-full bg-white/70 outline-none"
+              className="w-full px-4 py-3 rounded-full text-gray-700 bg-white/70 outline-none"
             />
 
             {/* Confirmar contraseña */}
@@ -73,11 +79,11 @@ const Register = () => {
               placeholder="Confirm Password"
               type="password"
               {...register("password2", { required: true })}
-              className="w-full px-4 py-3 rounded-full bg-white/70 outline-none"
+              className="w-full px-4 py-3 rounded-full text-gray-700 bg-white/70 outline-none"
             />
 
             {/* Para volver al login */}
-            <p className="text-sm text-gray-700">
+            <p className="text-sm text-gray-900">
               Do you already have an account?{" "}
               <span
                 className="underline cursor-pointer"
