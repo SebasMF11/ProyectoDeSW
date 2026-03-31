@@ -45,9 +45,15 @@ const Registre = () => {
           <form onSubmit={onSubmit} className="w-full flex flex-col gap-3">
             {/* Nombre */}
             <input
-              placeholder="Nombre Completo"
+              placeholder="Nombre"
               type="text"
               {...register("name", { required: true })}
+              className="w-full px-4 py-3 rounded-full bg-white/70 outline-none text-black"
+            />
+            <input
+              placeholder="Apellido"
+              type="text"
+              {...register("lastName", { required: true })}
               className="w-full px-4 py-3 rounded-full bg-white/70 outline-none text-black"
             />
 

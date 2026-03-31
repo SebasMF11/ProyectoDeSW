@@ -15,24 +15,24 @@ const academicPeriod = () => {
         <p>Crear cuenta</p>
         <form onSubmit={onSubmit}>
           <input
-            placeholder="Nombre Completo"
-            type="text"
-            {...register("name", { required: true })}
+            placeholder="Año-Semestre"
+            type="number"
+            {...register("semesterName", { required: true })}
           />
           <input
-            placeholder="Correo"
-            type="email"
-            {...register("email", { required: true })}
+            placeholder="Fecha de inicio"
+            type="date"
+            {...register("startDate", { required: true })}
           />
           <input
-            placeholder="Contraseña"
-            type="password"
-            {...register("password", { required: true })}
+            placeholder="Fecha de fin"
+            type="date"
+            {...register("endDate", { required: true })}
           />
           <input
-            placeholder="Confirmar Contraseña"
-            type="password"
-            {...register("password2", { required: true })}
+            placeholder="Semana de parciales"
+            type="number"
+            {...register("midtermWeek", { required: true })}
           />
           <button type="submit">Registrarse</button>
         </form>

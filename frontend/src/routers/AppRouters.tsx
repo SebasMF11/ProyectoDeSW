@@ -8,7 +8,7 @@ import NoteList from "../pages/noteList";
 import Note from "../pages/note";
 import CourseList from "../pages/courseList";
 import Course from "../pages/course";
-import Activities from "../pages/activities";
+import Activitie from "../pages/activitie";
 import ActivitiesList from "../pages/activitiesList";
 import AcademicPeriod from "../pages/academicPeriod";
 import CourseDays from "../pages/courseDays";
@@ -71,7 +71,7 @@ const AppRouters = () => {
         path="/activities"
         element={
           <ProtectedRouters>
-            <Activities />
+            <Activitie />
           </ProtectedRouters>
         }
       />

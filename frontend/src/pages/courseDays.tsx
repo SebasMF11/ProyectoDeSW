@@ -15,24 +15,24 @@ const courseDays = () => {
         <p>Crear cuenta</p>
         <form onSubmit={onSubmit}>
           <input
-            placeholder="Nombre Completo"
+            placeholder="Dia de la semana"
+            type="number"
+            {...register("day", { required: true })}
+          />
+          <input
+            placeholder="Aula"
             type="text"
-            {...register("name", { required: true })}
+            {...register("classroom", { required: true })}
           />
           <input
-            placeholder="Correo"
-            type="email"
-            {...register("email", { required: true })}
+            placeholder="Hora de inicio"
+            type="text"
+            {...register("startTime", { required: true })}
           />
           <input
-            placeholder="Contraseña"
-            type="password"
-            {...register("password", { required: true })}
-          />
-          <input
-            placeholder="Confirmar Contraseña"
-            type="password"
-            {...register("password2", { required: true })}
+            placeholder="Hora de fin"
+            type="text"
+            {...register("endTime", { required: true })}
           />
           <button type="submit">Registrarse</button>
         </form>

@@ -15,24 +15,19 @@ const note = () => {
         <p>Crear cuenta</p>
         <form onSubmit={onSubmit}>
           <input
-            placeholder="Nombre Completo"
+            placeholder="Elegir asignatura"
             type="text"
-            {...register("name", { required: true })}
+            {...register("course", { required: true })}
           />
           <input
-            placeholder="Correo"
-            type="email"
-            {...register("email", { required: true })}
+            placeholder="Seleccionar actividad"
+            type="text"
+            {...register("activity", { required: true })}
           />
           <input
-            placeholder="Contraseña"
-            type="password"
-            {...register("password", { required: true })}
-          />
-          <input
-            placeholder="Confirmar Contraseña"
-            type="password"
-            {...register("password2", { required: true })}
+            placeholder="Nota"
+            type="number"
+            {...register("grade", { required: true })}
           />
           <button type="submit">Registrarse</button>
         </form>
