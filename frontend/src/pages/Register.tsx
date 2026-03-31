@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router";
 import { useForm } from "react-hook-form";
-import { authRequest } from "../api/auth";
+import { authRequest } from "../api/students.api";
 import { useEffect } from "react";
 import useAuth from "../hooks/useAuth";
 import fondo from "../assets/FondoDePantalla.jpg";
@@ -82,6 +82,14 @@ const Register = () => {
               className="w-full px-4 py-3 rounded-full text-gray-700 bg-white/70 outline-none"
             />
 
+            {/* Botón */}
+            <button
+              type="submit"
+              className="bg-green-500 hover:bg-green-600 text-white rounded-full px-6 py-4 font-semibold transition mx-auto block"
+            >
+              Registrarse
+            </button>
+
             {/* Para volver al login */}
             <p className="text-sm text-gray-900">
               Do you already have an account?{" "}
@@ -92,14 +100,6 @@ const Register = () => {
                 Sign in here
               </span>
             </p>
-
-            {/* Botón */}
-            <button
-              type="submit"
-              className="w-full bg-green-500 hover:bg-green-600 text-white py-3 rounded-full font-semibold transition"
-            >
-              Registrarse
-            </button>
           </form>
         </div>
       </div>
