@@ -27,7 +27,7 @@ app.use(cors({ origin: "http://localhost:5173" }));
 app.use("/student", studentRoutes);
 
 app.get("/", (req, res) => {
-  res.send("Backend funcionando 🚀");
+  res.send("Backend 🚀");
 });
 
 module.exports = app;

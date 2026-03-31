@@ -6,22 +6,22 @@ const authMiddleware = require("../middlewares/authMiddleware");
 router.post("/create", authMiddleware, assessmentController.createAssessment);
 router.get("/view", authMiddleware, assessmentController.getAssessments);
 router.get(
-  "/view/course/:course_id",
+  "/view/course/:courseId",
   authMiddleware,
   assessmentController.getAssessmentsByCourse,
 );
 router.get(
-  "/view/semester/:semester_id",
+  "/view/semester/:semesterId",
   authMiddleware,
   assessmentController.getAssessmentsBySemester,
 );
 router.put(
-  "/update/:idassessment",
+  "/update/:assessmentId",
   authMiddleware,
   assessmentController.updateAssessment,
 );
 router.delete(
-  "/delete/:idassessment",
+  "/delete/:assessmentId",
   authMiddleware,
   assessmentController.deleteAssessment,
 );

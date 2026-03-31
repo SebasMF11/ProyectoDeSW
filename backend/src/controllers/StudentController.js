@@ -2,21 +2,19 @@ const studentService = require("../services/StudentService");
 
 exports.authStudent = async (req, res) => {
   try {
-    const { name, lastname, email, password, password2 } = req.body;
+    const { name, lastName, email, password, password2 } = req.body;
 
-    if (!name || !lastname || !email || !password || !password2) {
-      return res
-        .status(400)
-        .json({ error: "Todos los campos son obligatorios" });
+    if (!name || !lastName || !email || !password || !password2) {
+      return res.status(400).json({ error: "All fields are required" });
     }
     if (password !== password2) {
-      return res.status(400).json({ error: "Las contraseñas no coinciden" });
+      return res.status(400).json({ error: "Passwords do not match" });
     }
 
-    await studentService.authStudent({ name, lastname, email, password });
+    await studentService.authStudent({ name, lastName, email, password });
 
     res.status(201).json({
-      message: "Correo de confirmación enviado, revisa tu bandeja 📧",
+      message: "Confirmation email sent, check your inbox 📧",
     });
   } catch (error) {
     console.error("Error registro:", error);
@@ -29,9 +27,7 @@ exports.loginStudent = async (req, res) => {
     const { email, password } = req.body;
 
     if (!email || !password) {
-      return res
-        .status(400)
-        .json({ error: "Email y contraseña son obligatorios" });
+      return res.status(400).json({ error: "Email and password are required" });
     }
 
     const result = await studentService.loginStudent({ email, password });
@@ -43,7 +39,7 @@ exports.loginStudent = async (req, res) => {
         id: result.user.id,
         email: result.user.email,
         name: result.user.user_metadata.name,
-        lastname: result.user.user_metadata.lastname,
+        lastName: result.user.user_metadata.lastName,
       },
     });
   } catch (error) {
@@ -59,6 +55,6 @@ exports.getStudent = async (req, res) => {
     res.status(200).json({ student });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Error interno del servidor" });
+    res.status(500).json({ error: "Internal server error" });
   }
 };

@@ -4,7 +4,7 @@ exports.getAll = async (student_id) => {
   const { data, error } = await supabase
     .from("course")
     .select(
-      "idcourse, coursename, teacher, credits, semester!inner(student_id)",
+      "course_id, course_name, teacher, credits, semester!inner(student_id)",
     )
     .eq("semester.student_id", student_id);
 
@@ -19,7 +19,7 @@ exports.getAll = async (student_id) => {
 exports.getBySemester = async (semester_id) => {
   const { data, error } = await supabase
     .from("course")
-    .select("coursename, teacher, credits")
+    .select("course_name, teacher, credits")
     .eq("semester_id", semester_id);
 
   if (error) {
@@ -30,11 +30,11 @@ exports.getBySemester = async (semester_id) => {
   return data;
 };
 
-exports.getSemesterByName = async (semestername, student_id) => {
+exports.getSemesterByName = async (semesterName, student_id) => {
   const { data, error } = await supabase
     .from("semester")
     .select("*")
-    .eq("semestername", semestername)
+    .eq("semester_name", semesterName)
     .eq("student_id", student_id)
     .single();
 
@@ -56,11 +56,11 @@ exports.create = async (course) => {
   return data;
 };
 
-exports.deleteCourse = async (idcourse, student_id) => {
+exports.deleteCourse = async (courseId, student_id) => {
   const { data: course, error: findError } = await supabase
     .from("course")
-    .select("idcourse, semester!inner(student_id)")
-    .eq("idcourse", idcourse)
+    .select("course_id, semester!inner(student_id)")
+    .eq("course_id", courseId)
     .eq("semester.student_id", student_id)
     .single();
 
@@ -69,7 +69,7 @@ exports.deleteCourse = async (idcourse, student_id) => {
   const { error } = await supabase
     .from("course")
     .delete()
-    .eq("idcourse", idcourse);
+    .eq("course_id", courseId);
 
   if (error) {
     console.error(error);
@@ -79,11 +79,11 @@ exports.deleteCourse = async (idcourse, student_id) => {
   return true;
 };
 
-exports.updateCourse = async (idcourse, student_id, fields) => {
+exports.updateCourse = async (courseId, student_id, fields) => {
   const { data: course, error: findError } = await supabase
     .from("course")
-    .select("idcourse, semester!inner(student_id)")
-    .eq("idcourse", idcourse)
+    .select("course_id, semester!inner(student_id)")
+    .eq("course_id", courseId)
     .eq("semester.student_id", student_id)
     .single();
 
@@ -92,7 +92,7 @@ exports.updateCourse = async (idcourse, student_id, fields) => {
   const { data, error } = await supabase
     .from("course")
     .update(fields)
-    .eq("idcourse", idcourse)
+    .eq("course_id", courseId)
     .select();
 
   if (error) {

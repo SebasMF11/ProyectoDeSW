@@ -12,145 +12,137 @@ const validDays = [
 
 exports.getDays = async (req, res) => {
   try {
-    const { course_id } = req.params;
-
-    const days = await dayService.getAll(course_id);
-
+    const { courseId } = req.params;
+    const days = await dayService.getAll(courseId);
     res.status(200).json({ days });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Error interno del servidor" });
+    res.status(500).json({ error: "Internal server error" });
   }
 };
 
 exports.createDay = async (req, res) => {
   try {
-    const { dayofweek, starttime, endtime, classroom, course_id } = req.body;
+    const { dayOfWeek, startTime, endTime, classroom, courseId } = req.body;
     const student_id = req.student.id;
 
-    if (!dayofweek || !starttime || !endtime || !course_id) {
+    if (!dayOfWeek || !startTime || !endTime || !courseId) {
       return res.status(400).json({
-        error: "dayofweek, starttime, endtime y course_id son obligatorios",
+        error: "dayOfWeek, startTime, endTime and courseId are required",
       });
     }
 
-    if (!validDays.includes(dayofweek.toLowerCase())) {
+    if (!validDays.includes(dayOfWeek.toLowerCase())) {
       return res.status(400).json({
-        error: `Día no válido. Usa: ${validDays.join(", ")}`,
+        error: `Invalid day. Use: ${validDays.join(", ")}`,
       });
     }
 
-    if (starttime >= endtime) {
+    if (startTime >= endTime) {
       return res
         .status(400)
-        .json({ error: "La hora de inicio debe ser menor que la hora de fin" });
+        .json({ error: "The start time must be earlier than the end time" });
     }
 
     const conflict = await dayService.checkConflict(
-      dayofweek.toLowerCase(),
-      starttime + ":00",
-      endtime + ":00",
+      dayOfWeek.toLowerCase(),
+      startTime + ":00",
+      endTime + ":00",
       student_id,
     );
 
     if (conflict && conflict.length > 0) {
       return res.status(400).json({
-        error: `Ya tienes una clase registrada el ${dayofweek} en ese horario`,
+        error: `You already have a class registered on ${dayOfWeek} at that time`,
       });
     }
 
     const day = await dayService.create({
-      dayofweek: dayofweek.toLowerCase(),
-      starttime: starttime + ":00",
-      endtime: endtime + ":00",
+      day_of_week: dayOfWeek.toLowerCase(),
+      start_time: startTime + ":00",
+      end_time: endTime + ":00",
       classroom,
-      course_id,
+      course_id: courseId,
     });
 
-    res.status(201).json({
-      message: "Día de clase creado correctamente",
-      day,
-    });
+    res.status(201).json({ message: "Day created successfully", day });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Error interno del servidor" });
+    res.status(500).json({ error: "Internal server error" });
   }
 };
 
 exports.updateDay = async (req, res) => {
   try {
-    const { idday } = req.params;
-    const { dayofweek, starttime, endtime, classroom } = req.body;
+    const { dayId } = req.params;
+    const { dayOfWeek, startTime, endTime, classroom } = req.body;
     const student_id = req.student.id;
 
-    if (dayofweek && !validDays.includes(dayofweek.toLowerCase())) {
+    if (dayOfWeek && !validDays.includes(dayOfWeek.toLowerCase())) {
       return res.status(400).json({
-        error: `Día no válido. Usa: ${validDays.join(", ")}`,
+        error: `Invalid day. Use: ${validDays.join(", ")}`,
       });
     }
 
-    if (starttime && endtime && starttime >= endtime) {
+    if (startTime && endTime && startTime >= endTime) {
       return res
         .status(400)
-        .json({ error: "La hora de inicio debe ser menor que la hora de fin" });
+        .json({ error: "The start time must be earlier than the end time" });
     }
 
-    if (dayofweek || starttime || endtime) {
+    if (dayOfWeek || startTime || endTime) {
       const conflict = await dayService.checkConflict(
-        dayofweek?.toLowerCase(),
-        starttime ? starttime + ":00" : null,
-        endtime ? endtime + ":00" : null,
+        dayOfWeek?.toLowerCase(),
+        startTime ? startTime + ":00" : null,
+        endTime ? endTime + ":00" : null,
         student_id,
       );
 
       if (conflict && conflict.length > 0) {
         return res.status(400).json({
-          error: `Ya tienes una clase registrada el ${dayofweek} en ese horario`,
+          error: `You already have a class registered on ${dayOfWeek} at that time`,
         });
       }
     }
 
-    const result = await dayService.update(idday, student_id, {
-      ...(dayofweek && { dayofweek: dayofweek.toLowerCase() }),
-      ...(starttime && { starttime: starttime + ":00" }),
-      ...(endtime && { endtime: endtime + ":00" }),
+    const result = await dayService.update(dayId, student_id, {
+      ...(dayOfWeek && { day_of_week: dayOfWeek.toLowerCase() }),
+      ...(startTime && { start_time: startTime + ":00" }),
+      ...(endTime && { end_time: endTime + ":00" }),
       ...(classroom && { classroom }),
     });
 
     if (!result) {
       return res
         .status(404)
-        .json({ error: "Día no encontrado o no tienes permiso para editarlo" });
+        .json({
+          error: "Day not found or you don't have permission to edit it",
+        });
     }
 
-    res.status(200).json({
-      message: "Día actualizado correctamente",
-      day: result,
-    });
+    res.status(200).json({ message: "Day updated successfully", day: result });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Error interno del servidor" });
+    res.status(500).json({ error: "Internal server error" });
   }
 };
 
 exports.deleteDay = async (req, res) => {
   try {
-    const { idday } = req.params;
+    const { dayId } = req.params;
     const student_id = req.student.id;
 
-    const result = await dayService.delete(idday, student_id);
+    const result = await dayService.delete(dayId, student_id);
 
     if (!result) {
-      return res
-        .status(404)
-        .json({
-          error: "Día no encontrado o no tienes permiso para eliminarlo",
-        });
+      return res.status(404).json({
+        error: "DDay not found or you don't have permission to delete it",
+      });
     }
 
-    res.status(200).json({ message: "Día eliminado correctamente" });
+    res.status(200).json({ message: "Day deleted successfully" });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Error interno del servidor" });
+    res.status(500).json({ error: "Internal server error" });
   }
 };

@@ -1,13 +1,13 @@
 const supabase = require("../config/supabase");
 
 exports.authStudent = async (student) => {
-  const { name, lastname, email, password } = student;
+  const { name, lastName, email, password } = student;
 
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
     options: {
-      data: { name, lastname },
+      data: { name, lastName },
     },
   });
 
@@ -26,13 +26,13 @@ exports.loginStudent = async ({ email, password }) => {
   const { data: existing } = await supabase
     .from("student")
     .select("*")
-    .eq("idstudent", data.user.id);
+    .eq("student_id", data.user.id);
 
   if (!existing || existing.length === 0) {
     await supabase.from("student").insert({
-      idstudent: data.user.id,
+      student_id: data.user.id,
       name: data.user.user_metadata.name,
-      lastname: data.user.user_metadata.lastname,
+      last_name: data.user.user_metadata.lastName,
       email: data.user.email,
     });
   }
@@ -43,8 +43,8 @@ exports.loginStudent = async ({ email, password }) => {
 exports.getStudent = async (student_id) => {
   const { data, error } = await supabase
     .from("student")
-    .select("name, lastname, email")
-    .eq("idstudent", student_id)
+    .select("name, last_name, email")
+    .eq("student_id", student_id)
     .single();
 
   if (error) {

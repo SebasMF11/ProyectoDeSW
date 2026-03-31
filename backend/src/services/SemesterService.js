@@ -32,7 +32,7 @@ exports.update = async (idsemester, student_id, fields) => {
   const { data, error } = await supabase
     .from("semester")
     .update(fields)
-    .eq("idsemester", idsemester)
+    .eq("semester_id", idsemester)
     .eq("student_id", student_id)
     .select();
 
