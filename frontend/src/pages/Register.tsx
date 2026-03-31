@@ -5,7 +5,8 @@ import { useEffect } from "react";
 import useAuth from "../hooks/useAuth";
 import fondo from "../assets/FondoDePantalla.jpg";
 import logo from "../assets/logo.png";
-const Registre = () => {
+
+const Register = () => {
   const navigate = useNavigate();
   useEffect(() => {
     const session = useAuth();
@@ -39,46 +40,46 @@ const Registre = () => {
           <img src={logo} alt="logo" className="w-44" />
 
           {/* Títulos */}
-          <p className="text-2xl font-bold text-black">Crear cuenta</p>
+          <h2 className="text-sm sm:text-base text-black">Sign up</h2>
 
           {/* FORMULARIO */}
           <form onSubmit={onSubmit} className="w-full flex flex-col gap-3">
             {/* Nombre */}
             <input
-              placeholder="Nombre"
+              placeholder="Name"
               type="text"
               {...register("name", { required: true })}
-              className="w-full px-4 py-3 rounded-full bg-white/70 outline-none text-black"
+              className="w-full px-4 py-3 rounded-full text-gray-700 bg-white/70 outline-none"
             />
             <input
-              placeholder="Apellido"
+              placeholder="Last Name"
               type="text"
               {...register("lastName", { required: true })}
-              className="w-full px-4 py-3 rounded-full bg-white/70 outline-none text-black"
+              className="w-full px-4 py-3 rounded-full text-gray-700 bg-white/70 outline-none"
             />
 
             {/* Correo */}
             <input
-              placeholder="Correo"
+              placeholder="Email"
               type="email"
               {...register("email", { required: true })}
-              className="w-full px-4 py-3 rounded-full bg-white/70 outline-none text-black"
+              className="w-full px-4 py-3 rounded-full text-gray-700 bg-white/70 outline-none"
             />
 
             {/* Contraseña */}
             <input
-              placeholder="Contraseña"
+              placeholder="Password"
               type="password"
               {...register("password", { required: true })}
-              className="w-full px-4 py-3 rounded-full bg-white/70 outline-none text-black"
+              className="w-full px-4 py-3 rounded-full text-gray-700 bg-white/70 outline-none"
             />
 
             {/* Confirmar contraseña */}
             <input
-              placeholder="Confirmar Contraseña"
+              placeholder="Confirm Password"
               type="password"
               {...register("password2", { required: true })}
-              className="w-full px-4 py-3 rounded-full bg-white/70 outline-none text-black"
+              className="w-full px-4 py-3 rounded-full text-gray-700 bg-white/70 outline-none"
             />
 
             {/* Botón */}
@@ -90,13 +91,13 @@ const Registre = () => {
             </button>
 
             {/* Para volver al login */}
-            <p className="text-sm text-gray-800">
-              ¿Ya tienes cuenta?{" "}
+            <p className="text-sm text-gray-900">
+              Do you already have an account?{" "}
               <span
                 className="underline cursor-pointer"
                 onClick={() => navigate("/auth")}
               >
-                Inicia sesión aquí
+                Sign in here
               </span>
             </p>
           </form>
@@ -105,4 +106,4 @@ const Registre = () => {
     </div>
   );
 };
-export default Registre;
+export default Register;
