@@ -30,14 +30,14 @@ export default function DayCell({
   return (
     <div
       onClick={() => isCurrentMonth && onSelect(day)}
-      className={`relative flex flex-col items-center py-1 min-h-[44px] ${
+      className={`relative flex flex-col items-center py-1 min-h-[58px] ${
         isCurrentMonth ? "cursor-pointer" : "cursor-default"
       } ${getHighlightClass(examPos)}`}
     >
       <div
-        className={`relative z-10 w-[34px] h-[34px] flex items-center justify-center
-          rounded-full text-sm transition-all
-          ${isSelected ? "bg-gray-400 text-white font-medium" : ""}
+        className={`relative z-10 w-[50px] h-[50px] text-[18px] flex items-center justify-center
+          rounded-full  transition-all
+          ${isSelected ? "bg-gray-200 shadow-md shadow-gray-400 text-gray-600 font-medium" : ""}
           ${!isSelected && isCurrentMonth ? "text-gray-800 hover:bg-gray-100" : ""}
           ${!isCurrentMonth ? "text-gray-300" : ""}
         `}
@@ -50,7 +50,7 @@ export default function DayCell({
           {dots.map((color, i) => (
             <div
               key={i}
-              className="w-[6px] h-[6px] rounded-full"
+              className="w-[7px] h-[7px] rounded-full"
               style={{ backgroundColor: color }}
             />
           ))}
