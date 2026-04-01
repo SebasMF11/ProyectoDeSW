@@ -2,9 +2,10 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router";
 import { useForm } from "react-hook-form";
 import useAuth from "../../hooks/useAuth";
+import { loginRequest } from "../../api/students.api";
 import { supabase } from "../../integrations/supabase";
-import fondo from "../assets/FondoDePantalla.jpg";
-import logo from "../assets/logo.png";
+import fondo from "../../assets/FondoDePantalla.jpg";
+import logo from "../../assets/logo.png";
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -21,6 +22,14 @@ const Auth = () => {
     if (error) {
       console.error(error);
       return;
+    }
+    try {
+      await loginRequest({
+        email: values.email,
+        password: values.password,
+      });
+    } catch (err) {
+      console.error("Error al sincronizar con base de datos:", err);
     }
     navigate("/home");
   });
