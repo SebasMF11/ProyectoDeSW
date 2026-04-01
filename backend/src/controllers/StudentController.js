@@ -19,7 +19,26 @@ exports.authStudent = async (req, res) => {
     });
   } catch (error) {
     console.error("Error registro:", error);
-    res.status(500).json({ error: error.message });
+    //todos los signos de pregunta son para evitar errores en caso de que el error no tenga esa propiedad
+    if (error?.code === "over_email_send_rate_limit" || error?.status === 429) {
+      return res.status(429).json({
+        error:
+          "Demasiados intentos de registro. Espera un momento antes de volver a intentar.",
+      });
+    }
+
+    if (
+      error?.name === "AuthRetryableFetchError" ||
+      error?.status === 0 ||
+      error?.cause?.code === "ENOTFOUND"
+    ) {
+      return res.status(503).json({
+        error:
+          "No se pudo conectar con el servicio de autenticacion. Verifica tu conexion e intenta nuevamente.",
+      });
+    }
+
+    res.status(500).json({ error: "Error interno al registrar estudiante" });
   }
 };
 
@@ -31,11 +50,14 @@ exports.loginStudent = async (req, res) => {
       return res.status(400).json({ error: "Email and password are required" });
     }
 
-    const authResult = await studentService.authStudent({
-      name,
-      lastName,
+    const authResult = await studentService.loginStudent({
       email,
       password,
+    });
+
+    res.status(200).json({
+      message: "Login successful",
+      user: authResult.user,
     });
   } catch (error) {
     console.error("Error login:", error);
