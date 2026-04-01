@@ -62,7 +62,7 @@ exports.getAll = async (student_id) => {
   const { data, error } = await supabase
     .from("assessment")
     .select(
-      "assessment_id, name_assessment, type, due_date, percentage, course!inner(course_name, semester!inner(student_id))",
+      "assessment_id, assessment_name, type, due_date, percentage, course!inner(course_name, semester!inner(student_id))",
     )
     .eq("course.semester.student_id", student_id);
 
@@ -78,7 +78,7 @@ exports.getByCourse = async (course_id, student_id) => {
   const { data, error } = await supabase
     .from("assessment")
     .select(
-      "assessment_id, name_assessment, type, due_date, percentage, course!inner(course_name, semester!inner(student_id))",
+      "assessment_id, assessment_name, type, due_date, percentage, course!inner(course_name, semester!inner(student_id))",
     )
     .eq("course_id", course_id)
     .eq("course.semester.student_id", student_id);
@@ -95,7 +95,7 @@ exports.getBySemester = async (semester_id, student_id) => {
   const { data, error } = await supabase
     .from("assessment")
     .select(
-      "assessment_id, name_assessment, type, due_date, percentage, course!inner(course_name, semester!inner(semester_id, student_id))",
+      "assessment_id, assessment_name, type, due_date, percentage, course!inner(course_name, semester!inner(semester_id, student_id))",
     )
     .eq("course.semester.semester_id", semester_id)
     .eq("course.semester.student_id", student_id);

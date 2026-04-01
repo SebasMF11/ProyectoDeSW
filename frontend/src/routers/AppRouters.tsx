@@ -4,14 +4,14 @@ import Register from "../pages/student/Register";
 import Auth from "../pages/student/Auth";
 import ProtectedRouters from "./ProtectedRouters";
 import Settings from "../pages/student/settings";
-import NoteList from "../pages/note/noteList";
-import Note from "../pages/note/note";
+import GradeList from "../pages/grade/gradeList";
+import Grade from "../pages/grade/grade";
 import CourseList from "../pages/course/courseList";
 import Course from "../pages/course/course";
-import Activitie from "../pages/activitie/activitie";
-import ActivitiesList from "../pages/activitie/activitiesList";
-import AcademicPeriod from "../pages/academicPeriod";
-import CourseDays from "../pages/course/courseDays";
+import Assessment from "../pages/assessment/assessment";
+import AssessmentList from "../pages/assessment/assessmentList";
+import Semester from "../pages/semester";
+import Day from "../pages/course/day";
 import Profile from "../pages/student/profile";
 const AppRouters = () => {
   return (
@@ -36,23 +36,23 @@ const AppRouters = () => {
         }
       />
       <Route
-        path="/notes"
+        path="/grade-list"
         element={
           <ProtectedRouters>
-            <NoteList />
+            <GradeList />
           </ProtectedRouters>
         }
       />
       <Route
-        path="/note"
+        path="/grade"
         element={
           <ProtectedRouters>
-            <Note />
+            <Grade />
           </ProtectedRouters>
         }
       />
       <Route
-        path="/courses"
+        path="/course-list"
         element={
           <ProtectedRouters>
             <CourseList />
@@ -68,34 +68,34 @@ const AppRouters = () => {
         }
       />
       <Route
-        path="/activities"
+        path="/assessment"
         element={
           <ProtectedRouters>
-            <Activitie />
+            <Assessment />
           </ProtectedRouters>
         }
       />
       <Route
-        path="/activities-list"
+        path="/assessment-list"
         element={
           <ProtectedRouters>
-            <ActivitiesList />
+            <AssessmentList />
           </ProtectedRouters>
         }
       />
       <Route
-        path="/academic-period"
+        path="/semester"
         element={
           <ProtectedRouters>
-            <AcademicPeriod />
+            <Semester />
           </ProtectedRouters>
         }
       />
       <Route
-        path="/course-days"
+        path="/day"
         element={
           <ProtectedRouters>
-            <CourseDays />
+            <Day />
           </ProtectedRouters>
         }
       />

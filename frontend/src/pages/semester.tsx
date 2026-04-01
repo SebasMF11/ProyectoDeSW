@@ -1,22 +1,25 @@
 import { useNavigate } from "react-router";
 import { useForm } from "react-hook-form";
-import { academicPeriodRequest } from "../api/academicPeriods.api";
-const academicPeriod = () => {
+import { semesterCreateRequest } from "../api/semester";
+
+const Semester = () => {
   const navigate = useNavigate();
   const { register, handleSubmit } = useForm();
+
   const onSubmit = handleSubmit(async (values) => {
-    const res = await academicPeriodRequest(values);
+    const res = await semesterCreateRequest(values);
     console.log(res);
     navigate("/");
   });
+
   return (
     <div>
       <div>
-        <p>Crear cuenta</p>
+        <p>Crear semestre</p>
         <form onSubmit={onSubmit}>
           <input
-            placeholder="Año-Semestre"
-            type="number"
+            placeholder="Nombre del semestre"
+            type="text"
             {...register("semesterName", { required: true })}
           />
           <input
@@ -30,8 +33,8 @@ const academicPeriod = () => {
             {...register("endDate", { required: true })}
           />
           <input
-            placeholder="Semana de parciales"
-            type="number"
+            placeholder="Fecha de semana de parciales"
+            type="date"
             {...register("midtermWeek", { required: true })}
           />
           <button type="submit">Registrarse</button>
@@ -40,4 +43,5 @@ const academicPeriod = () => {
     </div>
   );
 };
-export default academicPeriod;
+
+export default Semester;

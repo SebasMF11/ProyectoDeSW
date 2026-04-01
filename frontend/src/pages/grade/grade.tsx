@@ -1,11 +1,11 @@
 import { useNavigate } from "react-router";
 import { useForm } from "react-hook-form";
-import { noteRequest } from "../../api/note";
-const note = () => {
+import { gradeCreateRequest } from "../../api/grade";
+const grade = () => {
   const navigate = useNavigate();
   const { register, handleSubmit } = useForm();
   const onSubmit = handleSubmit(async (values) => {
-    const res = await noteRequest(values);
+    const res = await gradeCreateRequest(values);
     console.log(res);
     navigate("/");
   });
@@ -15,14 +15,9 @@ const note = () => {
         <p>Crear cuenta</p>
         <form onSubmit={onSubmit}>
           <input
-            placeholder="Elegir asignatura"
-            type="text"
-            {...register("course", { required: true })}
-          />
-          <input
             placeholder="Seleccionar actividad"
             type="text"
-            {...register("activity", { required: true })}
+            {...register("assessment", { required: true })}
           />
           <input
             placeholder="Nota"
@@ -35,4 +30,4 @@ const note = () => {
     </div>
   );
 };
-export default note;
+export default grade;
