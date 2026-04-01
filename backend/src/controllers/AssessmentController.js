@@ -18,6 +18,32 @@ const daysOfWeek = [
   "saturday",
 ];
 
+const parseDateRange = (rangeValue) => {
+  if (!rangeValue || typeof rangeValue !== "string") {
+    return null;
+  }
+
+  const trimmed = rangeValue.trim();
+  const startStr = trimmed.slice(1).split(",")[0];
+  const endExclusiveStr = trimmed.slice(0, -1).split(",")[1];
+
+  if (!startStr || !endExclusiveStr) {
+    return null;
+  }
+
+  const start = new Date(`${startStr}T00:00:00Z`);
+  const endExclusive = new Date(`${endExclusiveStr}T00:00:00Z`);
+
+  if (Number.isNaN(start.getTime()) || Number.isNaN(endExclusive.getTime())) {
+    return null;
+  }
+
+  const end = new Date(endExclusive);
+  end.setUTCDate(end.getUTCDate() - 1);
+
+  return { start, end };
+};
+
 exports.createAssessment = async (req, res) => {
   try {
     const { nameAssessment, type, month, day, courseName, percentage } =
@@ -91,9 +117,16 @@ exports.createAssessment = async (req, res) => {
           .json({ error: "Semester for the course not found" });
       }
 
-      const midtermStart = new Date(semester.midterm_week + "T00:00:00");
-      const midtermEnd = new Date(midtermStart);
-      midtermEnd.setDate(midtermStart.getDate() + 6);
+      const midtermRange = parseDateRange(semester.midterm_week);
+
+      if (!midtermRange) {
+        return res.status(400).json({
+          error: "Midterm week range is invalid for this semester",
+        });
+      }
+
+      const midtermStart = midtermRange.start;
+      const midtermEnd = midtermRange.end;
 
       if (duedateObj < midtermStart || duedateObj > midtermEnd) {
         return res.status(400).json({

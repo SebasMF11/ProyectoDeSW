@@ -13,7 +13,8 @@ const validDays = [
 exports.getDays = async (req, res) => {
   try {
     const { courseId } = req.params;
-    const days = await dayService.getAll(courseId);
+    const student_id = req.student.id;
+    const days = await dayService.getAll(courseId, student_id);
     res.status(200).json({ days });
   } catch (error) {
     console.error(error);
@@ -57,13 +58,22 @@ exports.createDay = async (req, res) => {
       });
     }
 
-    const day = await dayService.create({
+    const day = await dayService.create(
+      {
       day_of_week: dayOfWeek.toLowerCase(),
       start_time: startTime + ":00",
       end_time: endTime + ":00",
       classroom,
       course_id: courseId,
-    });
+      },
+      student_id,
+    );
+
+    if (!day) {
+      return res
+        .status(404)
+        .json({ error: "Course not found or you don't have permission" });
+    }
 
     res.status(201).json({ message: "Day created successfully", day });
   } catch (error) {

@@ -1,21 +1,21 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router";
 import { useForm } from "react-hook-form";
-import useAuth from "../hooks/useAuth";
-import { loginRequest } from "../api/students.api";
-import { supabase } from "../integrations/supabase";
-import fondo from "../assets/FondoDePantalla.jpg";
-import logo from "../assets/logo.png";
+import useAuth from "../../hooks/useAuth";
+import { loginRequest } from "../../api/students.api";
+import { supabase } from "../../integrations/supabase";
+import fondo from "../../assets/FondoDePantalla.jpg";
+import logo from "../../assets/logo.png";
 
 const Auth = () => {
   const navigate = useNavigate();
   const session = useAuth();
   useEffect(() => {
     if (session) navigate("/home");
-  }, []);
+  }, [navigate, session]);
   const { register, handleSubmit } = useForm();
   const onSubmit = handleSubmit(async (values) => {
-    const { data, error } = await supabase.auth.signInWithPassword({
+    const { error } = await supabase.auth.signInWithPassword({
       email: values.email,
       password: values.password,
     });
@@ -23,8 +23,14 @@ const Auth = () => {
       console.error(error);
       return;
     }
-    const res = await loginRequest(data.user);
-    console.log(res);
+    try {
+      await loginRequest({
+        email: values.email,
+        password: values.password,
+      });
+    } catch (err) {
+      console.error("Error al sincronizar con base de datos:", err);
+    }
     navigate("/home");
   });
   return (

@@ -1,5 +1,3 @@
-import React from "react";
-
 function courseList() {
   return <div>courseList</div>;
 }

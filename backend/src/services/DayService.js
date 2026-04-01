@@ -1,20 +1,32 @@
 const supabase = require("../config/supabase");
 
-exports.getAll = async (course_id) => {
+exports.getAll = async (course_id, student_id) => {
   const { data, error } = await supabase
     .from("day")
-    .select("day_id, day_of_week, start_time, end_time, classroom")
-    .eq("course_id", course_id);
+    .select(
+      "day_id, day_of_week, start_time, end_time, classroom, course!inner(semester!inner(student_id))",
+    )
+    .eq("course_id", course_id)
+    .eq("course.semester.student_id", student_id);
 
   if (error) {
     console.error(error);
     throw error;
   }
 
-  return data;
+  return data.map(({ course, ...day }) => day);
 };
 
-exports.create = async (day) => {
+exports.create = async (day, student_id) => {
+  const { data: course, error: findError } = await supabase
+    .from("course")
+    .select("course_id, semester!inner(student_id)")
+    .eq("course_id", day.course_id)
+    .eq("semester.student_id", student_id)
+    .single();
+
+  if (findError || !course) return null;
+
   const { data, error } = await supabase.from("day").insert([day]).select();
 
   if (error) {

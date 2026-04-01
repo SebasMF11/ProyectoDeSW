@@ -1,12 +1,12 @@
 import { useNavigate } from "react-router";
 import { useForm } from "react-hook-form";
-import { activitieRequest } from "../api/activities.api";
+import { assessmentCreateRequest } from "../../api/assessment.api";
 
-const activities = () => {
+const assessment = () => {
   const navigate = useNavigate();
   const { register, handleSubmit } = useForm();
   const onSubmit = handleSubmit(async (values) => {
-    const res = await activitieRequest(values);
+    const res = await assessmentCreateRequest(values);
     console.log(res);
     navigate("/");
   });
@@ -23,7 +23,7 @@ const activities = () => {
           <input
             placeholder="Nombre de la actividad"
             type="text"
-            {...register("activitieName", { required: true })}
+            {...register("assessmentName", { required: true })}
           />
           <input
             placeholder="Mes"
@@ -38,7 +38,7 @@ const activities = () => {
           <input
             placeholder="Tipo de actividad"
             type="text"
-            {...register("activityType", { required: true })}
+            {...register("courseName", { required: true })}
           />
           <input
             placeholder="--%"
@@ -51,4 +51,4 @@ const activities = () => {
     </div>
   );
 };
-export default activities;
+export default assessment;
