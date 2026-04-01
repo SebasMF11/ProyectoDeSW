@@ -1,11 +1,11 @@
 import { useNavigate } from "react-router";
 import { useForm } from "react-hook-form";
-import { courseDaysRequest } from "../../api/course";
-const courseDays = () => {
+import { dayCreateRequest } from "../../api/day.api";
+const day = () => {
   const navigate = useNavigate();
   const { register, handleSubmit } = useForm();
   const onSubmit = handleSubmit(async (values) => {
-    const res = await courseDaysRequest(values);
+    const res = await dayCreateRequest(values);
     console.log(res);
     navigate("/");
   });
@@ -17,7 +17,7 @@ const courseDays = () => {
           <input
             placeholder="Dia de la semana"
             type="number"
-            {...register("day", { required: true })}
+            {...register("dayOfWeek", { required: true })}
           />
           <input
             placeholder="Aula"
@@ -40,4 +40,4 @@ const courseDays = () => {
     </div>
   );
 };
-export default courseDays;
+export default day;

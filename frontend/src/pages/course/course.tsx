@@ -1,11 +1,11 @@
 import { useNavigate } from "react-router";
 import { useForm } from "react-hook-form";
-import { courseRequest } from "../../api/course";
+import { courseCreateRequest } from "../../api/course";
 const course = () => {
   const navigate = useNavigate();
   const { register, handleSubmit } = useForm();
   const onSubmit = handleSubmit(async (values) => {
-    const res = await courseRequest(values);
+    const res = await courseCreateRequest(values);
     console.log(res);
     navigate("/");
   });
@@ -27,7 +27,7 @@ const course = () => {
           <input
             placeholder="Profesor"
             type="text"
-            {...register("professor", { required: true })}
+            {...register("teacher", { required: true })}
           />
           <input
             placeholder="Creditos"
@@ -37,7 +37,7 @@ const course = () => {
           <input
             placeholder="Semestre"
             type="list"
-            {...register("semester", { required: true })}
+            {...register("semesterName", { required: true })}
           />
           <button type="submit">Registrarse</button>
         </form>
