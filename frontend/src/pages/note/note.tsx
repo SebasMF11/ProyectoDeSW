@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router";
 import { useForm } from "react-hook-form";
-import { noteRequest } from "../api/note";
+import { noteRequest } from "../../api/note";
 const note = () => {
   const navigate = useNavigate();
   const { register, handleSubmit } = useForm();

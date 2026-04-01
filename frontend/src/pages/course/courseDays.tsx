@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router";
 import { useForm } from "react-hook-form";
-import { courseDaysRequest } from "../api/course";
+import { courseDaysRequest } from "../../api/course";
 const courseDays = () => {
   const navigate = useNavigate();
   const { register, handleSubmit } = useForm();

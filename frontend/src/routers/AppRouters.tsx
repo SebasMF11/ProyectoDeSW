@@ -1,18 +1,18 @@
 import { Route, Routes } from "react-router";
 import Home from "../pages/Home";
-import Register from "../pages/Register";
-import Auth from "../pages/Auth";
+import Register from "../pages/student/Register";
+import Auth from "../pages/student/Auth";
 import ProtectedRouters from "./ProtectedRouters";
-import Settings from "../pages/settings";
-import NoteList from "../pages/noteList";
-import Note from "../pages/note";
-import CourseList from "../pages/courseList";
-import Course from "../pages/course";
-import Activitie from "../pages/activitie";
-import ActivitiesList from "../pages/activitiesList";
+import Settings from "../pages/student/settings";
+import NoteList from "../pages/note/noteList";
+import Note from "../pages/note/note";
+import CourseList from "../pages/course/courseList";
+import Course from "../pages/course/course";
+import Activitie from "../pages/activitie/activitie";
+import ActivitiesList from "../pages/activitie/activitiesList";
 import AcademicPeriod from "../pages/academicPeriod";
-import CourseDays from "../pages/courseDays";
-
+import CourseDays from "../pages/course/courseDays";
+import Profile from "../pages/student/profile";
 const AppRouters = () => {
   return (
     <Routes>
@@ -96,6 +96,14 @@ const AppRouters = () => {
         element={
           <ProtectedRouters>
             <CourseDays />
+          </ProtectedRouters>
+        }
+      />
+      <Route
+        path="/profile"
+        element={
+          <ProtectedRouters>
+            <Profile />
           </ProtectedRouters>
         }
       />
