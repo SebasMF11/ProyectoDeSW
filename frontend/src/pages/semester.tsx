@@ -33,7 +33,7 @@ const Semester = () => {
             {...register("endDate", { required: true })}
           />
           <input
-            placeholder="Fecha de semana de parciales"
+            placeholder="Inicio de semana de parciales"
             type="date"
             {...register("midtermWeek", { required: true })}
           />

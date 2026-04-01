@@ -1,5 +1,28 @@
 const semesterService = require("../services/SemesterService");
 
+const formatDate = (date) => date.toISOString().split("T")[0];
+
+const toDate = (dateString) => new Date(`${dateString}T00:00:00Z`);
+
+const addDays = (date, days) => {
+  const result = new Date(date);
+  result.setUTCDate(result.getUTCDate() + days);
+  return result;
+};
+
+const toDateRange = (startDateString, days) => {
+  const start = toDate(startDateString);
+  const endExclusive = addDays(start, days);
+  return `[${formatDate(start)},${formatDate(endExclusive)})`;
+};
+
+const getFinalExamWeekRange = (endDateString) => {
+  const end = toDate(endDateString);
+  const finalExamStart = addDays(end, -7);
+  const finalExamEndExclusive = addDays(end, 1);
+  return `[${formatDate(finalExamStart)},${formatDate(finalExamEndExclusive)})`;
+};
+
 exports.getSemester = async (req, res) => {
   try {
     const student_id = req.student.id;
@@ -15,28 +38,15 @@ exports.createSemester = async (req, res) => {
     const { semesterName, startDate, endDate, midtermWeek } = req.body;
     const student_id = req.student.id;
 
-    const end = new Date(endDate + "T00:00:00");
-    const finalExam = new Date(end);
-    finalExam.setDate(end.getDate() - 6);
-
-    const midDate = new Date(midtermWeek + "T00:00:00");
-    const start = new Date(startDate + "T00:00:00");
-
-    if (midDate < start || midDate > end) {
-      return res.status(400).json({
-        error:
-          "The midterm week must be between the start and end dates of the semester",
-      });
-    }
-
-    const finalExamWeek = finalExam.toISOString().split("T")[0];
+    const midtermWeekRange = toDateRange(midtermWeek, 7);
+    const finalExamWeekRange = getFinalExamWeekRange(endDate);
 
     const semester = await semesterService.create({
       semester_name: semesterName,
       start_date: startDate,
       end_date: endDate,
-      midterm_week: midtermWeek,
-      final_exam_week: finalExamWeek,
+      midterm_week: midtermWeekRange,
+      final_exam_week: finalExamWeekRange,
       student_id,
     });
 
@@ -58,17 +68,19 @@ exports.updateSemester = async (req, res) => {
 
     let finalExamWeek;
     if (endDate) {
-      const end = new Date(endDate + "T00:00:00");
-      const finalExam = new Date(end);
-      finalExam.setDate(end.getDate() - 6);
-      finalExamWeek = finalExam.toISOString().split("T")[0];
+      finalExamWeek = getFinalExamWeekRange(endDate);
+    }
+
+    let midtermWeekRange;
+    if (midtermWeek) {
+      midtermWeekRange = toDateRange(midtermWeek, 7);
     }
 
     const semester = await semesterService.update(semesterId, student_id, {
       ...(semesterName && { semester_name: semesterName }),
       ...(startDate && { start_date: startDate }),
       ...(endDate && { end_date: endDate }),
-      ...(midtermWeek && { midterm_week: midtermWeek }),
+      ...(midtermWeekRange && { midterm_week: midtermWeekRange }),
       ...(finalExamWeek && { final_exam_week: finalExamWeek }),
     });
 
