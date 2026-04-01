@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router";
 import { useForm } from "react-hook-form";
-import { activitieRequest } from "../api/activities.api";
+import { activitieRequest } from "../../api/activities.api";
 
 const activities = () => {
   const navigate = useNavigate();

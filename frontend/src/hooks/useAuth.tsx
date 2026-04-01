@@ -1,16 +1,38 @@
-import { KEY_STORAGE } from "../const/constants";
+import { useEffect, useState } from "react";
+import type { Session } from "@supabase/supabase-js";
+import { supabase } from "../integrations/supabase";
+
 const useAuth = () => {
-  //esto es para verificar si en el navegador existe un inicio de sesion
-  try {
-    const _locaStorage = localStorage.getItem(KEY_STORAGE) ?? "";
-    if (_locaStorage) {
-      const session = _locaStorage ? JSON.parse(_locaStorage) : null;
-      return session;
-    }
-  } catch (error) {
-    console.log(error);
-  }
-  return null;
+  const [session, setSession] = useState<Session | null | undefined>(
+    undefined,
+  );
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadSession = async () => {
+      const {
+        data: { session: currentSession },
+      } = await supabase.auth.getSession();
+
+      if (isMounted) setSession(currentSession ?? null);
+    };
+
+    loadSession();
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, currentSession) => {
+      setSession(currentSession ?? null);
+    });
+
+    return () => {
+      isMounted = false;
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  return session;
 };
 
 export default useAuth;
