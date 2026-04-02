@@ -7,7 +7,7 @@ const grade = () => {
   const onSubmit = handleSubmit(async (values) => {
     const res = await gradeCreateRequest(values);
     console.log(res);
-    navigate("/");
+    navigate("/home");
   });
   return (
     <div>
