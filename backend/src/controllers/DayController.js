@@ -1,13 +1,13 @@
 const dayService = require("../services/DayService");
 
 const validDays = [
-  "monday",
-  "tuesday",
-  "wednesday",
-  "thursday",
-  "friday",
-  "saturday",
-  "sunday",
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+  "Sunday",
 ];
 
 exports.getDays = async (req, res) => {
@@ -24,12 +24,12 @@ exports.getDays = async (req, res) => {
 
 exports.createDay = async (req, res) => {
   try {
-    const { dayOfWeek, startTime, endTime, classroom, courseId } = req.body;
+    const { dayOfWeek, startTime, endTime, classroom, courseName } = req.body;
     const student_id = req.student.id;
 
-    if (!dayOfWeek || !startTime || !endTime || !courseId) {
+    if (!dayOfWeek || !startTime || !endTime || !courseName) {
       return res.status(400).json({
-        error: "dayOfWeek, startTime, endTime and courseId are required",
+        error: "dayOfWeek, startTime, endTime and courseName are required",
       });
     }
 
@@ -43,6 +43,13 @@ exports.createDay = async (req, res) => {
       return res
         .status(400)
         .json({ error: "The start time must be earlier than the end time" });
+    }
+
+    const course = await dayService.getCourseByName(courseName, student_id);
+    if (!course) {
+      return res
+        .status(404)
+        .json({ error: `Course "${courseName}" not found` });
     }
 
     const conflict = await dayService.checkConflict(
@@ -60,11 +67,11 @@ exports.createDay = async (req, res) => {
 
     const day = await dayService.create(
       {
-      day_of_week: dayOfWeek.toLowerCase(),
-      start_time: startTime + ":00",
-      end_time: endTime + ":00",
-      classroom,
-      course_id: courseId,
+        day_of_week: dayOfWeek.toLowerCase(),
+        start_time: startTime + ":00",
+        end_time: endTime + ":00",
+        classroom,
+        course_id: course.course_id,
       },
       student_id,
     );
@@ -123,11 +130,9 @@ exports.updateDay = async (req, res) => {
     });
 
     if (!result) {
-      return res
-        .status(404)
-        .json({
-          error: "Day not found or you don't have permission to edit it",
-        });
+      return res.status(404).json({
+        error: "Day not found or you don't have permission to edit it",
+      });
     }
 
     res.status(200).json({ message: "Day updated successfully", day: result });
@@ -146,7 +151,7 @@ exports.deleteDay = async (req, res) => {
 
     if (!result) {
       return res.status(404).json({
-        error: "DDay not found or you don't have permission to delete it",
+        error: "Day not found or you don't have permission to delete it",
       });
     }
 

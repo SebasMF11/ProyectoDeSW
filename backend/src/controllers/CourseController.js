@@ -151,3 +151,34 @@ exports.updateCourse = async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 };
+
+exports.updateCourseStatus = async (req, res) => {
+  try {
+    const { courseId } = req.params;
+    const { status } = req.body;
+    const student_id = req.student.id;
+
+    if (status === undefined || typeof status !== "boolean") {
+      return res.status(400).json({ error: "status must be a boolean value" });
+    }
+
+    const result = await courseService.updateStatus(
+      courseId,
+      student_id,
+      status,
+    );
+    if (!result) {
+      return res
+        .status(404)
+        .json({ error: "Course not found or you don't have permission" });
+    }
+
+    res.status(200).json({
+      message: `Course ${status ? "activated" : "deactivated"} successfully`,
+      course: result,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};

@@ -43,3 +43,15 @@ exports.update = async (idsemester, student_id, fields) => {
 
   return data;
 };
+
+exports.checkOverlap = async (startDate, endDate, student_id) => {
+  const { data, error } = await supabase
+    .from("semester")
+    .select("*")
+    .eq("student_id", student_id)
+    .lt("start_date", endDate)
+    .gt("end_date", startDate);
+
+  if (error) return null;
+  return data;
+};
