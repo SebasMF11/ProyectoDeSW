@@ -1,41 +1,32 @@
 import { useNavigate } from "react-router";
-import { useForm } from "react-hook-form";
-import { authRequest } from "../../api/students.api";
+import { supabase } from "../../integrations/supabase";
+
 const settings = () => {
   const navigate = useNavigate();
-  const { register, handleSubmit } = useForm();
-  const onSubmit = handleSubmit(async (values) => {
-    const res = await authRequest(values);
-    console.log(res);
-    navigate("/");
-  });
+  const handleLogout = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) throw error;
+    navigate("/auth");
+  };
+
+  const cancelSemester = async () => {
+    //esta no me la se
+    //yo si
+  };
+
   return (
     <div>
       <div>
-        <p>Crear cuenta</p>
-        <form onSubmit={onSubmit}>
-          <input
-            placeholder="Nombre Completo"
-            type="text"
-            {...register("name", { required: true })}
-          />
-          <input
-            placeholder="Correo"
-            type="email"
-            {...register("email", { required: true })}
-          />
-          <input
-            placeholder="Contraseña"
-            type="password"
-            {...register("password", { required: true })}
-          />
-          <input
-            placeholder="Confirmar Contraseña"
-            type="password"
-            {...register("password2", { required: true })}
-          />
-          <button type="submit">Registrarse</button>
-        </form>
+        <p>SETTINGS</p>
+        <span className="cursor-pointer" onClick={() => navigate("/profile")}>
+          Profile information
+        </span>
+        <span className="cursor-pointer" onClick={cancelSemester}>
+          Cancel semester
+        </span>
+        <span className="underline cursor-pointer" onClick={handleLogout}>
+          Log out
+        </span>
       </div>
     </div>
   );
