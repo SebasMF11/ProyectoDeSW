@@ -1,6 +1,5 @@
 import { supabase } from "../integrations/supabase";
 import Calendar from "../components/calendar/Calendar";
-import Navbar from "../components/navbar";
 
 function Home() {
   const handleSession = async () => {
@@ -12,15 +11,13 @@ function Home() {
 
   return (
     <div>
-      <Navbar />
-
       <div className="bg-white bgrelative w-full min-h-screen flex items-center justify-center">
         <div>
           <Calendar />
         </div>
         <div>
           <p className="inline-block bg-gray-200 text-gray-600 px-5 py-2 rounded-full text-[20px] font-semibold">
-            Day 1 11 asldk
+            Day 1
           </p>
           <p className="text-[25px] font-bold text-black">Your classes today</p>
 

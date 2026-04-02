@@ -1,4 +1,4 @@
-import { Route, Routes } from "react-router";
+import { Route, Routes, Navigate } from "react-router";
 import Home from "../pages/Home";
 import Register from "../pages/student/Register";
 import Auth from "../pages/student/Auth";
@@ -108,6 +108,7 @@ const AppRouters = () => {
         }
       />
 
+      <Route path="/" element={<Navigate to="/auth" />} />
       <Route path="*" element={<h1>404 Not Found</h1>} />
     </Routes>
   );

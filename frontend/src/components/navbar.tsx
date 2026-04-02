@@ -1,10 +1,10 @@
 import { supabase } from "../integrations/supabase";
 import { useNavigate } from "react-router";
 import logo from "../assets/logo2.png";
-import { MdMenu } from "react-icons/md";
 import { FiUser } from "react-icons/fi";
 import { IoMdSettings } from "react-icons/io";
 import { IoIosLogOut } from "react-icons/io";
+import Menu from "./menu";
 
 function navbar() {
   const navigate = useNavigate();
@@ -16,8 +16,8 @@ function navbar() {
 
   return (
     <div className="w-full flex items-center justify-between bg-[#009853] p-2">
-      <div className="flex items-center cursor-pointer gap-2">
-        <MdMenu size={30} color="white" />
+      <div className="flex items-center gap-2">
+        <Menu />
         <img src={logo} alt="Logo" className="h-10 w-10" />
         <p className="text-[25px] font-bold font-sans text-white">PoliPlan</p>
       </div>

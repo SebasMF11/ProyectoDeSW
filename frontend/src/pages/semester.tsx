@@ -3,7 +3,6 @@ import { useForm } from "react-hook-form";
 import { semesterCreateRequest } from "../api/semester";
 import axios from "axios";
 import { useState } from "react";
-import Navbar from "../components/navbar";
 
 const Semester = () => {
   const navigate = useNavigate();
@@ -29,7 +28,6 @@ const Semester = () => {
 
   return (
     <div>
-      <Navbar />
       <div className="z-10 max-w-xl p-6 mx-auto">
         {errorMessage ? <p>{errorMessage}</p> : null}
         <form className="flex flex-col items-center gap-4" onSubmit={onSubmit}>
