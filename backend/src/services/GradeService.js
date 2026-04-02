@@ -117,18 +117,20 @@ exports.delete = async (gradeId, student_id) => {
 
   return true;
 };
-exports.getAssessmentByName = async (
+exports.getAssessmentByNameAndSemester = async (
   assessmentName,
   courseName,
+  semesterName,
   student_id,
 ) => {
   const { data, error } = await supabase
     .from("assessment")
     .select(
-      "assessment_id, course!inner(course_name, semester!inner(student_id))",
+      "assessment_id, course!inner(course_name, semester!inner(semester_name, student_id))",
     )
     .eq("assessment_name", assessmentName)
     .eq("course.course_name", courseName)
+    .eq("course.semester.semester_name", semesterName)
     .eq("course.semester.student_id", student_id)
     .eq("course.status", true)
     .single();

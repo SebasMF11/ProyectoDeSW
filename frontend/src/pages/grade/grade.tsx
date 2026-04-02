@@ -17,12 +17,22 @@ const grade = () => {
           <input
             placeholder="Seleccionar actividad"
             type="text"
-            {...register("assessment", { required: true })}
+            {...register("assessmentName", { required: true })}
           />
           <input
             placeholder="Nota"
             type="number"
-            {...register("grade", { required: true })}
+            {...register("value", { required: true, valueAsNumber: true })}
+          />
+          <input
+            placeholder="Seleccionar curso"
+            type="text"
+            {...register("courseName", { required: true })}
+          />
+          <input
+            placeholder="Nombre del semestre"
+            type="text"
+            {...register("semesterName", { required: true })}
           />
           <button type="submit">Registrarse</button>
         </form>

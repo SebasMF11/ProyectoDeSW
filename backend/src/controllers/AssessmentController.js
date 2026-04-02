@@ -37,8 +37,15 @@ const parseDateRange = (rangeValue) => {
 
 exports.createAssessment = async (req, res) => {
   try {
-    const { assessmentName, type, month, day, courseName, percentage } =
-      req.body;
+    const {
+      assessmentName,
+      type,
+      month,
+      day,
+      courseName,
+      semesterName,
+      percentage,
+    } = req.body;
     const student_id = req.student.id;
 
     if (
@@ -47,6 +54,7 @@ exports.createAssessment = async (req, res) => {
       !month ||
       !day ||
       !courseName ||
+      !semesterName ||
       !percentage
     ) {
       return res.status(400).json({ error: "All fields are required" });
@@ -58,14 +66,15 @@ exports.createAssessment = async (req, res) => {
         .json({ error: `Invalid type. Use: ${validTypes.join(", ")}` });
     }
 
-    const course = await assessmentService.getCourseByName(
+    const course = await assessmentService.getCourseByNameAndSemester(
       courseName,
+      semesterName,
       student_id,
     );
     if (!course) {
-      return res
-        .status(404)
-        .json({ error: `Course "${courseName}" not found` });
+      return res.status(404).json({
+        error: `Course "${courseName}" not found in semester "${semesterName}"`,
+      });
     }
 
     const year = new Date().getFullYear();

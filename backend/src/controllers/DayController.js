@@ -1,14 +1,49 @@
 const dayService = require("../services/DayService");
 
 const validDays = [
-  "Monday",
-  "Tuesday",
-  "Wednesday",
-  "Thursday",
-  "Friday",
-  "Saturday",
-  "Sunday",
+  "monday",
+  "tuesday",
+  "wednesday",
+  "thursday",
+  "friday",
+  "saturday",
+  "sunday",
 ];
+
+const parseTimeToMinutes = (timeValue) => {
+  if (!timeValue || typeof timeValue !== "string") {
+    return null;
+  }
+
+  const parts = timeValue.trim().split(":");
+  if (parts.length < 2) {
+    return null;
+  }
+
+  const hours = Number(parts[0]);
+  const minutes = Number(parts[1]);
+
+  if (
+    Number.isNaN(hours) ||
+    Number.isNaN(minutes) ||
+    hours < 0 ||
+    hours > 23 ||
+    minutes < 0 ||
+    minutes > 59
+  ) {
+    return null;
+  }
+
+  return hours * 60 + minutes;
+};
+
+const normalizeTime = (timeValue) => {
+  const parts = timeValue.trim().split(":");
+  const hours = String(Number(parts[0])).padStart(2, "0");
+  const minutes = String(Number(parts[1])).padStart(2, "0");
+
+  return `${hours}:${minutes}:00`;
+};
 
 exports.getDays = async (req, res) => {
   try {
@@ -24,38 +59,60 @@ exports.getDays = async (req, res) => {
 
 exports.createDay = async (req, res) => {
   try {
-    const { dayOfWeek, startTime, endTime, classroom, courseName } = req.body;
+    const {
+      dayOfWeek,
+      startTime,
+      endTime,
+      classroom,
+      courseName,
+      semesterName,
+    } = req.body;
     const student_id = req.student.id;
+    const normalizedDayOfWeek = dayOfWeek?.trim().toLowerCase();
 
-    if (!dayOfWeek || !startTime || !endTime || !courseName) {
+    if (!dayOfWeek || !startTime || !endTime || !courseName || !semesterName) {
       return res.status(400).json({
-        error: "dayOfWeek, startTime, endTime and courseName are required",
+        error:
+          "dayOfWeek, startTime, endTime, courseName and semesterName are required",
       });
     }
 
-    if (!validDays.includes(dayOfWeek.toLowerCase())) {
+    if (!validDays.includes(normalizedDayOfWeek)) {
       return res.status(400).json({
         error: `Invalid day. Use: ${validDays.join(", ")}`,
       });
     }
 
-    if (startTime >= endTime) {
+    const startMinutes = parseTimeToMinutes(startTime);
+    const endMinutes = parseTimeToMinutes(endTime);
+
+    if (startMinutes === null || endMinutes === null) {
+      return res.status(400).json({
+        error: "Invalid time format. Use HH:MM",
+      });
+    }
+
+    if (startMinutes >= endMinutes) {
       return res
         .status(400)
         .json({ error: "The start time must be earlier than the end time" });
     }
 
-    const course = await dayService.getCourseByName(courseName, student_id);
+    const course = await dayService.getCourseByNameAndSemester(
+      courseName,
+      semesterName,
+      student_id,
+    );
     if (!course) {
-      return res
-        .status(404)
-        .json({ error: `Course "${courseName}" not found` });
+      return res.status(404).json({
+        error: `Course "${courseName}" not found in semester "${semesterName}"`,
+      });
     }
 
     const conflict = await dayService.checkConflict(
-      dayOfWeek.toLowerCase(),
-      startTime + ":00",
-      endTime + ":00",
+      normalizedDayOfWeek,
+      normalizeTime(startTime),
+      normalizeTime(endTime),
       student_id,
     );
 
@@ -67,9 +124,9 @@ exports.createDay = async (req, res) => {
 
     const day = await dayService.create(
       {
-        day_of_week: dayOfWeek.toLowerCase(),
-        start_time: startTime + ":00",
-        end_time: endTime + ":00",
+        day_of_week: normalizedDayOfWeek,
+        start_time: normalizeTime(startTime),
+        end_time: normalizeTime(endTime),
         classroom,
         course_id: course.course_id,
       },
@@ -94,14 +151,31 @@ exports.updateDay = async (req, res) => {
     const { dayId } = req.params;
     const { dayOfWeek, startTime, endTime, classroom } = req.body;
     const student_id = req.student.id;
+    const normalizedDayOfWeek = dayOfWeek?.trim().toLowerCase();
 
-    if (dayOfWeek && !validDays.includes(dayOfWeek.toLowerCase())) {
+    if (dayOfWeek && !validDays.includes(normalizedDayOfWeek)) {
       return res.status(400).json({
         error: `Invalid day. Use: ${validDays.join(", ")}`,
       });
     }
 
-    if (startTime && endTime && startTime >= endTime) {
+    const startMinutes = startTime ? parseTimeToMinutes(startTime) : null;
+    const endMinutes = endTime ? parseTimeToMinutes(endTime) : null;
+
+    if (
+      (startTime && startMinutes === null) ||
+      (endTime && endMinutes === null)
+    ) {
+      return res.status(400).json({
+        error: "Invalid time format. Use HH:MM",
+      });
+    }
+
+    if (
+      startMinutes !== null &&
+      endMinutes !== null &&
+      startMinutes >= endMinutes
+    ) {
       return res
         .status(400)
         .json({ error: "The start time must be earlier than the end time" });
@@ -109,9 +183,9 @@ exports.updateDay = async (req, res) => {
 
     if (dayOfWeek || startTime || endTime) {
       const conflict = await dayService.checkConflict(
-        dayOfWeek?.toLowerCase(),
-        startTime ? startTime + ":00" : null,
-        endTime ? endTime + ":00" : null,
+        normalizedDayOfWeek,
+        startTime ? normalizeTime(startTime) : null,
+        endTime ? normalizeTime(endTime) : null,
         student_id,
       );
 
@@ -123,9 +197,9 @@ exports.updateDay = async (req, res) => {
     }
 
     const result = await dayService.update(dayId, student_id, {
-      ...(dayOfWeek && { day_of_week: dayOfWeek.toLowerCase() }),
-      ...(startTime && { start_time: startTime + ":00" }),
-      ...(endTime && { end_time: endTime + ":00" }),
+      ...(dayOfWeek && { day_of_week: normalizedDayOfWeek }),
+      ...(startTime && { start_time: normalizeTime(startTime) }),
+      ...(endTime && { end_time: normalizeTime(endTime) }),
       ...(classroom && { classroom }),
     });
 
