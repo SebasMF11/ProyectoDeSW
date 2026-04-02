@@ -1,7 +1,14 @@
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { useForm } from "react-hook-form";
 import { dayCreateRequest } from "../../api/day.api";
+import { courseGetAllRequest } from "../../api/course";
 import Navbar from "../../components/navbar";
+
+type Course = {
+  course_id: number;
+  course_name: string;
+};
 
 const day = () => {
   const navigate = useNavigate();
@@ -11,32 +18,80 @@ const day = () => {
     console.log(res);
     navigate("/home");
   });
+
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [coursesLoading, setCoursesLoading] = useState(true);
+  const [coursesError, setCoursesError] = useState("");
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadCourses = async () => {
+      try {
+        setCoursesLoading(true);
+        setCoursesError("");
+        const res = await courseGetAllRequest();
+        const fetchedCourses = res.data?.courses ?? [];
+
+        if (isMounted) {
+          setCourses(fetchedCourses);
+        }
+      } catch (error) {
+        console.error(error);
+        if (isMounted) {
+          setCoursesError("No se pudieron cargar los cursos");
+        }
+      } finally {
+        if (isMounted) {
+          setCoursesLoading(false);
+        }
+      }
+    };
+
+    loadCourses();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   return (
     <div>
       <Navbar />
       <div className="z-10 max-w-xl p-6 mx-auto ">
         <form onSubmit={onSubmit} className="flex flex-col items-center gap-4">
           <p className="title">Day</p>
+
           <select
             className="inputClase"
-            {...register("dayOfWeek", { required: true })}
+            {...register("courseId", { required: true })}
+            disabled={coursesLoading}
           >
-            <option value="">Choose a course</option>
-            {/* ACA FALTA PONER EL COSO PA QUE SALGAN LAS ASIGNATURAS */}
-            <option value="1">Math</option>
+            <option value="">
+              {coursesLoading ? "Cargando cursos..." : "Choose a course"}
+            </option>
+            {courses.map((course) => (
+              <option key={course.course_id} value={course.course_id}>
+                {course.course_name}
+              </option>
+            ))}
           </select>
+
+          {coursesError && (
+            <p className="text-red-600 text-sm">{coursesError}</p>
+          )}
           <select
             className="inputClase"
             {...register("dayOfWeek", { required: true })}
           >
             <option value="">Choose a day of the week</option>
-            <option value="1">Monday</option>
-            <option value="2">Tuesday</option>
-            <option value="3">Wednesday</option>
-            <option value="4">Thursday</option>
-            <option value="5">Friday</option>
-            <option value="6">Saturday</option>
-            <option value="6">Sunday</option>
+            <option value="Monday">Monday</option>
+            <option value="Tuesday">Tuesday</option>
+            <option value="Wednesday">Wednesday</option>
+            <option value="Thursday">Thursday</option>
+            <option value="Friday">Friday</option>
+            <option value="Saturday">Saturday</option>
+            <option value="Sunday">Sunday</option>
           </select>
           <input
             placeholder="Classroom"

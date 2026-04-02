@@ -23,14 +23,18 @@ const course = () => {
             <div className="w-full flex flex-row items-center justify-between gap-4">
               <select
                 className="inputClase"
-                {...register("dayOfWeek", { required: true })}
+                {...register("color", { required: true })}
               >
                 <option value="">Color</option>
-                <option value="1">Red</option>
-                <option value="2">Green</option>
-                <option value="3">Blue</option>
-                <option value="4">Yellow</option>
-                <option value="5">Purple</option>
+                <option value="Red">Red</option>
+                <option value="Blue">Blue</option>
+                <option value="Green">Green</option>
+                <option value="Yellow">Yellow</option>
+                <option value="Purple">Purple</option>
+                <option value="Pink">Pink</option>
+                <option value="Black">Black</option>
+                <option value="White">White</option>
+                <option value="Gray">Gray</option>
               </select>
               <p className="title">Asignatura</p>
             </div>
