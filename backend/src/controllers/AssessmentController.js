@@ -46,12 +46,12 @@ const parseDateRange = (rangeValue) => {
 
 exports.createAssessment = async (req, res) => {
   try {
-    const { nameAssessment, type, month, day, courseName, percentage } =
+    const { assessmentName, type, month, day, courseName, percentage } =
       req.body;
     const student_id = req.student.id;
 
     if (
-      !nameAssessment ||
+      !assessmentName ||
       !type ||
       !month ||
       !day ||
@@ -167,7 +167,7 @@ exports.createAssessment = async (req, res) => {
     }
 
     const assessment = await assessmentService.create({
-      name_assessment: nameAssessment,
+      assessment_name: assessmentName,
       type: type.toLowerCase(),
       due_date: duedateStr,
       course_id: course.course_id,
@@ -227,7 +227,7 @@ exports.getAssessmentsBySemester = async (req, res) => {
 exports.updateAssessment = async (req, res) => {
   try {
     const { assessmentId } = req.params;
-    const { nameAssessment, type, month, day, percentage } = req.body;
+    const { assessmentName, type, month, day, percentage } = req.body;
     const student_id = req.student.id;
 
     if (type && !validTypes.includes(type.toLowerCase())) {
@@ -247,7 +247,7 @@ exports.updateAssessment = async (req, res) => {
     }
 
     const result = await assessmentService.update(assessmentId, student_id, {
-      ...(nameAssessment && { name_assessment: nameAssessment }),
+      ...(assessmentName && { assessment_name: assessmentName }),
       ...(type && { type: type.toLowerCase() }),
       ...(duedateStr && { due_date: duedateStr }),
       ...(percentage && { percentage }),

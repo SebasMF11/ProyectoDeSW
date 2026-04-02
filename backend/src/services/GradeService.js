@@ -12,11 +12,12 @@ exports.getAssessmentById = async (assessmentId, student_id) => {
   return data;
 };
 
-exports.checkGradeExists = async (assessmentId) => {
+exports.checkGradeExists = async (assessmentName, student_id) => {
   const { data, error } = await supabase
     .from("grade")
     .select("grade_id")
-    .eq("assessment_id", assessmentId)
+    .eq("assessment.assessment_name", assessmentName)
+    .eq("assessment.course.semester.student_id", student_id)
     .single();
 
   if (error) return null;
@@ -110,4 +111,15 @@ exports.delete = async (gradeId, student_id) => {
   }
 
   return true;
+};
+exports.getAssessmentByName = async (assessmentName, student_id) => {
+  const { data, error } = await supabase
+    .from("assessment")
+    .select("*")
+    .eq("assessment_name", assessmentName)
+    .eq("course.semester.student_id", student_id)
+    .single();
+
+  if (error) return null;
+  return data;
 };

@@ -15,9 +15,14 @@ const grade = () => {
         <p>Crear cuenta</p>
         <form onSubmit={onSubmit}>
           <input
+            placeholder="Seleccionar curso"
+            type="text"
+            {...register("courseName", { required: true })}
+          />
+          <input
             placeholder="Seleccionar actividad"
             type="text"
-            {...register("assessment", { required: true })}
+            {...register("assessmentName", { required: true })}
           />
           <input
             placeholder="Nota"

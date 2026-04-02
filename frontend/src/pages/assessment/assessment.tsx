@@ -18,7 +18,7 @@ const assessment = () => {
           <input
             placeholder="Elegir asignatura"
             type="list"
-            {...register("course", { required: true })}
+            {...register("courseName", { required: true })}
           />
           <input
             placeholder="Nombre de la actividad"
@@ -38,7 +38,7 @@ const assessment = () => {
           <input
             placeholder="Tipo de actividad"
             type="text"
-            {...register("courseName", { required: true })}
+            {...register("type", { required: true })}
           />
           <input
             placeholder="--%"
