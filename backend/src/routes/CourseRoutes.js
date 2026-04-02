@@ -16,5 +16,10 @@ router.delete(
   courseController.deleteCourse,
 );
 router.put("/update/:courseId", authMiddleware, courseController.updateCourse);
+router.put(
+  "/status/:courseId",
+  authMiddleware,
+  courseController.updateCourseStatus,
+);
 
 module.exports = router;

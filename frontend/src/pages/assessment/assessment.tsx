@@ -17,8 +17,13 @@ const assessment = () => {
         <form onSubmit={onSubmit}>
           <input
             placeholder="Elegir asignatura"
-            type="list"
+            type="text"
             {...register("courseName", { required: true })}
+          />
+          <input
+            placeholder="Nombre del semestre"
+            type="text"
+            {...register("semesterName", { required: true })}
           />
           <input
             placeholder="Nombre de la actividad"
@@ -27,13 +32,13 @@ const assessment = () => {
           />
           <input
             placeholder="Mes"
-            type="text"
-            {...register("month", { required: true })}
+            type="number"
+            {...register("month", { required: true, valueAsNumber: true })}
           />
           <input
             placeholder="Dia"
-            type="text"
-            {...register("day", { required: true })}
+            type="number"
+            {...register("day", { required: true, valueAsNumber: true })}
           />
           <input
             placeholder="Tipo de actividad"
@@ -42,8 +47,8 @@ const assessment = () => {
           />
           <input
             placeholder="--%"
-            type="text"
-            {...register("percentage", { required: true })}
+            type="number"
+            {...register("percentage", { required: true, valueAsNumber: true })}
           />
           <button type="submit">Registrarse</button>
         </form>

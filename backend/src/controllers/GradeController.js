@@ -2,13 +2,19 @@ const gradeService = require("../services/GradeService");
 
 exports.createGrade = async (req, res) => {
   try {
-    const { assessmentName, value, courseName } = req.body;
+    const { assessmentName, value, courseName, semesterName } = req.body;
     const student_id = req.student.id;
 
-    if (!assessmentName || value === undefined) {
-      return res
-        .status(400)
-        .json({ error: "assessmentName and value are required" });
+    if (
+      !assessmentName ||
+      !courseName ||
+      !semesterName ||
+      value === undefined
+    ) {
+      return res.status(400).json({
+        error:
+          "assessmentName, courseName, semesterName and value are required",
+      });
     }
 
     if (value < 0 || value > 5) {
@@ -17,18 +23,20 @@ exports.createGrade = async (req, res) => {
         .json({ error: "The grade must be between 0.0 and 5.0" });
     }
 
-    const assessment = await gradeService.getAssessmentByName(
+    const assessment = await gradeService.getAssessmentByNameAndSemester(
       assessmentName,
+      courseName,
+      semesterName,
       student_id,
     );
     if (!assessment) {
-      return res
-        .status(404)
-        .json({ error: "Assessment not found or you don't have permission" });
+      return res.status(404).json({
+        error: `Assessment "${assessmentName}" not found for course "${courseName}" in semester "${semesterName}"`,
+      });
     }
 
     const existing = await gradeService.checkGradeExists(
-      assessment.name,
+      assessment.assessment_id,
       student_id,
     );
     if (existing) {

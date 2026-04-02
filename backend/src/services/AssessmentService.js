@@ -1,11 +1,17 @@
 const supabase = require("../config/supabase");
 
-exports.getCourseByName = async (courseName, student_id) => {
+exports.getCourseByNameAndSemester = async (
+  courseName,
+  semesterName,
+  student_id,
+) => {
   const { data, error } = await supabase
     .from("course")
-    .select("course_id, semester!inner(student_id)")
+    .select("course_id, semester!inner(semester_name, student_id)")
     .eq("course_name", courseName)
+    .eq("semester.semester_name", semesterName)
     .eq("semester.student_id", student_id)
+    .eq("status", true)
     .single();
 
   if (error) return null;
@@ -31,6 +37,7 @@ exports.getSemesterByCourse = async (course_id) => {
     .from("course")
     .select("semester!inner(semester_id, midterm_week, final_exam_week)")
     .eq("course_id", course_id)
+    .eq("status", true)
     .single();
 
   if (error) return null;
@@ -47,13 +54,23 @@ exports.getDaysByCourse = async (course_id) => {
   return data;
 };
 
-exports.checkAssessmentConflict = async (course_id, due_date) => {
-  const { data, error } = await supabase
+exports.checkAssessmentConflict = async (
+  course_id,
+  due_date,
+  excludeAssessmentId = null,
+) => {
+  let query = supabase
     .from("assessment")
     .select("*")
     .eq("course_id", course_id)
-    .eq("due_date", due_date);
+    .eq("due_date", due_date)
+    .eq("course.status", true);
 
+  if (excludeAssessmentId) {
+    query = query.neq("assessment_id", excludeAssessmentId);
+  }
+
+  const { data, error } = await query;
   if (error) return null;
   return data;
 };
@@ -64,7 +81,8 @@ exports.getAll = async (student_id) => {
     .select(
       "assessment_id, assessment_name, type, due_date, percentage, course!inner(course_name, semester!inner(student_id))",
     )
-    .eq("course.semester.student_id", student_id);
+    .eq("course.semester.student_id", student_id)
+    .eq("course.status", true);
 
   if (error) {
     console.error(error);
@@ -81,7 +99,8 @@ exports.getByCourse = async (course_id, student_id) => {
       "assessment_id, assessment_name, type, due_date, percentage, course!inner(course_name, semester!inner(student_id))",
     )
     .eq("course_id", course_id)
-    .eq("course.semester.student_id", student_id);
+    .eq("course.semester.student_id", student_id)
+    .eq("course.status", true);
 
   if (error) {
     console.error(error);
@@ -98,7 +117,8 @@ exports.getBySemester = async (semester_id, student_id) => {
       "assessment_id, assessment_name, type, due_date, percentage, course!inner(course_name, semester!inner(semester_id, student_id))",
     )
     .eq("course.semester.semester_id", semester_id)
-    .eq("course.semester.student_id", student_id);
+    .eq("course.semester.student_id", student_id)
+    .eq("course.status", true);
 
   if (error) {
     console.error(error);
@@ -111,9 +131,10 @@ exports.getBySemester = async (semester_id, student_id) => {
 exports.update = async (assessmentId, student_id, fields) => {
   const { data: assessment, error: findError } = await supabase
     .from("assessment")
-    .select("assessment_id, course!inner(semester!inner(student_id))")
+    .select("assessment_id, course!inner(status, semester!inner(student_id))")
     .eq("assessment_id", assessmentId)
     .eq("course.semester.student_id", student_id)
+    .eq("course.status", true)
     .single();
 
   if (findError || !assessment) return null;
@@ -157,11 +178,32 @@ exports.delete = async (assessmentId, student_id) => {
   return true;
 };
 
-exports.getTotalPercentage = async (course_id) => {
-  const { data, error } = await supabase
+exports.getTotalPercentage = async (course_id, excludeAssessmentId = null) => {
+  let query = supabase
     .from("assessment")
     .select("percentage")
-    .eq("course_id", course_id);
+    .eq("course_id", course_id)
+    .eq("course.status", true);
+
+  if (excludeAssessmentId) {
+    query = query.neq("assessment_id", excludeAssessmentId);
+  }
+
+  const { data, error } = await query;
+  if (error) return null;
+  return data;
+};
+
+exports.getAssessmentById = async (assessmentId, student_id) => {
+  const { data, error } = await supabase
+    .from("assessment")
+    .select(
+      "assessment_id, type, due_date, course_id, percentage, course!inner(semester!inner(student_id))",
+    )
+    .eq("assessment_id", assessmentId)
+    .eq("course.semester.student_id", student_id)
+    .eq("course.status", true)
+    .single();
 
   if (error) return null;
   return data;

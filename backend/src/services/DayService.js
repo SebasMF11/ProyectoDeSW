@@ -7,7 +7,8 @@ exports.getAll = async (course_id, student_id) => {
       "day_id, day_of_week, start_time, end_time, classroom, course!inner(semester!inner(student_id))",
     )
     .eq("course_id", course_id)
-    .eq("course.semester.student_id", student_id);
+    .eq("course.semester.student_id", student_id)
+    .eq("course.status", true);
 
   if (error) {
     console.error(error);
@@ -23,6 +24,7 @@ exports.create = async (day, student_id) => {
     .select("course_id, semester!inner(student_id)")
     .eq("course_id", day.course_id)
     .eq("semester.student_id", student_id)
+    .eq("status", true)
     .single();
 
   if (findError || !course) return null;
@@ -61,6 +63,7 @@ exports.update = async (dayId, student_id, fields) => {
     .select("day_id, course!inner(semester!inner(student_id))")
     .eq("day_id", dayId)
     .eq("course.semester.student_id", student_id)
+    .eq("course.status", true)
     .single();
 
   if (findError || !day) return null;
@@ -97,4 +100,34 @@ exports.delete = async (dayId, student_id) => {
   }
 
   return true;
+};
+
+exports.getCourseByNameAndSemester = async (
+  courseName,
+  semesterName,
+  student_id,
+) => {
+  const { data, error } = await supabase
+    .from("course")
+    .select("course_id, semester!inner(semester_name, student_id)")
+    .eq("course_name", courseName)
+    .eq("semester.semester_name", semesterName)
+    .eq("semester.student_id", student_id)
+    .eq("status", true)
+    .single();
+
+  if (error) return null;
+  return data;
+};
+
+exports.getSemesterByName = async (semesterName, student_id) => {
+  const { data, error } = await supabase
+    .from("semester")
+    .select("*")
+    .eq("semester_name", semesterName)
+    .eq("student_id", student_id)
+    .single();
+
+  if (error) return null;
+  return data;
 };

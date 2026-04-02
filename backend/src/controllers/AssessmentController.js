@@ -8,15 +8,6 @@ const validTypes = [
   "presentation",
   "lab",
 ];
-const daysOfWeek = [
-  "sunday",
-  "monday",
-  "tuesday",
-  "wednesday",
-  "thursday",
-  "friday",
-  "saturday",
-];
 
 const parseDateRange = (rangeValue) => {
   if (!rangeValue || typeof rangeValue !== "string") {
@@ -46,8 +37,15 @@ const parseDateRange = (rangeValue) => {
 
 exports.createAssessment = async (req, res) => {
   try {
-    const { assessmentName, type, month, day, courseName, percentage } =
-      req.body;
+    const {
+      assessmentName,
+      type,
+      month,
+      day,
+      courseName,
+      semesterName,
+      percentage,
+    } = req.body;
     const student_id = req.student.id;
 
     if (
@@ -56,6 +54,7 @@ exports.createAssessment = async (req, res) => {
       !month ||
       !day ||
       !courseName ||
+      !semesterName ||
       !percentage
     ) {
       return res.status(400).json({ error: "All fields are required" });
@@ -67,14 +66,15 @@ exports.createAssessment = async (req, res) => {
         .json({ error: `Invalid type. Use: ${validTypes.join(", ")}` });
     }
 
-    const course = await assessmentService.getCourseByName(
+    const course = await assessmentService.getCourseByNameAndSemester(
       courseName,
+      semesterName,
       student_id,
     );
     if (!course) {
-      return res
-        .status(404)
-        .json({ error: `Course "${courseName}" not found` });
+      return res.status(404).json({
+        error: `Course "${courseName}" not found in semester "${semesterName}"`,
+      });
     }
 
     const year = new Date().getFullYear();
@@ -236,13 +236,93 @@ exports.updateAssessment = async (req, res) => {
         .json({ error: `Invalid type. Use: ${validTypes.join(", ")}` });
     }
 
+    // Obtener el assessment actual para tener el course_id
+    const currentAssessment = await assessmentService.getAssessmentById(
+      assessmentId,
+      student_id,
+    );
+    if (!currentAssessment) {
+      return res.status(404).json({
+        error: "Assessment not found or you don't have permission to edit it",
+      });
+    }
+
     let duedateStr;
+    let duedateObj;
     if (month && day) {
       const year = new Date().getFullYear();
       duedateStr = `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-      const duedateObj = new Date(duedateStr + "T00:00:00");
+      duedateObj = new Date(duedateStr + "T00:00:00");
       if (isNaN(duedateObj)) {
         return res.status(400).json({ error: "Invalid date" });
+      }
+
+      // Validar conflicto de actividad en el mismo día (excluyendo la actual)
+      const conflict = await assessmentService.checkAssessmentConflict(
+        currentAssessment.course_id,
+        duedateStr,
+        assessmentId,
+      );
+      if (conflict && conflict.length > 0) {
+        return res.status(400).json({
+          error: `You already have an assessment scheduled for that day`,
+        });
+      }
+    }
+
+    const finalType = type ? type.toLowerCase() : currentAssessment.type;
+    const finalDuedateObj =
+      duedateObj || new Date(currentAssessment.due_date + "T00:00:00");
+
+    if (finalType === "midterm") {
+      const semester = await assessmentService.getSemesterByCourse(
+        currentAssessment.course_id,
+      );
+      if (!semester) {
+        return res
+          .status(404)
+          .json({ error: "Semester for the course not found" });
+      }
+
+      const midtermRange = parseDateRange(semester.midterm_week);
+      if (!midtermRange) {
+        return res
+          .status(400)
+          .json({ error: "Midterm week range is invalid for this semester" });
+      }
+
+      if (
+        finalDuedateObj < midtermRange.start ||
+        finalDuedateObj > midtermRange.end
+      ) {
+        return res.status(400).json({
+          error: `Midterm assessments must be scheduled between ${midtermRange.start.toLocaleDateString()} and ${midtermRange.end.toLocaleDateString()}`,
+        });
+      }
+    }
+
+    if (percentage) {
+      if (percentage > 25) {
+        return res
+          .status(400)
+          .json({ error: "The percentage of an assessment cannot exceed 25%" });
+      }
+
+      // Obtener total excluyendo la actividad actual
+      const existingAssessments = await assessmentService.getTotalPercentage(
+        currentAssessment.course_id,
+        assessmentId,
+      );
+      if (existingAssessments) {
+        const totalPercentage = existingAssessments.reduce(
+          (acc, a) => acc + a.percentage,
+          0,
+        );
+        if (totalPercentage + percentage > 100) {
+          return res.status(400).json({
+            error: `The sum of percentages would exceed 100%. Available percentage: ${100 - totalPercentage}%`,
+          });
+        }
       }
     }
 
@@ -259,10 +339,9 @@ exports.updateAssessment = async (req, res) => {
       });
     }
 
-    res.status(200).json({
-      message: "Assessment updated successfully",
-      assessment: result,
-    });
+    res
+      .status(200)
+      .json({ message: "Assessment updated successfully", assessment: result });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Internal server error" });

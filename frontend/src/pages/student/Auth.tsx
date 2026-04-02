@@ -73,7 +73,7 @@ const Auth = () => {
             </p>
             <button
               type="submit"
-              className="w-full text-white py-3 rounded-full font-semibold transition"
+              className="w-full bg-green-500 hover:bg-green-600 text-white py-3 rounded-full font-semibold transition"
             >
               Login
             </button>
@@ -83,4 +83,5 @@ const Auth = () => {
     </div>
   );
 };
+
 export default Auth;
