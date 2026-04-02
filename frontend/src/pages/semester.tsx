@@ -9,7 +9,7 @@ const Semester = () => {
   const onSubmit = handleSubmit(async (values) => {
     const res = await semesterCreateRequest(values);
     console.log(res);
-    navigate("/");
+    navigate("/home");
   });
 
   return (
@@ -20,21 +20,25 @@ const Semester = () => {
           <input
             placeholder="Nombre del semestre"
             type="text"
+            className="inputClase"
             {...register("semesterName", { required: true })}
           />
           <input
             placeholder="Fecha de inicio"
             type="date"
+            className="inputClase"
             {...register("startDate", { required: true })}
           />
           <input
             placeholder="Fecha de fin"
             type="date"
+            className="inputClase"
             {...register("endDate", { required: true })}
           />
           <input
             placeholder="Inicio de semana de parciales"
             type="date"
+            className="inputClase"
             {...register("midtermWeek", { required: true })}
           />
           <button type="submit">Registrarse</button>
