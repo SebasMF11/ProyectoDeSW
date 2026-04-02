@@ -7,7 +7,7 @@ const grade = () => {
   const onSubmit = handleSubmit(async (values) => {
     const res = await gradeCreateRequest(values);
     console.log(res);
-    navigate("/home");
+    navigate("/");
   });
   return (
     <div>
@@ -17,14 +17,22 @@ const grade = () => {
           <input
             placeholder="Seleccionar actividad"
             type="text"
-            className="inputClase"
-            {...register("assessment", { required: true })}
+            {...register("assessmentName", { required: true })}
           />
           <input
             placeholder="Nota"
             type="number"
-            className="inputClase"
-            {...register("grade", { required: true })}
+            {...register("value", { required: true, valueAsNumber: true })}
+          />
+          <input
+            placeholder="Seleccionar curso"
+            type="text"
+            {...register("courseName", { required: true })}
+          />
+          <input
+            placeholder="Nombre del semestre"
+            type="text"
+            {...register("semesterName", { required: true })}
           />
           <button type="submit">Registrarse</button>
         </form>

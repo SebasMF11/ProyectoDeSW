@@ -5,7 +5,7 @@ exports.authStudent = async (req, res) => {
     const { name, lastName, email, password, password2 } = req.body;
     if (!name || !lastName || !email || !password || !password2) {
       return res.status(400).json({
-        error: "Todos los campos son obligatorios",
+        error: "All fields are required",
       });
     }
     if (password !== password2) {
@@ -23,7 +23,7 @@ exports.authStudent = async (req, res) => {
     if (error?.code === "over_email_send_rate_limit" || error?.status === 429) {
       return res.status(429).json({
         error:
-          "Demasiados intentos de registro. Espera un momento antes de volver a intentar.",
+          "Too many registration attempts. Please wait a moment before trying again.",
       });
     }
 
@@ -34,11 +34,11 @@ exports.authStudent = async (req, res) => {
     ) {
       return res.status(503).json({
         error:
-          "No se pudo conectar con el servicio de autenticacion. Verifica tu conexion e intenta nuevamente.",
+          "Could not connect to the authentication service. Check your connection and try again.",
       });
     }
 
-    res.status(500).json({ error: "Error interno al registrar estudiante" });
+    res.status(500).json({ error: "Internal error while registering student" });
   }
 };
 
@@ -56,6 +56,7 @@ exports.loginStudent = async (req, res) => {
     });
 
     res.status(200).json({
+      token: authResult.session.access_token,
       message: "Login successful",
       user: authResult.user,
     });

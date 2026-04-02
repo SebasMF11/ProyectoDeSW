@@ -2,11 +2,21 @@
 .env
 .env.*
 !.env.example
+
+# Backend secrets
+backend/.env
+backend/.env.*
 !backend/.env.example
+
+# Frontend secrets
+frontend/.env
+frontend/.env.*
 !frontend/.env.example
 
 # Dependencies
 node_modules/
+backend/node_modules/
+frontend/node_modules/
 
 # Logs
 *.log

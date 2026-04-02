@@ -1,51 +1,55 @@
 import { useNavigate } from "react-router";
 import { useForm } from "react-hook-form";
 import { semesterCreateRequest } from "../api/semester";
-import Navbar from "../components/navbar";
+import axios from "axios";
+import { useState } from "react";
 
 const Semester = () => {
   const navigate = useNavigate();
+  const [errorMessage, setErrorMessage] = useState("");
   const { register, handleSubmit } = useForm();
 
   const onSubmit = handleSubmit(async (values) => {
-    const res = await semesterCreateRequest(values);
-    console.log(res);
-    navigate("/home");
+    try {
+      setErrorMessage("");
+      const res = await semesterCreateRequest(values);
+      console.log(res);
+      navigate("/");
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const apiMessage = error.response?.data?.error;
+        setErrorMessage(apiMessage || "No se pudo crear el semestre");
+        return;
+      }
+
+      setErrorMessage("Ocurrio un error inesperado");
+    }
   });
 
   return (
     <div>
-      <Navbar />
-      <div className="z-10 max-w-xl p-6 mx-auto">
-        <form className="flex flex-col items-center gap-4" onSubmit={onSubmit}>
-          <p className="title">Semestre</p>
+      <div>
+        <p>Crear semestre</p>
+        {errorMessage ? <p>{errorMessage}</p> : null}
+        <form onSubmit={onSubmit}>
           <input
-            placeholder="Semester Name. Example: 2023-1"
+            placeholder="Nombre del semestre"
             type="text"
-            className="inputClase"
             {...register("semesterName", { required: true })}
           />
-          <p className="text-sm text-gray-600">Fecha de inicio</p>
           <input
             placeholder="Fecha de inicio"
             type="date"
-            className="inputClase"
             {...register("startDate", { required: true })}
           />
-
-          <p className="text-sm text-gray-600">Fecha de fin</p>
           <input
             placeholder="Fecha de fin"
             type="date"
-            className="inputClase"
             {...register("endDate", { required: true })}
           />
-
-          <p className="text-sm text-gray-600">Fecha de inicio de parciales</p>
           <input
             placeholder="Inicio de semana de parciales"
             type="date"
-            className="inputClase"
             {...register("midtermWeek", { required: true })}
           />
           <button type="submit">Registrarse</button>

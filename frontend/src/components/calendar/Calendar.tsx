@@ -9,6 +9,7 @@ import {
   addMonths,
   subMonths,
 } from "date-fns";
+import { es } from "date-fns/locale";
 import { FiChevronLeft, FiChevronRight } from "react-icons/fi";
 import type { CalendarProps } from "./calendarTypes";
 import DayCell from "./DayCell";
@@ -39,27 +40,23 @@ export default function Calendar({ onSelectDate }: CalendarProps) {
   };
 
   return (
-    <div className="bg-white rounded-2xl p-6 w-full max-w-[590px] p-8">
+    <div className="bg-white rounded-2xl p-6 w-full max-w-sm">
       {/* Header */}
-      <div className="flex items-center justify-between gap-5 text-[26px] mb-5">
+      <div className="flex items-center justify-center gap-5 mb-5">
         <button
           onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
-          className="text-gray-500 !bg-transparent hover:text-gray-700 transition-colors"
+          className="text-gray-500 hover:text-gray-700 transition-colors"
         >
           <FiChevronLeft size={20} />
         </button>
-        <div className="flex justify-center items-center flex-col w-[500px] pb-5">
-          <span className="text-[20px]  text-gray-800 text-center capitalize">
-            {format(currentMonth, "yyyy")}
-          </span>
 
-          <span className="text-[28px] font-medium text-gray-800 text-center capitalize">
-            {format(currentMonth, "MMMM")}
-          </span>
-        </div>
+        <span className="text-xl font-medium text-gray-800 w-32 text-center capitalize">
+          {format(currentMonth, "MMMM", { locale: es })}
+        </span>
+
         <button
           onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
-          className="text-gray-500 !bg-transparent hover:text-gray-700 transition-colors"
+          className="text-gray-500 hover:text-gray-700 transition-colors"
         >
           <FiChevronRight size={20} />
         </button>
