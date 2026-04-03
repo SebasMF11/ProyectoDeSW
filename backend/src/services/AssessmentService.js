@@ -35,7 +35,9 @@ exports.create = async (assessment) => {
 exports.getSemesterByCourse = async (course_id) => {
   const { data, error } = await supabase
     .from("course")
-    .select("semester!inner(semester_id, midterm_week, final_exam_week)")
+    .select(
+      "semester!inner(semester_id, start_date, end_date, midterm_week, final_exam_week)",
+    )
     .eq("course_id", course_id)
     .eq("status", true)
     .single();

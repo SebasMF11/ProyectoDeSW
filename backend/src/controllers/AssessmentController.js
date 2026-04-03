@@ -35,13 +35,50 @@ const parseDateRange = (rangeValue) => {
   return { start, end };
 };
 
+const parseDueDate = (dueDate) => {
+  if (typeof dueDate !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(dueDate)) {
+    return null;
+  }
+
+  const date = new Date(`${dueDate}T00:00:00Z`);
+  if (Number.isNaN(date.getTime())) {
+    return null;
+  }
+
+  const [year, month, day] = dueDate.split("-").map(Number);
+  const isSameDate =
+    date.getUTCFullYear() === year &&
+    date.getUTCMonth() + 1 === month &&
+    date.getUTCDate() === day;
+
+  if (!isSameDate) {
+    return null;
+  }
+
+  return date;
+};
+
+const parseSemesterDate = (dateValue) => {
+  if (typeof dateValue !== "string") {
+    return null;
+  }
+
+  const date = new Date(`${dateValue}T00:00:00Z`);
+  if (Number.isNaN(date.getTime())) {
+    return null;
+  }
+
+  return date;
+};
+
+const isDateWithinRange = (date, start, end) => date >= start && date <= end;
+
 exports.createAssessment = async (req, res) => {
   try {
     const {
       assessmentName,
       type,
-      month,
-      day,
+      dueDate,
       courseName,
       semesterName,
       percentage,
@@ -51,8 +88,7 @@ exports.createAssessment = async (req, res) => {
     if (
       !assessmentName ||
       !type ||
-      !month ||
-      !day ||
+      !dueDate ||
       !courseName ||
       !semesterName ||
       !percentage
@@ -77,12 +113,33 @@ exports.createAssessment = async (req, res) => {
       });
     }
 
-    const year = new Date().getFullYear();
-    const duedateStr = `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-    const duedateObj = new Date(duedateStr + "T00:00:00");
-
-    if (isNaN(duedateObj)) {
+    const duedateObj = parseDueDate(dueDate);
+    if (!duedateObj) {
       return res.status(400).json({ error: "Invalid date" });
+    }
+
+    const duedateStr = dueDate;
+
+    const semester = await assessmentService.getSemesterByCourse(
+      course.course_id,
+    );
+    if (!semester) {
+      return res
+        .status(404)
+        .json({ error: "Semester for the course not found" });
+    }
+
+    const semesterStart = parseSemesterDate(semester.start_date);
+    const semesterEnd = parseSemesterDate(semester.end_date);
+
+    if (!semesterStart || !semesterEnd) {
+      return res.status(400).json({ error: "Semester date range is invalid" });
+    }
+
+    if (!isDateWithinRange(duedateObj, semesterStart, semesterEnd)) {
+      return res.status(400).json({
+        error: `The assessment date must be between ${semester.start_date} and ${semester.end_date}`,
+      });
     }
 
     /*
@@ -107,16 +164,7 @@ exports.createAssessment = async (req, res) => {
     }
     */
 
-    if (type.toLowerCase() === "parcial") {
-      const semester = await assessmentService.getSemesterByCourse(
-        course.course_id,
-      );
-      if (!semester) {
-        return res
-          .status(404)
-          .json({ error: "Semester for the course not found" });
-      }
-
+    if (type.toLowerCase() === "midterm") {
       const midtermRange = parseDateRange(semester.midterm_week);
 
       if (!midtermRange) {
@@ -227,7 +275,7 @@ exports.getAssessmentsBySemester = async (req, res) => {
 exports.updateAssessment = async (req, res) => {
   try {
     const { assessmentId } = req.params;
-    const { assessmentName, type, month, day, percentage } = req.body;
+    const { assessmentName, type, dueDate, percentage } = req.body;
     const student_id = req.student.id;
 
     if (type && !validTypes.includes(type.toLowerCase())) {
@@ -249,13 +297,13 @@ exports.updateAssessment = async (req, res) => {
 
     let duedateStr;
     let duedateObj;
-    if (month && day) {
-      const year = new Date().getFullYear();
-      duedateStr = `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-      duedateObj = new Date(duedateStr + "T00:00:00");
-      if (isNaN(duedateObj)) {
+    if (dueDate) {
+      duedateObj = parseDueDate(dueDate);
+      if (!duedateObj) {
         return res.status(400).json({ error: "Invalid date" });
       }
+
+      duedateStr = dueDate;
 
       // Validar conflicto de actividad en el mismo día (excluyendo la actual)
       const conflict = await assessmentService.checkAssessmentConflict(
@@ -274,16 +322,29 @@ exports.updateAssessment = async (req, res) => {
     const finalDuedateObj =
       duedateObj || new Date(currentAssessment.due_date + "T00:00:00");
 
-    if (finalType === "midterm") {
-      const semester = await assessmentService.getSemesterByCourse(
-        currentAssessment.course_id,
-      );
-      if (!semester) {
-        return res
-          .status(404)
-          .json({ error: "Semester for the course not found" });
-      }
+    const semester = await assessmentService.getSemesterByCourse(
+      currentAssessment.course_id,
+    );
+    if (!semester) {
+      return res
+        .status(404)
+        .json({ error: "Semester for the course not found" });
+    }
 
+    const semesterStart = parseSemesterDate(semester.start_date);
+    const semesterEnd = parseSemesterDate(semester.end_date);
+
+    if (!semesterStart || !semesterEnd) {
+      return res.status(400).json({ error: "Semester date range is invalid" });
+    }
+
+    if (!isDateWithinRange(finalDuedateObj, semesterStart, semesterEnd)) {
+      return res.status(400).json({
+        error: `The assessment date must be between ${semester.start_date} and ${semester.end_date}`,
+      });
+    }
+
+    if (finalType === "midterm") {
       const midtermRange = parseDateRange(semester.midterm_week);
       if (!midtermRange) {
         return res

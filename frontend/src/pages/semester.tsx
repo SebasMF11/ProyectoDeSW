@@ -1,17 +1,82 @@
 import { useNavigate } from "react-router";
 import { useForm } from "react-hook-form";
-import { semesterCreateRequest } from "../api/semester";
+import { semesterCreateRequest, semesterViewRequest } from "../api/semester";
 import axios from "axios";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+
+type SemesterItem = {
+  semester_id: number;
+  semester_name: string;
+  start_date: string;
+  end_date: string;
+};
+
+const overlaps = (
+  startDate: string,
+  endDate: string,
+  existing: SemesterItem,
+) => {
+  const start = new Date(`${startDate}T00:00:00Z`);
+  const end = new Date(`${endDate}T00:00:00Z`);
+  const existingStart = new Date(`${existing.start_date}T00:00:00Z`);
+  const existingEnd = new Date(`${existing.end_date}T00:00:00Z`);
+
+  return start < existingEnd && end > existingStart;
+};
 
 const Semester = () => {
   const navigate = useNavigate();
   const [errorMessage, setErrorMessage] = useState("");
-  const { register, handleSubmit } = useForm();
+  const [semesters, setSemesters] = useState<SemesterItem[]>([]);
+  const { register, handleSubmit, watch } = useForm();
+  const startDate = watch("startDate");
+  const endDate = watch("endDate");
+
+  useEffect(() => {
+    const loadSemesters = async () => {
+      try {
+        const { data } = await semesterViewRequest();
+        setSemesters(Array.isArray(data) ? data : []);
+      } catch (error) {
+        console.error(error);
+        setSemesters([]);
+      }
+    };
+
+    loadSemesters();
+  }, []);
 
   const onSubmit = handleSubmit(async (values) => {
     try {
       setErrorMessage("");
+
+      const { startDate, endDate, midtermWeek } = values;
+
+      if (startDate > endDate) {
+        setErrorMessage(
+          "La fecha de inicio no puede ser mayor que la fecha de fin",
+        );
+        return;
+      }
+
+      if (midtermWeek < startDate || midtermWeek > endDate) {
+        setErrorMessage(
+          "La fecha de inicio de parciales debe estar entre inicio y fin del semestre",
+        );
+        return;
+      }
+
+      const overlappingSemester = semesters.find((semester) =>
+        overlaps(startDate, endDate, semester),
+      );
+
+      if (overlappingSemester) {
+        setErrorMessage(
+          `Las fechas del semestre se sobreponen con "${overlappingSemester.semester_name}"`,
+        );
+        return;
+      }
+
       const res = await semesterCreateRequest(values);
       console.log(res);
       navigate("/");
@@ -51,6 +116,7 @@ const Semester = () => {
             placeholder="Fecha de fin"
             type="date"
             className="inputClase"
+            min={startDate || undefined}
             {...register("endDate", { required: true })}
           />
 
@@ -59,6 +125,8 @@ const Semester = () => {
             placeholder="Inicio de semana de parciales"
             type="date"
             className="inputClase"
+            min={startDate || undefined}
+            max={endDate || undefined}
             {...register("midtermWeek", { required: true })}
           />
           <button type="submit">Registrarse</button>

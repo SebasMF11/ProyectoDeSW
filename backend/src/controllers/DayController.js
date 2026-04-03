@@ -10,6 +10,9 @@ const validDays = [
   "sunday",
 ];
 
+const MIN_ALLOWED_MINUTES = 6 * 60;
+const MAX_ALLOWED_MINUTES = 22 * 60;
+
 const parseTimeToMinutes = (timeValue) => {
   if (!timeValue || typeof timeValue !== "string") {
     return null;
@@ -44,6 +47,9 @@ const normalizeTime = (timeValue) => {
 
   return `${hours}:${minutes}:00`;
 };
+
+const isWithinAllowedHours = (minutes) =>
+  minutes >= MIN_ALLOWED_MINUTES && minutes <= MAX_ALLOWED_MINUTES;
 
 exports.getDays = async (req, res) => {
   try {
@@ -89,6 +95,15 @@ exports.createDay = async (req, res) => {
     if (startMinutes === null || endMinutes === null) {
       return res.status(400).json({
         error: "Invalid time format. Use HH:MM",
+      });
+    }
+
+    if (
+      !isWithinAllowedHours(startMinutes) ||
+      !isWithinAllowedHours(endMinutes)
+    ) {
+      return res.status(400).json({
+        error: "The schedule must be between 06:00 and 22:00",
       });
     }
 
@@ -168,6 +183,15 @@ exports.updateDay = async (req, res) => {
     ) {
       return res.status(400).json({
         error: "Invalid time format. Use HH:MM",
+      });
+    }
+
+    if (
+      (startMinutes !== null && !isWithinAllowedHours(startMinutes)) ||
+      (endMinutes !== null && !isWithinAllowedHours(endMinutes))
+    ) {
+      return res.status(400).json({
+        error: "The schedule must be between 06:00 and 22:00",
       });
     }
 
