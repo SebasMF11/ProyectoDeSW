@@ -1,5 +1,33 @@
+/**
+ * ARCHIVO: authMiddleware.js
+ * PROPÓSITO: Middleware de autenticación JWT
+ *
+ * RESPONSABILIDADES:
+ * - Validar tokens JWT en peticiones protegidas
+ * - Extraer datos del usuario autenticado
+ * - Proporcionar fallback local si Supabase no responde
+ *
+ * FLUJO DE SEGURIDAD:
+ * 1. Verificar que el header Authorization exista (formato: "Bearer <token>")
+ * 2. Intentar validar el token contra Supabase (verificación en línea)
+ * 3. Si Supabase falla por red, usar validación JWT manual (descodificar)
+ * 4. Agregar datos del usuario a req.student para que los controladores accedan
+ *
+ * TOKENS JWT:
+ * - Emitidos por Supabase Auth durante login
+ * - Contienen información del usuario en payload (base64)
+ * - Incluyen timestamp de expiración (exp)
+ */
+
 const supabase = require("../config/supabase");
 
+/**
+ * HELPER: decodeJwtPayload
+ * Decodifica manualmente el payload de un JWT
+ *
+ * ESTRUCTURA JWT: header.payload.signature
+ * Decodificamos la segunda sección (payload base64url)
+ */
 const decodeJwtPayload = (token) => {
   const parts = token.split(".");
 
@@ -15,6 +43,20 @@ const decodeJwtPayload = (token) => {
   }
 };
 
+/**
+ * HELPER: buildFallbackUser
+ * Construye un objeto usuario decodificando el JWT localmente
+ *
+ * PROPÓSITO:
+ * Si Supabase no responde (error de red), aún podemos validar el JWT
+ * extrayendo su payload y verificando expiración
+ *
+ * VALIDACIONES:
+ * - El JWT debe contener 'sub' (subject/usuario_id)
+ * - El token no debe estar expirado
+ *
+ * NOTA: Esta es una medida de resilencia, no reemplaza validación con Supabase
+ */
 const buildFallbackUser = (token) => {
   const payload = decodeJwtPayload(token);
 
@@ -33,6 +75,17 @@ const buildFallbackUser = (token) => {
   };
 };
 
+/**
+ * MIDDLEWARE: authMiddleware
+ *
+ * FLUJO:
+ * 1. Leer header Authorization
+ * 2. Validar formato Bearer
+ * 3. Intentar validar token con Supabase
+ * 4. Si falla Supabase, usar validación manual (JWT decodificado)
+ * 5. Si todo falla, rechazar petición (401)
+ * 6. Si éxito, almacenar usuario en req.student y continuar
+ */
 const authMiddleware = async (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;

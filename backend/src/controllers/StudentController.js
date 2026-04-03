@@ -1,5 +1,39 @@
+/**
+ * ARCHIVO: StudentController.js
+ * PROPÓSITO: Maneja las peticiones HTTP relacionadas con estudiantes
+ *
+ * PATRÓN ARQUITECTÓNICO:
+ * Los controladores siguen la arquitectura en capas:
+ * Controller (http) -> Service (lógica) -> Supabase (BD)
+ *
+ * RESPONSABILIDADES:
+ * 1. Validar datos de entrada (req.body)
+ * 2. Llamar a StudentService para lógica de negocio
+ * 3. Manejar errores y responder con HTTP apropiado
+ * 4. Retornar respuestas JSON estructuradas
+ */
+
 const studentService = require("../services/StudentService");
 
+/**
+ * FUNCIÓN: authStudent
+ * MÉTODO: POST /student/auth
+ * PROPÓSITO: Registrar un nuevo estudiante
+ *
+ * ENTRADA: { name, lastName, email, password, password2 }
+ * SALIDA: { message: "Confirmation email sent, check your inbox 📧" }
+ *
+ * VALIDACIONES:
+ * - Todos los campos son obligatorios
+ * - Las contraseñas deben coincidir
+ * - Email debe ser único
+ *
+ * MANEJO DE ERRORES:
+ * - 400: Datos inválidos o incompletos
+ * - 429: Demasiados intentos de registro
+ * - 503: No se puede conectar a Supabase
+ * - 500: Error interno
+ */
 exports.authStudent = async (req, res) => {
   try {
     const { name, lastName, email, password, password2 } = req.body;

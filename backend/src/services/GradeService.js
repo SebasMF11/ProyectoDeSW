@@ -42,7 +42,7 @@ exports.getByCourse = async (courseId, student_id) => {
   const { data, error } = await supabase
     .from("grade")
     .select(
-      "grade_id, value, assessment!inner(name_assessment, type, percentage, due_date, course_id, course!inner(course_name, semester!inner(student_id)))",
+      "grade_id, value, assessment!inner(assessment_name, type, percentage, due_date, course_id, course!inner(course_name, semester!inner(student_id)))",
     )
     .eq("assessment.course_id", courseId)
     .eq("assessment.course.semester.student_id", student_id)
