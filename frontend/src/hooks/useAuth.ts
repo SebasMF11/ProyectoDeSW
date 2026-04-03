@@ -1,5 +1,5 @@
 /**
- * ARCHIVO: useAuth.tsx
+ * ARCHIVO: useAuth.ts
  * PROPÓSITO: Custom hook para gestionar autenticación
  *
  * RESPONSABILIDADES:
@@ -25,14 +25,13 @@ import type { Session } from "@supabase/supabase-js";
 import { supabase } from "../integrations/supabase";
 
 const useAuth = () => {
-  // Estado de la sesión: undefined (cargando), Session (autenticado), null (no autenticado)
+  // Estado de la sesion: undefined (cargando), Session (autenticado), null (no autenticado)
   const [session, setSession] = useState<Session | null | undefined>(undefined);
 
   useEffect(() => {
-    // Flag para evitar actualizar estado si el componente fue desmontado
+    // Evita actualizar el estado si el componente ya se desmontó.
     let isMounted = true;
 
-    // Función para cargar la sesión actual
     const loadSession = async () => {
       const {
         data: { session: currentSession },
@@ -41,17 +40,14 @@ const useAuth = () => {
       if (isMounted) setSession(currentSession ?? null);
     };
 
-    // Cargar sesión al montar
     loadSession();
 
-    // Suscribirse a cambios de autenticación (login/logout/token refresh)
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, currentSession) => {
       setSession(currentSession ?? null);
     });
 
-    // Cleanup: desuscribirse y marcar componente como desmontado
     return () => {
       isMounted = false;
       subscription.unsubscribe();

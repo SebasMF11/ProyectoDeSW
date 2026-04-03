@@ -5,6 +5,8 @@ import axios from "axios";
 import { assessmentCreateRequest } from "../../api/assessment.api";
 import { semesterViewRequest } from "../../api/semester";
 import { courseBySemesterRequest } from "../../api/course";
+import SemesterSelect from "../../components/SemesterSelect";
+import CourseSelect from "../../components/CourseSelect";
 
 type Semester = {
   semester_id: number;
@@ -99,38 +101,32 @@ const assessment = () => {
         <p>Crear cuenta</p>
         {errorMessage ? <p>{errorMessage}</p> : null}
         <form onSubmit={onSubmit}>
-          <select
-            defaultValue=""
-            {...register("semesterName", { required: true })}
-          >
-            <option value="" disabled>
-              {semesters.length > 0
-                ? "Selecciona un semestre"
-                : "No hay semestres registrados"}
-            </option>
-            {semesters.map((semester) => (
-              <option key={semester.semester_id} value={semester.semester_name}>
-                {semester.semester_name}
-              </option>
-            ))}
-          </select>
-          <select
-            defaultValue=""
-            {...register("courseName", { required: true })}
-          >
-            <option value="" disabled>
-              {selectedSemester
-                ? courses.length > 0
-                  ? "Selecciona una asignatura"
-                  : "No hay asignaturas en este semestre"
-                : "Primero selecciona un semestre"}
-            </option>
-            {courses.map((course) => (
-              <option key={course.course_name} value={course.course_name}>
-                {course.course_name}
-              </option>
-            ))}
-          </select>
+          <SemesterSelect
+            semesters={semesters}
+            placeholderOptionText="Selecciona un semestre"
+            emptyOptionText="No hay semestres registrados"
+            selectProps={{
+              defaultValue: "",
+              ...register("semesterName", { required: true }),
+            }}
+          />
+          <CourseSelect
+            courses={courses}
+            placeholderOptionText={
+              selectedSemester
+                ? "Selecciona una asignatura"
+                : "Primero selecciona un semestre"
+            }
+            emptyOptionText={
+              selectedSemester
+                ? "No hay asignaturas en este semestre"
+                : "Primero selecciona un semestre"
+            }
+            selectProps={{
+              defaultValue: "",
+              ...register("courseName", { required: true }),
+            }}
+          />
           <input
             placeholder="Nombre de la actividad"
             type="text"

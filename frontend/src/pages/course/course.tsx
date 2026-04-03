@@ -5,11 +5,13 @@ import axios from "axios";
 import { courseCreateRequest, courseUpdateRequest } from "../../api/course";
 import { semesterViewRequest } from "../../api/semester";
 
+// Estructura de cada semestre recibido desde la API.
 type Semester = {
   semester_id: number;
   semester_name: string;
 };
 
+// Datos que llegan por navegacion cuando se abre el formulario en modo edicion.
 type EditCourseState = {
   course_id: number;
   course_name: string;
@@ -19,6 +21,7 @@ type EditCourseState = {
   semester_name: string;
 };
 
+// Valores que maneja react-hook-form dentro del formulario.
 type FormValues = {
   color: string;
   courseName: string;
@@ -50,6 +53,8 @@ const course = () => {
   const editCourse = location.state as EditCourseState | undefined;
   const isEditMode = Boolean(editCourse?.course_id);
 
+  // En BD el color del curso se guarda como HEX, pero el select usa nombres.
+  // Este mapa traduce HEX -> nombre para precargar el valor correcto al editar.
   const colorHexToName: Record<string, string> = {
     "#FF5733": "red",
     "#3380FF": "blue",
@@ -63,6 +68,8 @@ const course = () => {
     "#808080": "gray",
   };
 
+  // useEffect con []: corre una sola vez al montar el componente.
+  // Aqui se usa para cargar semestres iniciales desde la API.
   useEffect(() => {
     const loadSemesters = async () => {
       try {
@@ -77,6 +84,15 @@ const course = () => {
     loadSemesters();
   }, []);
 
+  // useEffect con dependencias: corre al montar y cuando cambian esas dependencias.
+  // Aqui rellena el formulario cuando hay curso a editar y cuando cambian sus datos.
+  /*Qué es useEffect:
+useEffect es un hook de React para ejecutar efectos secundarios después de renderizar, como pedir datos, sincronizar estado externo o precargar valores.
+Depende del arreglo de dependencias:
+
+[]: se ejecuta una vez al montar.
+[a, b]: se ejecuta al montar y cada vez que cambie a o b.
+Sin arreglo: se ejecuta en cada render.*/
   useEffect(() => {
     if (!isEditMode || !editCourse) return;
 

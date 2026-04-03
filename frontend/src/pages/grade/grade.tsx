@@ -3,14 +3,12 @@ import { useForm } from "react-hook-form";
 import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import { gradeCreateRequest } from "../../api/grade";
-import { semesterViewRequest } from "../../api/semester";
 import { courseBySemesterRequest } from "../../api/course";
 import { assessmentBySemesterRequest } from "../../api/assessment.api";
-
-type Semester = {
-  semester_id: number;
-  semester_name: string;
-};
+import useSemesters from "../../hooks/useSemesters";
+import SemesterSelect from "../../components/SemesterSelect";
+import CourseSelect from "../../components/CourseSelect";
+import AssessmentSelect from "../../components/AssessmentSelect";
 
 type Course = {
   course_name: string;
@@ -26,10 +24,11 @@ type Assessment = {
 const grade = () => {
   const navigate = useNavigate();
   const [errorMessage, setErrorMessage] = useState("");
-  const [semesters, setSemesters] = useState<Semester[]>([]);
+  const { semesters, semesterError, latestSemesterName } = useSemesters();
   const [courses, setCourses] = useState<Course[]>([]);
   const [assessments, setAssessments] = useState<Assessment[]>([]);
   const { register, handleSubmit, watch, setValue } = useForm();
+  const semesterRegister = register("semesterName", { required: true });
   const selectedSemesterName = watch("semesterName");
   const selectedCourseName = watch("courseName");
 
@@ -50,18 +49,9 @@ const grade = () => {
   );
 
   useEffect(() => {
-    const loadSemesters = async () => {
-      try {
-        const { data } = await semesterViewRequest();
-        setSemesters(Array.isArray(data) ? data : []);
-      } catch (error) {
-        console.error(error);
-        setSemesters([]);
-      }
-    };
-
-    loadSemesters();
-  }, []);
+    if (!latestSemesterName || selectedSemesterName) return;
+    setValue("semesterName", latestSemesterName);
+  }, [latestSemesterName, selectedSemesterName, setValue]);
 
   useEffect(() => {
     const loadCourses = async () => {
@@ -138,60 +128,53 @@ const grade = () => {
     <div>
       <div>
         <p>Crear cuenta</p>
-        {errorMessage ? <p>{errorMessage}</p> : null}
+        {errorMessage || semesterError ? (
+          <p>{errorMessage || semesterError}</p>
+        ) : null}
         <form onSubmit={onSubmit}>
-          <select
-            defaultValue=""
-            {...register("semesterName", { required: true })}
-          >
-            <option value="" disabled>
-              {semesters.length > 0
-                ? "Selecciona un semestre"
-                : "No hay semestres registrados"}
-            </option>
-            {semesters.map((semester) => (
-              <option key={semester.semester_id} value={semester.semester_name}>
-                {semester.semester_name}
-              </option>
-            ))}
-          </select>
-          <select
-            defaultValue=""
-            {...register("courseName", { required: true })}
-          >
-            <option value="" disabled>
-              {selectedSemesterName
-                ? courses.length > 0
-                  ? "Selecciona un curso"
-                  : "No hay cursos en este semestre"
-                : "Primero selecciona un semestre"}
-            </option>
-            {courses.map((course) => (
-              <option key={course.course_name} value={course.course_name}>
-                {course.course_name}
-              </option>
-            ))}
-          </select>
-          <select
-            defaultValue=""
-            {...register("assessmentName", { required: true })}
-          >
-            <option value="" disabled>
-              {selectedCourseName
-                ? filteredAssessments.length > 0
-                  ? "Selecciona una actividad"
-                  : "No hay actividades para este curso"
-                : "Primero selecciona un curso"}
-            </option>
-            {filteredAssessments.map((assessment) => (
-              <option
-                key={assessment.assessment_name}
-                value={assessment.assessment_name}
-              >
-                {assessment.assessment_name}
-              </option>
-            ))}
-          </select>
+          <SemesterSelect
+            semesters={semesters}
+            placeholderOptionText="Selecciona un semestre"
+            emptyOptionText={"No hay semestres registrados"}
+            selectProps={{
+              defaultValue: "",
+              ...semesterRegister,
+            }}
+          />
+          <CourseSelect
+            courses={courses}
+            placeholderOptionText={
+              selectedSemesterName
+                ? "Selecciona un curso"
+                : "Primero selecciona un semestre"
+            }
+            emptyOptionText={
+              selectedSemesterName
+                ? "No hay cursos en este semestre"
+                : "Primero selecciona un semestre"
+            }
+            selectProps={{
+              defaultValue: "",
+              ...register("courseName", { required: true }),
+            }}
+          />
+          <AssessmentSelect
+            assessments={filteredAssessments}
+            placeholderOptionText={
+              selectedCourseName
+                ? "Selecciona una actividad"
+                : "Primero selecciona un curso"
+            }
+            emptyOptionText={
+              selectedCourseName
+                ? "No hay actividades para este curso"
+                : "Primero selecciona un curso"
+            }
+            selectProps={{
+              defaultValue: "",
+              ...register("assessmentName", { required: true }),
+            }}
+          />
           <input
             placeholder="Nota"
             type="number"

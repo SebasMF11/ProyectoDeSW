@@ -1,15 +1,9 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { courseBySemesterRequest, courseDeleteRequest } from "../../api/course";
-import { semesterViewRequest } from "../../api/semester";
+import useSemesters from "../../hooks/useSemesters";
+import SemesterSelect from "../../components/SemesterSelect";
 import axios from "axios";
-
-type Semester = {
-  semester_id: number;
-  semester_name: string;
-  start_date?: string;
-  end_date?: string;
-};
 
 type Course = {
   course_id: number;
@@ -19,16 +13,10 @@ type Course = {
   color?: string;
 };
 
-const safeDate = (dateValue?: string) => {
-  if (!dateValue) return Number.NEGATIVE_INFINITY;
-
-  const parsedDate = new Date(dateValue).getTime();
-  return Number.isNaN(parsedDate) ? Number.NEGATIVE_INFINITY : parsedDate;
-};
-
 function courseList() {
   const navigate = useNavigate();
-  const [semesters, setSemesters] = useState<Semester[]>([]);
+  const { semesters, loadingSemesters, semesterError, latestSemesterName } =
+    useSemesters();
   const [selectedSemester, setSelectedSemester] = useState("");
   const [courses, setCourses] = useState<Course[]>([]);
   const [loadingCourses, setLoadingCourses] = useState(false);
@@ -53,36 +41,6 @@ function courseList() {
       setLoadingCourses(false);
     }
   };
-
-  const latestSemesterName = useMemo(() => {
-    if (semesters.length === 0) return "";
-
-    const sortedSemesters = [...semesters].sort((a, b) => {
-      const endDateDifference = safeDate(b.end_date) - safeDate(a.end_date);
-      if (endDateDifference !== 0) return endDateDifference;
-
-      return safeDate(b.start_date) - safeDate(a.start_date);
-    });
-
-    return sortedSemesters[0].semester_name;
-  }, [semesters]);
-
-  useEffect(() => {
-    const loadSemesters = async () => {
-      try {
-        setErrorMessage("");
-        const { data } = await semesterViewRequest();
-        const semesterData = Array.isArray(data) ? data : [];
-        setSemesters(semesterData);
-      } catch (error) {
-        console.error(error);
-        setSemesters([]);
-        setErrorMessage("No se pudieron cargar los semestres");
-      }
-    };
-
-    loadSemesters();
-  }, []);
 
   useEffect(() => {
     if (!latestSemesterName) return;
@@ -138,33 +96,27 @@ function courseList() {
         </button>
       </div>
 
-      {errorMessage ? <p>{errorMessage}</p> : null}
+      {errorMessage || semesterError ? (
+        <p>{errorMessage || semesterError}</p>
+      ) : null}
 
-      <label htmlFor="semester-select">Semestre</label>
-      <select
-        id="semester-select"
+      <SemesterSelect
+        semesters={semesters}
         value={selectedSemester}
-        onChange={(event) => setSelectedSemester(event.target.value)}
-      >
-        {semesters.length === 0 ? (
-          <option value="">No hay semestres registrados</option>
-        ) : null}
-
-        {semesters.map((semester) => (
-          <option key={semester.semester_id} value={semester.semester_name}>
-            {semester.semester_name}
-          </option>
-        ))}
-      </select>
+        onValueChange={setSelectedSemester}
+      />
 
       <div className="mt-6">
-        {loadingCourses ? <p>Cargando cursos...</p> : null}
+        {loadingSemesters || loadingCourses ? <p>Cargando cursos...</p> : null}
 
-        {!loadingCourses && selectedSemester && courses.length === 0 ? (
+        {!loadingSemesters &&
+        !loadingCourses &&
+        selectedSemester &&
+        courses.length === 0 ? (
           <p>No hay cursos asignados a este semestre.</p>
         ) : null}
 
-        {!loadingCourses && courses.length > 0 ? (
+        {!loadingSemesters && !loadingCourses && courses.length > 0 ? (
           <ul className="flex flex-col gap-3">
             {courses.map((course) => (
               <li

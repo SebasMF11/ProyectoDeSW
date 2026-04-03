@@ -18,8 +18,14 @@ function navbar() {
     <div className="w-full flex items-center justify-between bg-[#009853] p-2">
       <div className="flex items-center gap-2">
         <Menu />
-        <img src={logo} alt="Logo" className="h-10 w-10" />
-        <p className="text-[25px] font-bold font-sans text-white">PoliPlan</p>
+        <button
+          type="button"
+          onClick={() => navigate("/home")}
+          className="flex items-center gap-2 cursor-pointer"
+        >
+          <img src={logo} alt="Logo" className="h-10 w-10" />
+          <p className="text-[25px] font-bold font-sans text-white">PoliPlan</p>
+        </button>
       </div>
 
       <div className="flex items-center px-10 gap-3">

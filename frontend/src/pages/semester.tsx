@@ -4,6 +4,7 @@ import { semesterCreateRequest, semesterViewRequest } from "../api/semester";
 import axios from "axios";
 import { useEffect, useState } from "react";
 
+// Modelo de cada semestre que llega desde la API y se guarda en estado local.
 type SemesterItem = {
   semester_id: number;
   semester_name: string;
@@ -11,6 +12,7 @@ type SemesterItem = {
   end_date: string;
 };
 
+// Valida si el rango [startDate, endDate] se cruza con un semestre existente.
 const overlaps = (
   startDate: string,
   endDate: string,
@@ -21,6 +23,8 @@ const overlaps = (
   const existingStart = new Date(`${existing.start_date}T00:00:00Z`);
   const existingEnd = new Date(`${existing.end_date}T00:00:00Z`);
 
+  // Si el nuevo inicio ocurre antes del fin existente y el nuevo fin despues
+  // del inicio existente, entonces hay superposicion.
   return start < existingEnd && end > existingStart;
 };
 
