@@ -1,13 +1,30 @@
-import { useNavigate } from "react-router";
+import { useLocation, useNavigate } from "react-router";
 import { useForm } from "react-hook-form";
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { courseCreateRequest } from "../../api/course";
+import { courseCreateRequest, courseUpdateRequest } from "../../api/course";
 import { semesterViewRequest } from "../../api/semester";
 
 type Semester = {
   semester_id: number;
   semester_name: string;
+};
+
+type EditCourseState = {
+  course_id: number;
+  course_name: string;
+  teacher: string;
+  credits: number;
+  color?: string;
+  semester_name: string;
+};
+
+type FormValues = {
+  color: string;
+  courseName: string;
+  teacher: string;
+  credits: number;
+  semesterName: string;
 };
 
 const colorOptions = [
@@ -25,9 +42,26 @@ const colorOptions = [
 
 const course = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [errorMessage, setErrorMessage] = useState("");
   const [semesters, setSemesters] = useState<Semester[]>([]);
-  const { register, handleSubmit } = useForm();
+  const { register, handleSubmit, setValue } = useForm<FormValues>();
+
+  const editCourse = location.state as EditCourseState | undefined;
+  const isEditMode = Boolean(editCourse?.course_id);
+
+  const colorHexToName: Record<string, string> = {
+    "#FF5733": "red",
+    "#3380FF": "blue",
+    "#33FF57": "green",
+    "#FFD700": "yellow",
+    "#FFA500": "orange",
+    "#800080": "purple",
+    "#FF69B4": "pink",
+    "#000000": "black",
+    "#FFFFFF": "white",
+    "#808080": "gray",
+  };
 
   useEffect(() => {
     const loadSemesters = async () => {
@@ -43,16 +77,40 @@ const course = () => {
     loadSemesters();
   }, []);
 
+  useEffect(() => {
+    if (!isEditMode || !editCourse) return;
+
+    setValue("courseName", editCourse.course_name || "");
+    setValue("teacher", editCourse.teacher || "");
+    setValue("credits", editCourse.credits);
+    setValue("semesterName", editCourse.semester_name || "");
+    setValue("color", colorHexToName[editCourse.color || ""] || "");
+  }, [editCourse, isEditMode, setValue]);
+
   const onSubmit = handleSubmit(async (values) => {
     try {
       setErrorMessage("");
-      const res = await courseCreateRequest(values);
+
+      const payload = {
+        ...values,
+        credits: Number(values.credits),
+      };
+
+      const res = isEditMode
+        ? await courseUpdateRequest(editCourse!.course_id, payload)
+        : await courseCreateRequest(payload);
+
       console.log(res);
-      navigate("/");
+      navigate("/course-list");
     } catch (error) {
       if (axios.isAxiosError(error)) {
         const apiMessage = error.response?.data?.error;
-        setErrorMessage(apiMessage || "No se pudo crear el curso");
+        setErrorMessage(
+          apiMessage ||
+            (isEditMode
+              ? "No se pudo actualizar el curso"
+              : "No se pudo crear el curso"),
+        );
         return;
       }
 
@@ -63,10 +121,15 @@ const course = () => {
   return (
     <div>
       <div>
-        <p>Crear cuenta</p>
+        <p>{isEditMode ? "Editar curso" : "Crear curso"}</p>
         {errorMessage ? <p>{errorMessage}</p> : null}
         <form onSubmit={onSubmit}>
-          <select defaultValue="" {...register("color", { required: true })}>
+          <select
+            defaultValue=""
+            {...register("color", {
+              required: true,
+            })}
+          >
             <option value="" disabled>
               Selecciona un color
             </option>
@@ -93,6 +156,7 @@ const course = () => {
           />
           <select
             defaultValue=""
+            disabled={isEditMode}
             {...register("semesterName", { required: true })}
           >
             <option value="" disabled>
@@ -106,7 +170,9 @@ const course = () => {
               </option>
             ))}
           </select>
-          <button type="submit">Registrarse</button>
+          <button type="submit">
+            {isEditMode ? "Guardar cambios" : "Registrar curso"}
+          </button>
         </form>
       </div>
     </div>

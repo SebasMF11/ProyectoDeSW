@@ -1,3 +1,9 @@
+/**
+ * ARCHIVO: AppRouters.tsx
+ * PROPÓSITO: Configurar todas las rutas de la aplicación
+ *
+ */
+
 import { Route, Routes, Navigate } from "react-router";
 import Home from "../pages/Home";
 import Register from "../pages/student/Register";
@@ -16,14 +22,29 @@ import Profile from "../pages/student/profile";
 const AppRouters = () => {
   return (
     <Routes>
+      {/* ============ RUTAS PÚBLICAS ============ */}
+      {/* Autenticación de estudiantes */}
       <Route path="/auth" element={<Auth />} />
       <Route path="/register" element={<Register />} />
 
+      {/* ============ RUTAS PROTEGIDAS - HOME ============ */}
+      {/* Panel principal del estudiante */}
       <Route
         path="/home"
         element={
           <ProtectedRouters>
             <Home />
+          </ProtectedRouters>
+        }
+      />
+
+      {/* ============ RUTAS PROTEGIDAS - PERFIL ============ */}
+      {/* Información de perfil e historial del estudiante */}
+      <Route
+        path="/profile"
+        element={
+          <ProtectedRouters>
+            <Profile />
           </ProtectedRouters>
         }
       />
@@ -35,22 +56,20 @@ const AppRouters = () => {
           </ProtectedRouters>
         }
       />
+
+      {/* ============ RUTAS PROTEGIDAS - SEMESTRES ============ */}
+      {/* Gestión de semestres académicos (períodos de tiempo) */}
       <Route
-        path="/grade-list"
+        path="/semester"
         element={
           <ProtectedRouters>
-            <GradeList />
+            <Semester />
           </ProtectedRouters>
         }
       />
-      <Route
-        path="/grade"
-        element={
-          <ProtectedRouters>
-            <Grade />
-          </ProtectedRouters>
-        }
-      />
+
+      {/* ============ RUTAS PROTEGIDAS - CURSOS ============ */}
+      {/* Gestión de cursos: creación, edición, visualización */}
       <Route
         path="/course-list"
         element={
@@ -67,14 +86,18 @@ const AppRouters = () => {
           </ProtectedRouters>
         }
       />
+      {/* Gestión de días académicos dentro de cursos */}
       <Route
-        path="/assessment"
+        path="/day"
         element={
           <ProtectedRouters>
-            <Assessment />
+            <Day />
           </ProtectedRouters>
         }
       />
+
+      {/* ============ RUTAS PROTEGIDAS - EVALUACIONES ============ */}
+      {/* Gestión de evaluaciones/rúbricas para calificar */}
       <Route
         path="/assessment-list"
         element={
@@ -84,31 +107,37 @@ const AppRouters = () => {
         }
       />
       <Route
-        path="/semester"
+        path="/assessment"
         element={
           <ProtectedRouters>
-            <Semester />
-          </ProtectedRouters>
-        }
-      />
-      <Route
-        path="/day"
-        element={
-          <ProtectedRouters>
-            <Day />
-          </ProtectedRouters>
-        }
-      />
-      <Route
-        path="/profile"
-        element={
-          <ProtectedRouters>
-            <Profile />
+            <Assessment />
           </ProtectedRouters>
         }
       />
 
+      {/* ============ RUTAS PROTEGIDAS - CALIFICACIONES ============ */}
+      {/* Gestión de calificaciones de estudiantes */}
+      <Route
+        path="/grade-list"
+        element={
+          <ProtectedRouters>
+            <GradeList />
+          </ProtectedRouters>
+        }
+      />
+      <Route
+        path="/grade"
+        element={
+          <ProtectedRouters>
+            <Grade />
+          </ProtectedRouters>
+        }
+      />
+
+      {/* ============ RUTAS DEFAULT ============ */}
+      {/* Redirige la raíz a autenticación */}
       <Route path="/" element={<Navigate to="/auth" />} />
+      {/* Página 404 para rutas no definidas */}
       <Route path="*" element={<h1>404 Not Found</h1>} />
     </Routes>
   );

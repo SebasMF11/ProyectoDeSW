@@ -20,7 +20,7 @@ exports.getAll = async (student_id) => {
 exports.getBySemester = async (semester_id) => {
   const { data, error } = await supabase
     .from("course")
-    .select("course_name, teacher, credits")
+    .select("course_id, course_name, teacher, credits, color")
     .eq("semester_id", semester_id)
     .eq("status", true);
 
