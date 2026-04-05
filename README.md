@@ -527,7 +527,7 @@ Authorization: Bearer eyJhbGc...
 
 ---
 
-## 💻 Useful commands
+# 💻 Useful commands
 
 ```bash
 # Backend
@@ -582,15 +582,15 @@ git push                            # Subir a GitHub
 
 ---
 
-# 👤 Autores
+# 👤 Authors
 
-- **Sara Camila Echeverri** - Estudiante de Ingeniería Informática
-- **Sara Jimenez Restrepo** - Estudiante de Ingeniería Informática.
-- **Sara Monsalve Lopera** - Estudiante de Ingeniería Informática.
-- **Sebastián Montoya Foronda** - Estudiante de Ingeniería Informática.
-- **Sebastián Tunjuelo Lujan** - Estudiante de Ingeniería Informática.
+- **Sara Camila Echeverri** - Software Engineering student.
+- **Sara Jimenez Restrepo** - Software Engineering student.
+- **Sara Monsalve Lopera** - Software Engineering student.
+- **Sebastián Montoya Foronda** - Software Engineering student.
+- **Sebastián Tunjuelo Lujan** - Software Engineering student.
 
 
 ---
 
-**Última actualización**: 4 de abril de 2026
+**Latest update**: 4 April 2026
