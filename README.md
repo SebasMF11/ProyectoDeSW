@@ -1,108 +1,284 @@
-# 📚 Sistema de Gestión Académica
+# 📚 PoliPlan: Academic Management for the Politecnico JIC
 
-Sistema completo de gestión académica desarrollado con **Node.js/Express** (backend) y **React + TypeScript** (frontend).
+Full academic management system developed using **Node.js/Express** (backend) y **React + TypeScript** (frontend).
 
-## 🎯 Descripción General
+# 🎯 Project description
 
-Este proyecto es una plataforma de gestión académica que permite:
+## Research question
+How can a web-based academic planning application improve the organization and follow-up of the academic performance of students at the Politecnico JIC?
 
-- **Autenticación**: Registro e inicio de sesión de estudiantes con Supabase Auth
-- **Gestión de Semestres**: Crear períodos académicos
-- **Gestión de Cursos**: Registrar cursos dentro de semestres
-- **Calendario Académico**: Crear días y horarios para cursos
-- **Evaluaciones**: Crear rúbricas y evaluaciones de desempeño
-- **Calificaciones**: Registrar y consultar calificaciones
-- **Perfil de Estudiante**: Gestionar información personal y ver historial
+## Introduction
+Nowadays, many students at the Politecnico JIC plan their semesters using a variety of tools such as physical diaries, notes on their mobile phones or independent files. This situation makes it difficult to organize subjects, remember important dates (mid-term exams, workshops, assignments) and keep proper record of academic performance.
+
+## Main objective
+Using the SMART methodology, develop a web application called PoliPlan that enables students at the Politecnico JIC to plan, organize and follow up on their activities and academic performance during the semester.
+
+## Specific objectives
+- Implement solutions that align with students' real needs, taking into account how the schedule is currently managed.
+- Identify the main problems students face in their current scheduling process, such as difficulties in updating schedules and potential mistakes when entering their information.
+- Analyse how current schedules are managed, in order to understand the weaknesses in the process of adding, editing and removing courses from a student's schedule in each semester.
+
+## Scope
+The PoliPlan system will enable students to:
+ - Register and manage their subjects.
+ -  Set academic schedules.
+ -  Record dates for mid-term exams, workshops, assignments and final exams.
+ -  Track their grades throughout the semester.
+ -  View their academic schedule on a web interface.
+    
+This phase of the project does **NOT** include:
+  - Integration with official institutional systems.
+  - Management of academic enrolment.
+  - Native mobile app.
+  - Administrative features for teaching staff.
+
+## Solution
+
+A full-featured app where students can register their courses, class schedules, exam dates, assignments and mid-term exams. The system allows students to track their grades, taking into account the two mandatory mid-term exams and the overall academic term.
 
 ---
+# 🏗️ Project Architecture
 
-## 🏗️ Arquitectura del Proyecto
+## Conceptual Diagram
 
-### Backend (Node.js + Express)
+<img width="1195" height="1315" alt="Conceptual Diagram PoliPlan" src="https://github.com/user-attachments/assets/97233703-d1a9-4ff0-bc61-f4e143de9c1a" />
+
+## Architectural Pattern
+We chose the Layered Architecture because it allows a strict separation of responsibilities, which is crucial for a system that handles various flows of academic data (schedules, grades and dates).
+The main reasons for this choice are:
+- **Frontend and Backend Decoupling:** Using React for the view and Node.js for the logic, the layered architecture allows the backend to function as a independent API REST. 
+-**Maintainability and scalability:** By separating the business logic (services) from data persistence (repositories), anything that changes in the way that Politecnico JIC assesses students (such as how mandatory midterms are calculated) can be implemented in one place without affecting the rest of the system.
+- **Good code organization practices:**
+    - Controllers: These are only responsible for receiving student requests and validating input data.
+    - Services: This is where PoliPlan’s “logic” resides, processing planning and tracking academic performance.
+    - Repositories: These manage communication exclusively with PostgreSQL, isolating SQL queries from the rest of the application.
+- **Facility for Testing:** This structure allows you to perform unit tests on the logic of the services without needing the database or the interface to be connected, ensuring more robust software.
+
+PoliPlan has evolved towards a cleaner layered architecture, where the ‘View’ is an independent project in React and the ‘Model’ is managed through specialised Repositories and Services.
+
+
+## Layered Architecture
+
+### Project structure
+```
+ProyectoDeSW/
+├── backend/
+│   ├── package.json
+│   └── src/
+│       ├── app.js                    ← Configuración Express
+│       ├── index.js                  ← Servidor local:3000
+│       ├── config/
+│       │   └── supabase.js          ← Cliente Supabase
+│       ├── routes/                   ← Endpoints API
+│       │   ├── StudentRoutes.js
+│       │   ├── CourseRoutes.js
+│       │   ├── SemesterRoutes.js
+│       │   ├── GradeRoutes.js
+│       │   ├── AssessmentRoutes.js
+│       │   └── DayRoutes.js
+│       ├── controllers/              ← Maneja HTTP requests
+│       │   ├── StudentController.js
+│       │   ├── CourseController.js
+│       │   └── ...
+│       ├── services/                 ← Lógica de negocio
+│       │   ├── StudentService.js
+│       │   ├── CourseService.js
+│       │   └── ...
+│       ├── middlewares/              ← Validaciones
+│       │   └── authMiddleware.js    ← Valida JWT
+│       └── utils/
+│
+├── frontend/
+│   ├── package.json
+│   ├── vite.config.ts              ← Build config
+│   ├── index.html
+│   └── src/
+│       ├── main.tsx                 ← Entry point
+│       ├── App.tsx                  ← Root component
+│       ├── index.css                ← Estilos globales
+│       ├── routers/
+│       │   ├── AppRouters.tsx       ← Definición de rutas
+│       │   └── ProtectedRouters.tsx ← Wrapper de seguridad
+│       ├── pages/                   ← Páginas principales
+│       │   ├── Home.tsx
+│       │   ├── student/
+│       │   │   ├── Auth.tsx
+│       │   │   ├── Register.tsx
+│       │   │   ├── profile.tsx
+│       │   │   └── settings.tsx
+│       │   ├── course/
+│       │   │   ├── course.tsx       ← Crear/editar
+│       │   │   ├── courseList.tsx   ← Listar
+│       │   │   └── day.tsx
+│       │   ├── grade/
+│       │   │   ├── grade.tsx
+│       │   │   └── gradeList.tsx
+│       │   ├── assessment/
+│       │   │   ├── assessment.tsx
+│       │   │   └── assessmentList.tsx
+│       │   └── semester.tsx
+│       ├── components/              ← Componentes reutilizables
+│       │   ├── navbar.tsx
+│       │   ├── menu.tsx
+│       │   └── calendar/
+│       │       └── Calendar.tsx
+│       ├── hooks/                   ← Custom hooks
+│       │   └── useAuth.tsx         ← Gestiona sesión
+│       ├── api/                     ← Clientes HTTP
+│       │   ├── httpClient.ts       ← Axios core (+ JWT interceptor)
+│       │   ├── course.ts
+│       │   ├── students.api.ts
+│       │   ├── grade.ts
+│       │   ├── semester.ts
+│       │   ├── assessment.api.ts
+│       │   └── day.api.ts
+│       ├── integrations/             ← Librerías externas
+│       │   └── supabase.tsx         ← Cliente Supabase
+│       └── styles/                  ← Estilos componentes
+│
+├── README.md                         ← Documentación principal
+├── ARCHITECTURE.md                   ← Flujos técnicos detallados
+├── GUIDE.md                          ← Guía de desarrollo
+└── .env.example                      ← Variables de entorno (template)
+```
+
+### Backend: MVC Structure
+
+```
+REQUEST
+  │
+  ▼
+ROUTES (studentRoutes.js)
+  └─ Definir endpoints: POST /student/login, GET /student/view
+  │
+  ▼
+MIDDLEWARES (authMiddleware.js)
+  └─ Validar JWT token
+  │
+  ▼
+CONTROLLERS (StudentController.js)
+  └─ Recibir req.body
+  └─ Validar datos (400 si inválido)
+  └─ Llamar Service
+  └─ Manejo errores
+  └─ Response JSON
+  │
+  ▼
+SERVICES (StudentService.js)
+  └─ Lógica de negocio
+  └─ Interactuar con Supabase
+  └─ Retornar datos
+  │
+  ▼
+SUPABASE
+  └─ Base de datos
+  └─ Auth service
+  │
+  ▼
+RESPONSE JSON back to client
+```
+
+### Frontend: Component Structure
+
+```
+App.tsx (root)
+  │
+  ▼
+AppRouters.tsx (route configuration)
+  │
+  ├─ PUBLIC: /auth, /register
+  │   └─ Auth.tsx (login page)
+  │   └─ Register.tsx (signup page)
+  │
+  └─ PROTECTED: /home, /course-list, /grade, etc.
+      └─ ProtectedRouters wrapper
+          ├─ Checks useAuth() hook
+          ├─ Shows Navbar if authenticated
+          └─ Page Component
+              ├─ useForm hook (React Hook Form)
+              ├─ useEffect (fetch data)
+              ├─ httpClient calls (API requests)
+              └─ JSX rendering
+```
+
+
+
+**Backend (Node.js + Express)**
 
 - **Framework**: Express.js
-- **Autenticación**: Supabase Auth (JWT)
-- **Base de Datos**: Supabase (PostgreSQL)
-- **Patrón**: MVC en capas (Routes → Controllers → Services → DB)
+- **Authentication**: Supabase Auth (JWT)
+- **Database**: Supabase (PostgreSQL)
+- **Pattern**: MVC in layers (Routes → Controllers → Services → DB)
 
-**Estructura de carpetas:**
-
-```
-backend/src/
-├── app.js                 # Configuración Express
-├── index.js              # Servidor (entry point)
-├── config/               # Configuración (Supabase)
-├── routes/               # Definición de endpoints API
-├── controllers/          # Manejo de peticiones HTTP
-├── services/             # Lógica de negocio
-└── middlewares/          # Autenticación JWT
-```
 
 **Endpoints principales:**
 
-- `POST /student/auth` - Registro de estudiante
-- `POST /student/login` - Autenticación
-- `POST /semester` - Crear semestre
-- `POST /course` - Crear curso
-- `POST /assessment` - Crear evaluación
-- `GET /grade` - Listar calificaciones
+- `POST /student/auth` - Student's register
+- `POST /student/login` - Authentication
+- `POST /semester` - Create a semester
+- `POST /course` - Create a course
+- `POST /assessment` - Create an assessment 
+- `GET /grade` - List grades
 
-### Frontend (React + TypeScript)
+**Frontend (React + TypeScript)**
 
 - **Framework**: React 18 + Vite
 - **Routing**: React Router v6
-- **Autenticación**: Supabase Auth
-- **HTTP Client**: Axios con interceptores JWT
-- **Estilos**: Tailwind CSS
+- **Authentication**: Supabase Auth
+- **HTTP Client**: Axios with JWC interceptors
+- **Styles**: Tailwind CSS
 
-**Estructura de carpetas:**
+---
 
+# 📊 Data model - Relations
 ```
-frontend/src/
-├── main.tsx              # Entry point
-├── App.tsx               # Componente raíz
-├── pages/                # Páginas de la aplicación
-├── routers/              # Definición de rutas (AppRouters, ProtectedRouters)
-├── hooks/                # Custom hooks (useAuth)
-├── api/                  # Clientes HTTP para APIs
-├── components/           # Componentes reutilizables
-├── integrations/         # Integración con Supabase
-└── styles/               # Estilos globales
+STUDENT 
+├─ student_id (UUID, PK)
+├─ name
+├─ last_name
+├─ email (UNIQUE)
+└─ created_at
+
+SEMESTER 
+├─ semester_id (PK)
+├─ semester_name
+├─ start_date
+├─ end_date
+
+COURSE  ──┬─ FK → SEMESTER
+├─ course_id (PK)
+├─ course_name
+├─ teacher
+├─ credits
+├─ color (hex)
+└─ semester_id
+
+DAY  ──┬─ FK → COURSE
+├─ day_id (PK)
+├─ course_id
+├─ day_date
+├─ start_time
+├─ end_time
+
+ASSESSMENT 
+├─ assessment_id (PK)
+├─ assessment_name
+├─ description
+├─ total_points
+
+GRADE  ──┬─ FK → STUDENT, COURSE
+├─ grade_id (PK)
+├─ student_id
+├─ course_id
+├─ score
+└─ created_at
 ```
 
 ---
 
-## 🔐 Flujo de Autenticación
+# 📋 Main Entities
 
-### Registro
-
-1. Usuario completa formulario en `/register`
-2. Frontend hace POST a `POST /student/auth`
-3. Backend valida datos y crea usuario en Supabase
-4. Supabase envía email de confirmación
-5. Usuario confirma email y puede hacer login
-
-### Login
-
-1. Usuario ingresa email/password en `/auth`
-2. Frontend hace POST a `POST /student/login`
-3. Backend valida credenciales contra Supabase
-4. Supabase retorna JWT token
-5. Frontend almacena token en sesión de Supabase
-6. Token se agrega automáticamente en header `Authorization: Bearer <token>` en todas las peticiones
-
-### Protección de Rutas
-
-1. `ProtectedRouters` envoltura comprueba sesión con `useAuth` hook
-2. Si no hay sesión, redirige a `/auth`
-3. Si hay sesión, renderiza navbar + componente de página
-4. Backend valida token en header con `authMiddleware`
-
----
-
-## 📋 Entidades Principales
-
-### Student (Estudiante)
+### Student 
 
 ```javascript
 {
@@ -114,7 +290,7 @@ frontend/src/
 }
 ```
 
-### Semester (Semestre)
+### Semester 
 
 ```javascript
 {
@@ -125,7 +301,7 @@ frontend/src/
 }
 ```
 
-### Course (Curso)
+### Course 
 
 ```javascript
 {
@@ -138,7 +314,7 @@ frontend/src/
 }
 ```
 
-### Assessment (Evaluación/Rúbrica)
+### Assessment 
 
 ```javascript
 {
@@ -149,7 +325,7 @@ frontend/src/
 }
 ```
 
-### Grade (Calificación)
+### Grade 
 
 ```javascript
 {
@@ -161,7 +337,7 @@ frontend/src/
 }
 ```
 
-### Day (Día Académico)
+### Day 
 
 ```javascript
 {
@@ -174,8 +350,72 @@ frontend/src/
 ```
 
 ---
+# 🔧Technologies Used / Tools
 
-## 🚀 Cómo Ejecutar
+- **Frontend:** React with Vite.
+- **Backend:** Node.js.
+- **Database:** PostgreSQL, using Supabase as the hosting platform.
+- **Design:** Figma for prototyping.
+- **Technical Documentation:** Lucidchart for UML diagrams.
+---
+
+# 📄Requirements
+To run this project locally, make sure you have installed:
+
+- Node.js (LTS version recommended).
+- NPM or Yarn for package management.
+- A Supabase account for the PostgreSQL database.
+
+---
+# 📖 Guide
+## Installation
+
+### 1. Clone and Install
+
+```bash
+# Clonar repositorio
+cd ProyectoDeSW
+
+# Backend
+cd backend
+npm install
+
+# Frontend (en otra terminal)
+cd ../frontend
+npm install
+```
+
+### 2. Set environment variables
+
+Create `backend/.env`:
+
+```env
+PORT=3000
+SUPABASE_URL=https://tuproyecto.supabase.co
+SUPABASE_ANON_KEY=eyJhbGc...
+SUPABASE_SERVICE_ROLE_KEY=eyJhbGc...
+```
+
+Obtain keys de: https://app.supabase.com → Settings → API
+
+### 3. Start Servers
+
+```bash
+# Terminal 1: Backend
+cd backend
+npm run dev
+
+# Terminal 2: Frontend
+cd frontend
+npm run dev
+```
+
+- Backend: http://localhost:3000
+- Frontend: http://localhost:5173
+
+
+---
+## 🚀 Execution
 
 ### Backend
 
@@ -185,7 +425,7 @@ npm install
 npm run dev  # o npm start
 ```
 
-- Servidor en http://localhost:3000
+- Server at http://localhost:3000
 
 ### Frontend
 
@@ -195,11 +435,11 @@ npm install
 npm run dev  # Vite dev server
 ```
 
-- Aplicación en http://localhost:5173
+- Application in http://localhost:5173
 
-### Variables de Entorno
+### Environment Variables
 
-Crear archivo `.env` en backend:
+Create file `.env` in backend:
 
 ```
 PORT=3000
@@ -210,9 +450,9 @@ SUPABASE_SERVICE_ROLE_KEY=<tu_service_key>
 
 ---
 
-## 📡 Ejemplo de Flujo Completo
+# 📡 Example of the whole process
 
-### 1. Registro de Estudiante
+### 1. Student's register
 
 ```bash
 POST http://localhost:3000/student/auth
@@ -236,7 +476,7 @@ POST http://localhost:3000/student/login
 → Response: { token: "eyJhbGc...", user: {...} }
 ```
 
-### 3. Crear Semestre (con token autenticado)
+### 3. Create Semester (with authenticated token)
 
 ```bash
 POST http://localhost:3000/semester
@@ -248,7 +488,7 @@ Authorization: Bearer eyJhbGc...
 }
 ```
 
-### 4. Crear Curso (dentro de semestre)
+### 4.  Create Course (within a semester)
 
 ```bash
 POST http://localhost:3000/course
@@ -264,62 +504,93 @@ Authorization: Bearer eyJhbGc...
 
 ---
 
-## 🛡️ Seguridad
+# 🛡️ Security
 
-- **JWT Tokens**: Emitidos por Supabase, validados en backend
-- **CORS**: Configurado para permitir frontend en http://localhost:5173
-- **Middleware de Autenticación**: Valida token en todas las rutas protegidas
-- **Fallback Local**: Si Supabase no responde, valida JWT decodificando localmente
-- **Token Refresh**: Frontend actualiza automáticamente tokens próximos a expirar
+- **JWT Tokens**: Generated by Supabase, validated on the backend
+- **CORS**: Configured to allow frontend in http://localhost:5173
+- **Authentication middleware**: Validate token on all protected routes
+- **Fallback Local**: If Supabase isn't responding, validate the JWT by decoding it locally
+- **Token Refresh**: The frontend automatically updates tokens that are about to expire
 
 ---
 
-## 🔧 Middlewares y Hooks
+# 🔧 Middlewares y Hooks
 
 ### Backend
 
-- `authMiddleware.js`: Valida JWT, permite acceso solo a rutas protegidas
+- `authMiddleware.js`: Validates JWT, allows access only to protected routes
 
 ### Frontend
 
-- `useAuth.tsx`: Lee sesión de Supabase y suscribe a cambios de autenticación
-- `httpClient.ts`: Interceptor que agrega token Bearer automáticamente
+- `useAuth.tsx`: Read Supabase session and subscribe to authentication changes
+- `httpClient.ts`:  Interceptor that automatically adds a Bearer token
 
 ---
 
-## 📊 Patrón de Datos
+## 💻 Useful commands
 
-```
-Frontend UI Request
-    ↓
-React Router (AppRouters)
-    ↓
-ProtectedRouters (valida sesión)
-    ↓
-Page Component (React)
-    ↓
-httpClient (axios) - agrega token JWT
-    ↓
-Backend Express Server
-    ↓
-authMiddleware (valida token)
-    ↓
-Controller (procesa petición)
-    ↓
-Service (lógica de negocio)
-    ↓
-Supabase (base de datos)
+```bash
+# Backend
+cd backend && npm run dev          # Inicia servidor local:3000
+npm test                            # Ejecutar tests (si existen)
+npm install <package>               # Agregar dependencia
+
+# Frontend
+cd frontend && npm run dev          # Inicia Vite local:5173
+npm run build                       # Build para producción
+npm run preview                     # Preview del build
+npm install <package>               # Agregar dependencia
+
+# Git
+git status                          # Ver cambios
+git add .                           # Preparar cambios
+git commit -m "mensaje"             # Guardar cambios
+git push                            # Subir a GitHub
 ```
 
 ---
 
-## 📝 Notas Importantes
+# 🔗 URLs Quick Links
 
-- **Base de datos**: Supabase usa PostgreSQL, todas las tablas están en `public` schema
-- **Fechas**: Se guardan en formato ISO 8601 (YYYY-MM-DD)
-- **Idioma**: Backend retorna mensajes en inglés, frontend puede estar en español
-- **CORS**: Solo acepta peticiones del frontend en desarrollo (configurar en producción)
+- **Backend API Base:** `http://localhost:3000`
+- **Frontend App:** `http://localhost:5173`
+- **Supabase Dashboard:** `https://app.supabase.com`
+- **Backend Docs:** `http://localhost:3000/` 
+- **API Testing:** `Postman`, `Insomnia`, o `curl`
+  
+---
+
+# 📖 Documentation
+
+## Personal
+
+- **RF and RNF:** https://docs.google.com/spreadsheets/d/1KHZ0umoQhq_7Eg1aUUMwLu2CGzGqLAEzf1TPSSUjEs8/edit?usp=sharing
+- **CS:** https://lucid.app/lucidchart/4c5bad2c-3f14-4c1b-8e61-10aee3b1cb0a/edit?viewport_loc=-2116%2C-726%2C1615%2C652%2C0_0&invitationId=inv_73043b7a-f216-4ef9-90e6-4ba0f176ee3d
+- **Mockups:** https://www.figma.com/design/3z4l2A3P5BJJ6YblUR6EyF/PoliPlan?node-id=0-1&p=f&m=draw
+- **Class Diagram:** https://lucid.app/lucidchart/14b5b23f-0696-47bd-a06e-84b67b64979d/edit?viewport_loc=-4188%2C-745%2C2481%2C982%2C0_0&invitationId=inv_75676d47-673c-451d-bb26-f1d7c7c5be34
+- **Package Diagram:** https://lucid.app/lucidchart/edfb2ad8-89cc-45fd-bddf-a7ae0ffdc757/edit?viewport_loc=-458%2C-255%2C2240%2C922%2C0_0&invitationId=inv_41e8dad8-6c0f-4eda-b0dd-aa7efecaa722
+- **Activity Diagram:** https://lucid.app/lucidchart/a5eb8fff-b0e3-46c0-895d-8ddfe6fd2a3e/edit?viewport_loc=2917%2C-220%2C1827%2C839%2C0_0&invitationId=inv_3db0106e-32d0-422c-8e9f-7bc66f6e9556
+
+## External
+
+- **Express.js:** https://expressjs.com
+- **React:** https://react.dev
+- **Supabase:** https://supabase.com/docs
+- **Axios:** https://axios-http.com
+- **React Router:** https://reactrouter.com
+- **React Hook Form:** https://react-hook-form.com
 
 ---
 
-**Última actualización**: 2 de abril de 2026
+# 👤 Autores
+
+- **Sara Camila Echeverri** - Estudiante de Ingeniería Informática
+- **Sara Jimenez Restrepo** - Estudiante de Ingeniería Informática.
+- **Sara Monsalve Lopera** - Estudiante de Ingeniería Informática.
+- **Sebastián Montoya Foronda** - Estudiante de Ingeniería Informática.
+- **Sebastián Tunjuelo Lujan** - Estudiante de Ingeniería Informática.
+
+
+---
+
+**Última actualización**: 4 de abril de 2026
