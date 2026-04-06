@@ -117,6 +117,7 @@ exports.delete = async (gradeId, student_id) => {
 
   return true;
 };
+
 exports.getAssessmentByNameAndSemester = async (
   assessmentName,
   courseName,
@@ -137,4 +138,78 @@ exports.getAssessmentByNameAndSemester = async (
 
   if (error) return null;
   return data;
+};
+
+//para calcular en cuanto va la materia
+exports.getCurrentGradeByCourse = async (courseId, student_id) => {
+  const { data, error } = await supabase
+    .from("grade")
+    .select(
+      "value, assessment!inner(percentage, course!inner(status, semester!inner(student_id)))",
+    )
+    .eq("assessment.course_id", courseId)
+    .eq("assessment.course.semester.student_id", student_id)
+    .eq("assessment.course.status", true);
+
+  if (error) {
+    console.error(error);
+    throw error;
+  }
+
+  // Calcular nota actual y porcentaje evaluado
+  const evaluatedPercentage = data.reduce(
+    (acc, g) => acc + g.assessment.percentage,
+    0,
+  );
+  const currentGrade = data.reduce(
+    (acc, g) => acc + (g.value * g.assessment.percentage) / 100,
+    0,
+  );
+
+  return {
+    currentGrade: Math.round(currentGrade * 100) / 100, // redondear a 2 decimales
+    evaluatedPercentage,
+    remainingPercentage: 100 - evaluatedPercentage,
+  };
+};
+
+//promedio semestral
+exports.getSemesterAverage = async (semesterId, student_id) => {
+  const { data, error } = await supabase
+    .from("grade")
+    .select(
+      "value, assessment!inner(percentage, course!inner(status, semester_id, semester!inner(student_id)))",
+    )
+    .eq("assessment.course.semester_id", semesterId)
+    .eq("assessment.course.semester.student_id", student_id)
+    .eq("assessment.course.status", true);
+
+  if (error) {
+    console.error(error);
+    throw error;
+  }
+
+  if (!data || data.length === 0) {
+    return {
+      semesterAverage: 0,
+      evaluatedPercentage: 0,
+      remainingPercentage: 100,
+    };
+  }
+
+  // Calcular promedio ponderado de todas las materias del semestre
+  const evaluatedPercentage = data.reduce(
+    (acc, g) => acc + g.assessment.percentage,
+    0,
+  );
+  const semesterAverage = data.reduce(
+    (acc, g) => acc + (g.value * g.assessment.percentage) / 100,
+    0,
+  );
+
+  return {
+    semesterAverage: Math.round(semesterAverage * 100) / 100,
+    evaluatedPercentage,
+    remainingPercentage: 100 - evaluatedPercentage,
+  };
 };

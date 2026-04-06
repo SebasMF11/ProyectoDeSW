@@ -42,6 +42,8 @@ router.post("/login", studentController.loginStudent);
  * authMiddleware valida token JWT en Authorization header
  */
 router.get("/view", authMiddleware, studentController.getStudent);
+router.put("/update", authMiddleware, studentController.updateStudent);
+router.put("/password", authMiddleware, studentController.updatePassword);
 
 /**
  * GET /student/me
