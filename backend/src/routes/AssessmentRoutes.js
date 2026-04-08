@@ -15,6 +15,8 @@ router.get(
   authMiddleware,
   assessmentController.getAssessmentsBySemester,
 );
+router.get("/view/day", authMiddleware, assessmentController.getAssessmentsByDay);
+router.get("/view/month", authMiddleware, assessmentController.getAssessmentsByMonth);
 router.put(
   "/update/:assessmentId",
   authMiddleware,

@@ -210,3 +210,45 @@ exports.getAssessmentById = async (assessmentId, student_id) => {
   if (error) return null;
   return data;
 };
+
+exports.getAssessmentsByDay = async (date, student_id) => {
+  const { data, error } = await supabase
+    .from("assessment")
+    .select(
+      "assessment_id, assessment_name, type, due_date, percentage, course!inner(course_name, semester!inner(student_id))",
+    )
+    .eq("due_date", date)
+    .eq("course.semester.student_id", student_id)
+    .eq("course.status", true);
+
+  if (error) {
+    console.error(error);
+    throw error;
+  }
+
+  return data;
+};
+
+exports.getAssessmentsByMonth = async (year, month, student_id) => {
+  const startDate = `${year}-${month.toString().padStart(2, '0')}-01`;
+  const nextMonth = month === 12 ? 1 : month + 1;
+  const nextYear = month === 12 ? year + 1 : year;
+  const endDate = `${nextYear}-${nextMonth.toString().padStart(2, '0')}-01`;
+
+  const { data, error } = await supabase
+    .from("assessment")
+    .select(
+      "assessment_id, assessment_name, type, due_date, percentage, course!inner(course_name, semester!inner(student_id))",
+    )
+    .gte("due_date", startDate)
+    .lt("due_date", endDate)
+    .eq("course.semester.student_id", student_id)
+    .eq("course.status", true);
+
+  if (error) {
+    console.error(error);
+    throw error;
+  }
+
+  return data;
+};

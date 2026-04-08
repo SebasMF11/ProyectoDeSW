@@ -427,3 +427,47 @@ exports.deleteAssessment = async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 };
+
+exports.getAssessmentsByDay = async (req, res) => {
+  try {
+    const { date } = req.query;
+    const student_id = req.student.id;
+
+    if (!date) {
+      return res.status(400).json({ error: "Date is required" });
+    }
+
+    const dateObj = parseDueDate(date);
+    if (!dateObj) {
+      return res.status(400).json({ error: "Invalid date format. Use YYYY-MM-DD" });
+    }
+
+    const assessments = await assessmentService.getAssessmentsByDay(date, student_id);
+    res.status(200).json({ assessments });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+exports.getAssessmentsByMonth = async (req, res) => {
+  try {
+    const { date } = req.query; // date como YYYY-MM
+    const student_id = req.student.id;
+
+    if (!date) {
+      return res.status(400).json({ error: "Date is required" });
+    }
+
+    const [year, month] = date.split('-').map(Number);
+    if (!year || !month || month < 1 || month > 12) {
+      return res.status(400).json({ error: "Invalid date format. Use YYYY-MM" });
+    }
+
+    const assessments = await assessmentService.getAssessmentsByMonth(year, month, student_id);
+    res.status(200).json({ assessments });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
