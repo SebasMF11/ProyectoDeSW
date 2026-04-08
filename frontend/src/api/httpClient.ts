@@ -23,8 +23,9 @@ import axios from "axios";
 import { supabase } from "../integrations/supabase";
 
 // Crear instancia de axios con configuración base
+const baseURL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000/";
 export const httpClient = axios.create({
-  baseURL: "http://localhost:3000/",
+  baseURL,
 });
 
 // INTERCEPTOR: Maneja autenticación automática en todas las peticiones

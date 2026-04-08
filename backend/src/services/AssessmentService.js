@@ -230,15 +230,15 @@ exports.getAssessmentsByDay = async (date, student_id) => {
 };
 
 exports.getAssessmentsByMonth = async (year, month, student_id) => {
-  const startDate = `${year}-${month.toString().padStart(2, '0')}-01`;
+  const startDate = `${year}-${month.toString().padStart(2, "0")}-01`;
   const nextMonth = month === 12 ? 1 : month + 1;
   const nextYear = month === 12 ? year + 1 : year;
-  const endDate = `${nextYear}-${nextMonth.toString().padStart(2, '0')}-01`;
+  const endDate = `${nextYear}-${nextMonth.toString().padStart(2, "0")}-01`;
 
   const { data, error } = await supabase
     .from("assessment")
     .select(
-      "assessment_id, assessment_name, type, due_date, percentage, course!inner(course_name, color, semester!inner(student_id))",
+      "assessment_id, assessment_name, type, due_date, percentage, course!inner(course_name, semester!inner(student_id))",
     )
     .gte("due_date", startDate)
     .lt("due_date", endDate)
