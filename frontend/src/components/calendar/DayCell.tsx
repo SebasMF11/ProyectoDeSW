@@ -1,7 +1,6 @@
 import { format, isSameDay, isSameMonth } from "date-fns";
 import type { DayCellProps } from "./calendarTypes";
 import {
-  EVENTS,
   getExamWeek,
   getExamPosition,
   getHighlightClass,
@@ -14,6 +13,8 @@ export default function DayCell({
   selected,
   currentMonth,
   onSelect,
+  assessments = {},
+  isLoading = false,
 }: DayCellProps) {
   // Obtener información de la semana de exámenes y su posición para aplicar estilos
   const examWeek = getExamWeek(day);
@@ -23,9 +24,9 @@ export default function DayCell({
   const isSelected = isSameDay(day, selected);
   const isCurrentMonth = isSameMonth(day, currentMonth);
 
-  // Obtener eventos para el día actual
+  // Obtener eventos para el día actual desde props
   const key = day.toISOString().split("T")[0];
-  const dots = EVENTS[key] ?? [];
+  const dots = assessments[key] ?? [];
 
   return (
     <div
@@ -45,7 +46,7 @@ export default function DayCell({
         {format(day, "d")}
       </div>
 
-      {dots.length > 0 && (
+      {dots.length > 0 && !isLoading && (
         <div className="flex gap-[3px] mt-[2px] z-10">
           {dots.map((color, i) => (
             <div

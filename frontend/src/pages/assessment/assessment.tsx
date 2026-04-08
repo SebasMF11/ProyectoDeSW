@@ -44,6 +44,10 @@ const assessment = () => {
       try {
         const { data } = await semesterViewRequest();
         setSemesters(Array.isArray(data) ? data : []);
+        // Seleccionar automáticamente el primer semestre si existe
+        if (Array.isArray(data) && data.length > 0) {
+          setValue("semesterName", data[0].semester_name);
+        }
       } catch (error) {
         console.error(error);
         setSemesters([]);
@@ -51,7 +55,7 @@ const assessment = () => {
     };
 
     loadSemesters();
-  }, []);
+  }, [setValue]);
 
   useEffect(() => {
     const loadCoursesBySemester = async () => {
