@@ -1,5 +1,7 @@
 import { supabase } from "../integrations/supabase";
+import { useState } from "react";
 import Calendar from "../components/calendar/Calendar";
+import { format } from "date-fns";
 
 function Home() {
   const handleSession = async () => {
@@ -9,26 +11,36 @@ function Home() {
     console.log(session);
   };
 
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+
   return (
-    <div>
-      <div className="bg-white bgrelative w-full min-h-screen flex items-center justify-center">
-        <div>
-          <Calendar />
-        </div>
+    <div className="bg-white  grid grid-cols-2 gab-2 h-screen ">
+      <div className="flex justify-center pt-5">
+        <Calendar onSelectDate={(date) => setSelectedDate(date)} />
+      </div>
+      <div className="flex flex-col justify-items-start pt-10">
         <div>
           <p className="inline-block bg-gray-200 text-gray-600 px-5 py-2 rounded-full text-[20px] font-semibold">
-            Day 1
+            {format(selectedDate, "MMMM d', ' yyyy")}
           </p>
-          <p className="text-[25px] font-bold text-black">Your classes today</p>
-
-          <p className="text-[25px] font-bold text-black">Events</p>
-          <button
-            className="bg-blue-500 text-white p-2 rounded"
-            onClick={handleSession}
-          >
-            View Session
-          </button>
         </div>
+
+        <div className="pl-8">
+          <p className="text-[25px] font-bold text-black pt-10">
+            Your classes today
+          </p>
+          <div className="pl-10 pt-2 text-gray-600">
+            <p>You dont have classes</p>
+          </div>
+          <p className="text-[25px] font-bold text-black pt-8">Assessments</p>
+
+          <div className="pl-10 pt-2 text-gray-600">
+            <p>You dont have events</p>
+          </div>
+        </div>
+        <button className="w-50 text-white rounded" onClick={handleSession}>
+          View Session
+        </button>
       </div>
     </div>
   );

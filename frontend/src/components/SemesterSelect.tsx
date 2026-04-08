@@ -31,8 +31,11 @@ function SemesterSelect({
 
   return (
     <>
-      <label htmlFor={id}>{label}</label>
+      <label htmlFor={id} className="formText">
+        {label}
+      </label>
       <select
+        className="formControl"
         id={id}
         {...selectProps}
         {...(hasControlledValue ? { value } : {})}

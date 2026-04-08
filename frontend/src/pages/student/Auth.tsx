@@ -57,8 +57,13 @@ const Auth = () => {
             />
             <input
               placeholder="Password"
+              minLength={6}
+              required
               type="password"
-              {...register("password", { required: true })}
+              {...register("password", {
+                required: "La contraseña es obligatoria",
+                minLength: { value: 6, message: "Mínimo 6 caracteres" },
+              })}
               className="w-full px-4 text-gray-700 py-3 rounded-full bg-white/70 outline-none"
             />
 

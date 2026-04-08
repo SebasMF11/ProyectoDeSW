@@ -16,13 +16,13 @@ type Course = {
 };
 
 const dayOptions = [
-  { value: "monday", label: "Lunes" },
-  { value: "tuesday", label: "Martes" },
-  { value: "wednesday", label: "Miercoles" },
-  { value: "thursday", label: "Jueves" },
-  { value: "friday", label: "Viernes" },
-  { value: "saturday", label: "Sabado" },
-  { value: "sunday", label: "Domingo" },
+  { value: "monday", label: "Monday" },
+  { value: "tuesday", label: "Tuesday" },
+  { value: "wednesday", label: "Wednesday" },
+  { value: "thursday", label: "Thursday" },
+  { value: "friday", label: "Friday" },
+  { value: "saturday", label: "Saturday" },
+  { value: "sunday", label: "Sunday" },
 ];
 
 const Day = () => {
@@ -81,27 +81,28 @@ const Day = () => {
     } catch (error) {
       if (axios.isAxiosError(error)) {
         const apiMessage = error.response?.data?.error;
-        setErrorMessage(apiMessage || "No se pudo crear el dia");
+        setErrorMessage(apiMessage || "Could not create the day");
         return;
       }
 
-      setErrorMessage("Ocurrio un error inesperado");
+      setErrorMessage("An unexpected error occurred");
     }
   });
   return (
     <div>
-      <div>
-        <p>Crear dia</p>
-        {errorMessage ? <p>{errorMessage}</p> : null}
-        <form onSubmit={onSubmit}>
+      <div className="formContainer">
+        <form onSubmit={onSubmit} className="formLayout">
+          <p className="title">Day</p>
+          {errorMessage ? <p>{errorMessage}</p> : null}
           <select
+            className="formControl"
             defaultValue=""
             {...register("semesterName", { required: true })}
           >
             <option value="" disabled>
               {semesters.length > 0
-                ? "Selecciona un semestre"
-                : "No hay semestres registrados"}
+                ? "Select a semester"
+                : "No semesters available"}
             </option>
             {semesters.map((semester) => (
               <option key={semester.semester_id} value={semester.semester_name}>
@@ -110,15 +111,16 @@ const Day = () => {
             ))}
           </select>
           <select
+            className="formControl"
             defaultValue=""
             {...register("courseName", { required: true })}
           >
             <option value="" disabled>
               {selectedSemesterName
                 ? courses.length > 0
-                  ? "Selecciona un curso"
-                  : "No hay cursos en este semestre"
-                : "Primero selecciona un semestre"}
+                  ? "Select a course"
+                  : "No courses in this semester"
+                : "Select a semester first"}
             </option>
             {courses.map((course) => (
               <option key={course.course_name} value={course.course_name}>
@@ -127,11 +129,12 @@ const Day = () => {
             ))}
           </select>
           <select
+            className="formControl"
             defaultValue=""
             {...register("dayOfWeek", { required: true })}
           >
             <option value="" disabled>
-              Selecciona un dia de la semana
+              Select a day of the week
             </option>
             {dayOptions.map((day) => (
               <option key={day.value} value={day.value}>
@@ -140,25 +143,28 @@ const Day = () => {
             ))}
           </select>
           <input
-            placeholder="Aula"
+            className="formControl"
+            placeholder="Classroom"
             type="text"
             {...register("classroom", { required: true })}
           />
           <input
-            placeholder="Hora de inicio"
+            className="formControl"
+            placeholder="Start Time"
             type="time"
             min="06:00"
             max="22:00"
             {...register("startTime", { required: true })}
           />
           <input
-            placeholder="Hora de fin"
+            className="formControl"
+            placeholder="End Time"
             type="time"
             min="06:00"
             max="22:00"
             {...register("endTime", { required: true })}
           />
-          <button type="submit">Registrarse</button>
+          <button type="submit">Create</button>
         </form>
       </div>
     </div>

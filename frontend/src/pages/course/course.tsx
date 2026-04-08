@@ -124,30 +124,33 @@ Sin arreglo: se ejecuta en cada render.*/
         setErrorMessage(
           apiMessage ||
             (isEditMode
-              ? "No se pudo actualizar el curso"
-              : "No se pudo crear el curso"),
+              ? "Could not update the course"
+              : "Could not create the course"),
         );
         return;
       }
 
-      setErrorMessage("Ocurrio un error inesperado");
+      setErrorMessage("An unexpected error occurred");
     }
   });
 
   return (
     <div>
-      <div>
-        <p>{isEditMode ? "Editar curso" : "Crear curso"}</p>
-        {errorMessage ? <p>{errorMessage}</p> : null}
-        <form onSubmit={onSubmit}>
+      <div className="formContainer">
+        <form onSubmit={onSubmit} className="formLayout">
+          <p className="title">
+            {isEditMode ? "Edit course" : "Create course"}
+          </p>
+          {errorMessage ? <p>{errorMessage}</p> : null}
           <select
+            className="formControl"
             defaultValue=""
             {...register("color", {
               required: true,
             })}
           >
             <option value="" disabled>
-              Selecciona un color
+              Select a color
             </option>
             {colorOptions.map((color) => (
               <option key={color} value={color}>
@@ -156,29 +159,33 @@ Sin arreglo: se ejecuta en cada render.*/
             ))}
           </select>
           <input
-            placeholder="Nombre"
+            className="formControl"
+            placeholder="Name"
             type="text"
             {...register("courseName", { required: true })}
           />
           <input
-            placeholder="Profesor"
+            className="formControl"
+            placeholder="Teacher"
             type="text"
             {...register("teacher", { required: true })}
           />
           <input
-            placeholder="Creditos"
+            className="formControl"
+            placeholder="Credits"
             type="number"
             {...register("credits", { required: true })}
           />
           <select
+            className="formControl"
             defaultValue=""
             disabled={isEditMode}
             {...register("semesterName", { required: true })}
           >
             <option value="" disabled>
               {semesters.length > 0
-                ? "Selecciona un semestre"
-                : "No hay semestres registrados"}
+                ? "Select a semester"
+                : "No semesters available"}
             </option>
             {semesters.map((semester) => (
               <option key={semester.semester_id} value={semester.semester_name}>
@@ -187,7 +194,7 @@ Sin arreglo: se ejecuta en cada render.*/
             ))}
           </select>
           <button type="submit">
-            {isEditMode ? "Guardar cambios" : "Registrar curso"}
+            {isEditMode ? "Save changes" : "Create"}
           </button>
         </form>
       </div>

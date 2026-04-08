@@ -87,24 +87,24 @@ const assessment = () => {
     } catch (error) {
       if (axios.isAxiosError(error)) {
         const apiMessage = error.response?.data?.error;
-        setErrorMessage(apiMessage || "No se pudo crear la actividad");
+        setErrorMessage(apiMessage || "Could not create the assessment");
         return;
       }
 
-      setErrorMessage("Ocurrio un error inesperado");
+      setErrorMessage("An unexpected error occurred");
     }
   });
 
   return (
     <div>
-      <div>
-        <p>Crear cuenta</p>
-        {errorMessage ? <p>{errorMessage}</p> : null}
-        <form onSubmit={onSubmit}>
+      <div className="formContainer">
+        <form onSubmit={onSubmit} className="formLayout">
+          <p className="title">Assessment</p>
+          {errorMessage ? <p>{errorMessage}</p> : null}
           <SemesterSelect
             semesters={semesters}
-            placeholderOptionText="Selecciona un semestre"
-            emptyOptionText="No hay semestres registrados"
+            placeholderOptionText="Select a semester"
+            emptyOptionText="No semesters available"
             selectProps={{
               defaultValue: "",
               ...register("semesterName", { required: true }),
@@ -113,14 +113,12 @@ const assessment = () => {
           <CourseSelect
             courses={courses}
             placeholderOptionText={
-              selectedSemester
-                ? "Selecciona una asignatura"
-                : "Primero selecciona un semestre"
+              selectedSemester ? "Select a course" : "Select a semester first"
             }
             emptyOptionText={
               selectedSemester
-                ? "No hay asignaturas en este semestre"
-                : "Primero selecciona un semestre"
+                ? "No courses in this semester"
+                : "Select a semester first"
             }
             selectProps={{
               defaultValue: "",
@@ -128,20 +126,26 @@ const assessment = () => {
             }}
           />
           <input
-            placeholder="Nombre de la actividad"
+            className="formControl"
+            placeholder="Assessment name"
             type="text"
             {...register("assessmentName", { required: true })}
           />
           <input
-            placeholder="Fecha de la actividad"
+            className="formControl"
+            placeholder="Assessment date"
             type="date"
             min={selectedSemesterData?.start_date}
             max={selectedSemesterData?.end_date}
             {...register("dueDate", { required: true })}
           />
-          <select defaultValue="" {...register("type", { required: true })}>
+          <select
+            className="formControl"
+            defaultValue=""
+            {...register("type", { required: true })}
+          >
             <option value="" disabled>
-              Selecciona el tipo de actividad
+              Select the assessment type
             </option>
             {assessmentTypes.map((type) => (
               <option key={type} value={type}>
@@ -149,12 +153,18 @@ const assessment = () => {
               </option>
             ))}
           </select>
-          <input
-            placeholder="--%"
-            type="number"
-            {...register("percentage", { required: true, valueAsNumber: true })}
-          />
-          <button type="submit">Registrarse</button>
+          <div className="flex flex-row items-center gap-2">
+            <input
+              className="formControl w-[50%]"
+              placeholder="--"
+              {...register("percentage", {
+                required: true,
+                valueAsNumber: true,
+              })}
+            />
+            <p className="text-[25px] text-[#3d483f]">%</p>
+          </div>
+          <button type="submit">Create</button>
         </form>
       </div>
     </div>

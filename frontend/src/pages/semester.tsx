@@ -97,43 +97,40 @@ const Semester = () => {
 
   return (
     <div>
-      <div className="z-10 max-w-xl p-6 mx-auto">
+      <div className="formContainer">
         {errorMessage ? <p>{errorMessage}</p> : null}
-        <form className="flex flex-col items-center gap-4" onSubmit={onSubmit}>
-          <p className="title">Semestre</p>
+        <form className="formLayout" onSubmit={onSubmit}>
+          <p className="title">Semester</p>
           <input
             placeholder="Semester Name. Example: 2023-1"
             type="text"
-            className="inputClase"
+            className="formControl"
             {...register("semesterName", { required: true })}
           />
-          <p className="text-sm text-gray-600">Fecha de inicio</p>
+          <p className="formText">Fecha de inicio</p>
           <input
-            placeholder="Fecha de inicio"
             type="date"
-            className="inputClase"
+            className="formControl"
             {...register("startDate", { required: true })}
           />
 
-          <p className="text-sm text-gray-600">Fecha de fin</p>
+          <p className="formText">End date</p>
           <input
-            placeholder="Fecha de fin"
             type="date"
-            className="inputClase"
+            className="formControl"
             min={startDate || undefined}
             {...register("endDate", { required: true })}
           />
 
-          <p className="text-sm text-gray-600">Fecha de inicio de parciales</p>
+          <p className="formText">Midterm week start date</p>
           <input
-            placeholder="Inicio de semana de parciales"
             type="date"
-            className="inputClase"
+            className="formControl"
             min={startDate || undefined}
             max={endDate || undefined}
             {...register("midtermWeek", { required: true })}
           />
-          <button type="submit">Registrarse</button>
+          <button type="submit">Create</button>
         </form>
       </div>
     </div>
