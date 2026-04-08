@@ -94,7 +94,7 @@ function courseList() {
         <button type="button" onClick={() => navigate("/course")}>
           Agregar curso
         </button>
-        <button type="button" onClick={() => navigate("/day")}>
+        <button type="button" onClick={() => navigate("/day ")}>
           Agregar dias
         </button>
       </div>
