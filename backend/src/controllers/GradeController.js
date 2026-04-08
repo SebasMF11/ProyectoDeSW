@@ -122,3 +122,35 @@ exports.deleteGrade = async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 };
+
+exports.getCurrentGradeByCourse = async (req, res) => {
+  try {
+    const { courseId } = req.params;
+    const student_id = req.student.id;
+
+    const result = await gradeService.getCurrentGradeByCourse(
+      courseId,
+      student_id,
+    );
+    res.status(200).json({ result });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+exports.getSemesterAverage = async (req, res) => {
+  try {
+    const { semesterId } = req.params;
+    const student_id = req.student.id;
+
+    const result = await gradeService.getSemesterAverage(
+      semesterId,
+      student_id,
+    );
+    res.status(200).json({ result });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};

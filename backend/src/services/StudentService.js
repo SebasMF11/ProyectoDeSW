@@ -81,3 +81,25 @@ exports.authStudent = async (student) => {
   // Supabase automáticamente envía email de confirmación
   return data;
 };
+
+exports.updateStudent = async (student_id, fields) => {
+  const { data, error } = await supabase
+    .from("student")
+    .update(fields)
+    .eq("student_id", student_id)
+    .select();
+
+  if (error) {
+    console.error(error);
+    throw error;
+  }
+
+  return data;
+};
+
+exports.updatePassword = async (password) => {
+  const { data, error } = await supabase.auth.updateUser({ password });
+
+  if (error) throw error;
+  return data;
+};

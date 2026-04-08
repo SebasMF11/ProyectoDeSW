@@ -110,3 +110,66 @@ exports.getStudent = async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 };
+
+exports.updateStudent = async (req, res) => {
+  try {
+    const { name, lastName, email } = req.body;
+    const student_id = req.student.id;
+
+    if (!name && !lastName && !email) {
+      return res.status(400).json({ error: "At least one field is required" });
+    }
+
+    if (email) {
+      const { error: authError } = await supabase.auth.updateUser({ email });
+      if (authError) {
+        return res.status(400).json({ error: authError.message });
+      }
+    }
+
+    const result = await studentService.updateStudent(student_id, {
+      ...(name && { name }),
+      ...(lastName && { last_name: lastName }),
+      ...(email && { email }),
+    });
+
+    res
+      .status(200)
+      .json({ message: "Profile updated successfully", student: result });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+exports.updatePassword = async (req, res) => {
+  try {
+    const { currentPassword, newPassword, newPassword2 } = req.body;
+    const student_id = req.student.id;
+
+    if (!currentPassword || !newPassword || !newPassword2) {
+      return res.status(400).json({ error: "All fields are required" });
+    }
+
+    if (newPassword !== newPassword2) {
+      return res.status(400).json({ error: "Passwords do not match" });
+    }
+
+    // Verificar contraseña actual
+    const { error: loginError } = await supabase.auth.signInWithPassword({
+      email: req.student.email,
+      password: currentPassword,
+    });
+
+    if (loginError) {
+      return res.status(401).json({ error: "Current password is incorrect" });
+    }
+
+    await studentService.updatePassword(newPassword);
+
+    res.status(200).json({ message: "Password updated successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};

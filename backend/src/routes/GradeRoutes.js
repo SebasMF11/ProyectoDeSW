@@ -11,5 +11,15 @@ router.get(
 );
 router.put("/update/:gradeId", authMiddleware, gradeController.updateGrade);
 router.delete("/delete/:gradeId", authMiddleware, gradeController.deleteGrade);
+router.get(
+  "/current/:courseId",
+  authMiddleware,
+  gradeController.getCurrentGradeByCourse,
+);
+router.get(
+  "/average/:semesterId",
+  authMiddleware,
+  gradeController.getSemesterAverage,
+);
 
 module.exports = router;

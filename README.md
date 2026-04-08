@@ -565,7 +565,7 @@ git push                            # Subir a GitHub
 ## Personal
 
 - **RF and RNF:** https://docs.google.com/spreadsheets/d/1KHZ0umoQhq_7Eg1aUUMwLu2CGzGqLAEzf1TPSSUjEs8/edit?usp=sharing
-- **CS:** https://lucid.app/lucidchart/4c5bad2c-3f14-4c1b-8e61-10aee3b1cb0a/edit?viewport_loc=-2116%2C-726%2C1615%2C652%2C0_0&invitationId=inv_73043b7a-f216-4ef9-90e6-4ba0f176ee3d
+- **CU:** https://lucid.app/lucidchart/4c5bad2c-3f14-4c1b-8e61-10aee3b1cb0a/edit?viewport_loc=-2116%2C-726%2C1615%2C652%2C0_0&invitationId=inv_73043b7a-f216-4ef9-90e6-4ba0f176ee3d
 - **Mockups:** https://www.figma.com/design/3z4l2A3P5BJJ6YblUR6EyF/PoliPlan?node-id=0-1&p=f&m=draw
 - **Class Diagram:** https://lucid.app/lucidchart/14b5b23f-0696-47bd-a06e-84b67b64979d/edit?viewport_loc=-4188%2C-745%2C2481%2C982%2C0_0&invitationId=inv_75676d47-673c-451d-bb26-f1d7c7c5be34
 - **Package Diagram:** https://lucid.app/lucidchart/edfb2ad8-89cc-45fd-bddf-a7ae0ffdc757/edit?viewport_loc=-458%2C-255%2C2240%2C922%2C0_0&invitationId=inv_41e8dad8-6c0f-4eda-b0dd-aa7efecaa722
