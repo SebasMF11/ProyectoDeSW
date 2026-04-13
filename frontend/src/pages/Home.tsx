@@ -4,14 +4,14 @@ import Calendar from "../components/calendar/Calendar";
 import { format } from "date-fns";
 
 function Home() {
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+
   const handleSession = async () => {
     const {
       data: { session },
     } = await supabase.auth.getSession();
     console.log(session);
   };
-
-  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
 
   return (
     <div className="bg-white  grid grid-cols-2 gab-2 h-screen ">
