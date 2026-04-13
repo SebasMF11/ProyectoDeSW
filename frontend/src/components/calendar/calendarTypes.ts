@@ -13,4 +13,6 @@ export interface DayCellProps {
   selected: Date;
   currentMonth: Date;
   onSelect: (day: Date) => void;
+  assessments?: Record<string, string[]>; // { "YYYY-MM-DD": ["#color1", ...] }
+  isLoading?: boolean;
 }

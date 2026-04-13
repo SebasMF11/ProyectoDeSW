@@ -8,7 +8,7 @@ export const EXAM_WEEKS: ExamWeek[] = [
 ];
 
 //Definicion de eventos (ejemplo)
-export const EVENTS: Record<string, string[]> = {
+export const ASSESSMENTS: Record<string, string[]> = {
   "2025-02-03": ["#e53935"],
   "2025-02-12": ["#1976d2"],
   "2025-02-14": ["#7b1fa2"],

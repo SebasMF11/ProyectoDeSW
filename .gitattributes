@@ -1,0 +1,25 @@
+# Regla base: detectar texto automáticamente y normalizar a LF en el repositorio
+* text=auto eol=lf
+
+# Scripts de Windows con CRLF explícito
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+
+# Binarios comunes (no tocar finales de línea)
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.ico binary
+*.pdf binary
+*.zip binary
+*.gz binary
+*.woff binary
+*.woff2 binary
+
+# Si versionas build de frontend, mantener LF en assets de texto
+frontend/dist/**/*.js text eol=lf
+frontend/dist/**/*.css text eol=lf
+frontend/dist/**/*.html text eol=lf

@@ -12,6 +12,7 @@ import {
 import { FiChevronLeft, FiChevronRight } from "react-icons/fi";
 import type { CalendarProps } from "./calendarTypes";
 import DayCell from "./DayCell";
+import { useAssessments } from "../../hooks/useAssessments";
 
 const DAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
@@ -19,6 +20,12 @@ export default function Calendar({ onSelectDate }: CalendarProps) {
   // Estado para el mes actual mostrado y el día seleccionado
   const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
   const [selected, setSelected] = useState<Date>(new Date());
+
+  // Hook para obtener las actividades del mes actual
+  const { assessments, isLoading } = useAssessments(
+    currentMonth.getFullYear(),
+    currentMonth.getMonth() + 1,
+  );
 
   // Calcular el rango de días a mostrar en el calendario, incluyendo días del mes anterior y siguiente para completar las semanas
   const monthStart = startOfMonth(currentMonth);
@@ -44,7 +51,7 @@ export default function Calendar({ onSelectDate }: CalendarProps) {
       <div className="flex items-center justify-between gap-5 text-[26px] mb-5">
         <button
           onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
-          className="text-gray-500 !bg-transparent hover:text-gray-700 transition-colors"
+          className="!text-gray-500 !bg-transparent"
         >
           <FiChevronLeft size={20} />
         </button>
@@ -59,7 +66,7 @@ export default function Calendar({ onSelectDate }: CalendarProps) {
         </div>
         <button
           onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
-          className="text-gray-500 !bg-transparent hover:text-gray-700 transition-colors"
+          className="!text-gray-500 !bg-transparent"
         >
           <FiChevronRight size={20} />
         </button>
@@ -86,6 +93,8 @@ export default function Calendar({ onSelectDate }: CalendarProps) {
             selected={selected}
             currentMonth={currentMonth}
             onSelect={handleSelect}
+            assessments={assessments}
+            isLoading={isLoading}
           />
         ))}
       </div>

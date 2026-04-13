@@ -1,0 +1,215 @@
+const supabase = require("../config/supabase");
+
+/* exports.getAssessmentById = async (assessmentId, student_id) => {
+  const { data, error } = await supabase
+    .from("assessment")
+    .select("assessment_id, course!inner(semester!inner(student_id))")
+    .eq("assessment_id", assessmentId)
+    .eq("course.semester.student_id", student_id)
+    .single();
+
+  if (error) return null;
+  return data;
+}; */
+
+exports.checkGradeExists = async (assessmentId, student_id) => {
+  const { data, error } = await supabase
+    .from("grade")
+    .select(
+      "grade_id, assessment!inner(course!inner(status, semester!inner(student_id)))",
+    )
+    .eq("assessment_id", assessmentId)
+    .eq("assessment.course.semester.student_id", student_id)
+    .eq("assessment.course.status", true)
+    .single();
+
+  if (error) return null;
+  return data;
+};
+
+exports.create = async (grade) => {
+  const { data, error } = await supabase.from("grade").insert([grade]).select();
+
+  if (error) {
+    console.error(error);
+    throw error;
+  }
+
+  return data;
+};
+
+exports.getByCourse = async (courseId, student_id) => {
+  const { data, error } = await supabase
+    .from("grade")
+    .select(
+      "grade_id, value, assessment!inner(assessment_name, type, percentage, due_date, course_id, course!inner(course_name, semester!inner(student_id)))",
+    )
+    .eq("assessment.course_id", courseId)
+    .eq("assessment.course.semester.student_id", student_id)
+    .eq("assessment.course.status", true);
+
+  if (error) {
+    console.error(error);
+    throw error;
+  }
+
+  return data.map((g) => ({
+    gradeId: g.grade_id,
+    value: g.value,
+    assessment: {
+      name: g.assessment.assessment_name,
+      type: g.assessment.type,
+      percentage: g.assessment.percentage,
+      dueDate: g.assessment.due_date,
+      courseName: g.assessment.course.course_name,
+    },
+  }));
+};
+
+exports.update = async (gradeId, student_id, value) => {
+  const { data: grade, error: findError } = await supabase
+    .from("grade")
+    .select(
+      "grade_id, assessment!inner(course!inner(status, semester!inner(student_id)))",
+    )
+    .eq("grade_id", gradeId)
+    .eq("assessment.course.semester.student_id", student_id)
+    .eq("assessment.course.status", true)
+    .single();
+
+  if (findError || !grade) return null;
+
+  const { data, error } = await supabase
+    .from("grade")
+    .update({ value })
+    .eq("grade_id", gradeId)
+    .select();
+
+  if (error) {
+    console.error(error);
+    throw error;
+  }
+
+  return data;
+};
+
+exports.delete = async (gradeId, student_id) => {
+  const { data: grade, error: findError } = await supabase
+    .from("grade")
+    .select(
+      "grade_id, assessment!inner(course!inner(semester!inner(student_id)))",
+    )
+    .eq("grade_id", gradeId)
+    .eq("assessment.course.semester.student_id", student_id)
+    .single();
+
+  if (findError || !grade) return null;
+
+  const { error } = await supabase
+    .from("grade")
+    .delete()
+    .eq("grade_id", gradeId);
+
+  if (error) {
+    console.error(error);
+    throw error;
+  }
+
+  return true;
+};
+
+exports.getAssessmentByNameAndSemester = async (
+  assessmentName,
+  courseName,
+  semesterName,
+  student_id,
+) => {
+  const { data, error } = await supabase
+    .from("assessment")
+    .select(
+      "assessment_id, course!inner(course_name, semester!inner(semester_name, student_id))",
+    )
+    .eq("assessment_name", assessmentName)
+    .eq("course.course_name", courseName)
+    .eq("course.semester.semester_name", semesterName)
+    .eq("course.semester.student_id", student_id)
+    .eq("course.status", true)
+    .single();
+
+  if (error) return null;
+  return data;
+};
+
+//para calcular en cuanto va la materia
+exports.getCurrentGradeByCourse = async (courseId, student_id) => {
+  const { data, error } = await supabase
+    .from("grade")
+    .select(
+      "value, assessment!inner(percentage, course!inner(status, semester!inner(student_id)))",
+    )
+    .eq("assessment.course_id", courseId)
+    .eq("assessment.course.semester.student_id", student_id)
+    .eq("assessment.course.status", true);
+
+  if (error) {
+    console.error(error);
+    throw error;
+  }
+
+  // Calcular nota actual y porcentaje evaluado
+  const evaluatedPercentage = data.reduce(
+    (acc, g) => acc + g.assessment.percentage,
+    0,
+  );
+  const currentGrade = data.reduce(
+    (acc, g) => acc + (g.value * g.assessment.percentage) / 100,
+    0,
+  );
+
+  return {
+    currentGrade: Math.round(currentGrade * 100) / 100, // redondear a 2 decimales
+    evaluatedPercentage,
+    remainingPercentage: 100 - evaluatedPercentage,
+  };
+};
+
+//promedio semestral
+exports.getSemesterAverage = async (semesterId, student_id) => {
+  const { data, error } = await supabase
+    .from("grade")
+    .select(
+      "value, assessment!inner(percentage, course!inner(status, semester_id, semester!inner(student_id)))",
+    )
+    .eq("assessment.course.semester_id", semesterId)
+    .eq("assessment.course.semester.student_id", student_id)
+    .eq("assessment.course.status", true);
+
+  if (error) {
+    console.error(error);
+    throw error;
+  }
+
+  if (!data || data.length === 0) {
+    return {
+      semesterAverage: 0,
+      evaluatedPercentage: 0,
+      remainingPercentage: 100,
+    };
+  }
+
+  // Calcular promedio ponderado de todas las materias del semestre
+  const evaluatedPercentage = data.reduce(
+    (acc, g) => acc + g.assessment.percentage,
+    0,
+  );
+  const semesterAverage = data.reduce(
+    (acc, g) => acc + (g.value * g.assessment.percentage) / 100,
+    0,
+  );
+
+  return {
+    semesterAverage: Math.round(semesterAverage * 100) / 100,
+    evaluatedPercentage,
+    remainingPercentage: 100 - evaluatedPercentage,
+  };
+};

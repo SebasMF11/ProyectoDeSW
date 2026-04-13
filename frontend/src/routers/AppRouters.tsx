@@ -1,29 +1,50 @@
-import { Route, Routes } from "react-router";
-import Home from "../pages/Home";
-import Register from "../pages/Register";
-import Auth from "../pages/Auth";
-import ProtectedRouters from "./ProtectedRouters";
-import Settings from "../pages/settings";
-import NoteList from "../pages/noteList";
-import Note from "../pages/note";
-import CourseList from "../pages/courseList";
-import Course from "../pages/course";
-import Activitie from "../pages/activitie";
-import ActivitiesList from "../pages/activitiesList";
-import AcademicPeriod from "../pages/academicPeriod";
-import CourseDays from "../pages/courseDays";
+/**
+ * ARCHIVO: AppRouters.tsx
+ * PROPÓSITO: Configurar todas las rutas de la aplicación
+ *
+ */
 
+import { Route, Routes, Navigate } from "react-router";
+import Home from "../pages/Home";
+import Register from "../pages/student/Register";
+import Auth from "../pages/student/Auth";
+import ProtectedRouters from "./ProtectedRouters";
+import Settings from "../pages/student/settings";
+import GradeList from "../pages/grade/gradeList";
+import Grade from "../pages/grade/grade";
+import CourseList from "../pages/course/courseList";
+import Course from "../pages/course/course";
+import Assessment from "../pages/assessment/assessment";
+import AssessmentList from "../pages/assessment/assessmentList";
+import Semester from "../pages/semester";
+import Day from "../pages/course/day";
+import Profile from "../pages/student/profile";
 const AppRouters = () => {
   return (
     <Routes>
+      {/* ============ RUTAS PÚBLICAS ============ */}
+      {/* Autenticación de estudiantes */}
       <Route path="/auth" element={<Auth />} />
       <Route path="/register" element={<Register />} />
 
+      {/* ============ RUTAS PROTEGIDAS - HOME ============ */}
+      {/* Panel principal del estudiante */}
       <Route
         path="/home"
         element={
           <ProtectedRouters>
             <Home />
+          </ProtectedRouters>
+        }
+      />
+
+      {/* ============ RUTAS PROTEGIDAS - PERFIL ============ */}
+      {/* Información de perfil e historial del estudiante */}
+      <Route
+        path="/profile"
+        element={
+          <ProtectedRouters>
+            <Profile />
           </ProtectedRouters>
         }
       />
@@ -35,24 +56,22 @@ const AppRouters = () => {
           </ProtectedRouters>
         }
       />
+
+      {/* ============ RUTAS PROTEGIDAS - SEMESTRES ============ */}
+      {/* Gestión de semestres académicos (períodos de tiempo) */}
       <Route
-        path="/notes"
+        path="/semester"
         element={
           <ProtectedRouters>
-            <NoteList />
+            <Semester />
           </ProtectedRouters>
         }
       />
+
+      {/* ============ RUTAS PROTEGIDAS - CURSOS ============ */}
+      {/* Gestión de cursos: creación, edición, visualización */}
       <Route
-        path="/note"
-        element={
-          <ProtectedRouters>
-            <Note />
-          </ProtectedRouters>
-        }
-      />
-      <Route
-        path="/courses"
+        path="/course-list"
         element={
           <ProtectedRouters>
             <CourseList />
@@ -67,39 +86,58 @@ const AppRouters = () => {
           </ProtectedRouters>
         }
       />
+      {/* Gestión de días académicos dentro de cursos */}
       <Route
-        path="/activities"
+        path="/day"
         element={
           <ProtectedRouters>
-            <Activitie />
-          </ProtectedRouters>
-        }
-      />
-      <Route
-        path="/activities-list"
-        element={
-          <ProtectedRouters>
-            <ActivitiesList />
-          </ProtectedRouters>
-        }
-      />
-      <Route
-        path="/academic-period"
-        element={
-          <ProtectedRouters>
-            <AcademicPeriod />
-          </ProtectedRouters>
-        }
-      />
-      <Route
-        path="/course-days"
-        element={
-          <ProtectedRouters>
-            <CourseDays />
+            <Day />
           </ProtectedRouters>
         }
       />
 
+      {/* ============ RUTAS PROTEGIDAS - EVALUACIONES ============ */}
+      {/* Gestión de evaluaciones/rúbricas para calificar */}
+      <Route
+        path="/assessment-list"
+        element={
+          <ProtectedRouters>
+            <AssessmentList />
+          </ProtectedRouters>
+        }
+      />
+      <Route
+        path="/assessment"
+        element={
+          <ProtectedRouters>
+            <Assessment />
+          </ProtectedRouters>
+        }
+      />
+
+      {/* ============ RUTAS PROTEGIDAS - CALIFICACIONES ============ */}
+      {/* Gestión de calificaciones de estudiantes */}
+      <Route
+        path="/grade-list"
+        element={
+          <ProtectedRouters>
+            <GradeList />
+          </ProtectedRouters>
+        }
+      />
+      <Route
+        path="/grade"
+        element={
+          <ProtectedRouters>
+            <Grade />
+          </ProtectedRouters>
+        }
+      />
+
+      {/* ============ RUTAS DEFAULT ============ */}
+      {/* Redirige la raíz a autenticación */}
+      <Route path="/" element={<Navigate to="/auth" />} />
+      {/* Página 404 para rutas no definidas */}
       <Route path="*" element={<h1>404 Not Found</h1>} />
     </Routes>
   );

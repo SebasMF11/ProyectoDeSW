@@ -1,17 +1,17 @@
 import { useNavigate } from "react-router";
 import { useForm } from "react-hook-form";
-import { authRequest } from "../api/students.api";
+import { authRequest } from "../../api/students.api";
 import { useEffect } from "react";
-import useAuth from "../hooks/useAuth";
-import fondo from "../assets/FondoDePantalla.jpg";
-import logo from "../assets/logo.png";
+import useAuth from "../../hooks/useAuth";
+import fondo from "../../assets/FondoDePantalla.jpg";
+import logo from "../../assets/logo.png";
 
 const Register = () => {
   const navigate = useNavigate();
+  const session = useAuth();
   useEffect(() => {
-    const session = useAuth();
     if (session) navigate("/home");
-  }, []);
+  }, [navigate, session]);
   const { register, handleSubmit } = useForm();
   const onSubmit = handleSubmit(async (values) => {
     const res = await authRequest(values);
