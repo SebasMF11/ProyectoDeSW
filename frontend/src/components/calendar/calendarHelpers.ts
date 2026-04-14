@@ -7,15 +7,6 @@ export const EXAM_WEEKS: ExamWeek[] = [
   { start: new Date(2025, 1, 17), end: new Date(2025, 1, 23) },
 ];
 
-//Definicion de eventos (ejemplo)
-export const ASSESSMENTS: Record<string, string[]> = {
-  "2025-02-03": ["#e53935"],
-  "2025-02-12": ["#1976d2"],
-  "2025-02-14": ["#7b1fa2"],
-  "2025-02-20": ["#2e7d32"],
-  "2025-02-26": ["#f9a825"],
-};
-
 //Clases para resaltar las semanas de examenes
 export const highlightClasses: Record<string, string> = {
   start: "before:left-2 before:right-0 before:rounded-l-full before:border-r-0",

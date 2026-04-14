@@ -1,6 +1,7 @@
 import { supabase } from "../integrations/supabase";
 import { useState } from "react";
 import Calendar from "../components/calendar/Calendar";
+import DayAssessmentsList from "../components/DayAssessmentsList";
 import { format } from "date-fns";
 
 function Home() {
@@ -34,8 +35,8 @@ function Home() {
           </div>
           <p className="text-[25px] font-bold text-black pt-8">Assessments</p>
 
-          <div className="pl-10 pt-2 text-gray-600">
-            <p>You dont have events</p>
+          <div className="pl-10 pt-2">
+            <DayAssessmentsList selectedDate={selectedDate} />
           </div>
         </div>
         <button className="w-50 text-white rounded" onClick={handleSession}>
