@@ -56,7 +56,7 @@ export function useAssessments(
           });
         }
 
-        setAssessments({});
+        setAssessments(assessmentsByDate);
       } finally {
         setIsLoading(false);
       }
