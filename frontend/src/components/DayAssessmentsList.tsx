@@ -5,9 +5,7 @@ export default function DayAssessmentsList({
 }: {
   selectedDate: Date;
 }) {
-  const { assessments, isLoading } = useAssessmentsByDay(
-    selectedDate.toISOString().split("T")[0],
-  );
+  const { assessments, isLoading } = useAssessmentsByDay(selectedDate);
 
   if (isLoading) {
     return <div className="text-gray-500">Loading...</div>;

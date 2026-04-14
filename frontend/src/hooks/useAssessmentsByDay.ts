@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { assessmentsByDayRequest } from "../api/assessment.api";
+import { format } from "date-fns";
 
 export interface Assessment {
   assessment_id: number;
@@ -19,10 +20,12 @@ interface UseAssessmentsReturn {
   error: string | null;
 }
 
-export function useAssessmentsByDay(date: string): UseAssessmentsReturn {
+export function useAssessmentsByDay(selectedDate: Date): UseAssessmentsReturn {
   const [assessments, setAssessments] = useState<Assessment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const date = format(selectedDate, "yyyy-MM-dd");
 
   useEffect(() => {
     const fetchAssessments = async () => {
@@ -42,7 +45,7 @@ export function useAssessmentsByDay(date: string): UseAssessmentsReturn {
       } catch (err) {
         console.error("Error fetching assessments by day:", err);
         setError(
-          err instanceof Error ? err.message : "Error loading assessments"
+          err instanceof Error ? err.message : "Error loading assessments",
         );
         setAssessments([]);
       } finally {
