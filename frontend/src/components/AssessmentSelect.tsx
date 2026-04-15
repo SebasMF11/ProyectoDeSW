@@ -18,8 +18,8 @@ type AssessmentSelectProps = {
 function AssessmentSelect({
   assessments,
   id = "assessment-select",
-  label = "Actividad",
-  emptyOptionText = "No hay actividades registradas",
+  label = "Assessment",
+  emptyOptionText = "There are no assessments available",
   placeholderOptionText,
   value,
   onValueChange,

@@ -5,6 +5,7 @@ import { courseBySemesterRequest } from "../../api/course";
 import { gradeByCourseRequest } from "../../api/grade";
 import useSemesters from "../../hooks/useSemesters";
 import SemesterSelect from "../../components/SemesterSelect";
+import { format } from "date-fns";
 
 type Course = {
   course_id: number;
@@ -142,85 +143,126 @@ function AssessmentList() {
   }, [assessments]);
 
   return (
-    <div className="p-6 max-w-4xl mx-auto">
-      <div className="flex items-center justify-between gap-3 mb-4">
-        <h1 className="text-xl font-semibold">Actividades por semestre</h1>
+    <div className="p-6 max-w-5xl mx-auto">
+      <header className="flex items-center justify-between gap-3 mb-4">
+        <section aria-label="Semester selection" className="space-y-3 w-30">
+          {errorMessage || semesterError ? (
+            <p>{errorMessage || semesterError}</p>
+          ) : null}
+
+          <SemesterSelect
+            semesters={semesters}
+            value={selectedSemester}
+            onValueChange={setSelectedSemester}
+          />
+        </section>
+        <p className="title">Assessments By Semester</p>
         <button type="button" onClick={() => navigate("/assessment")}>
-          Agregar assessment
+          Add assessment
         </button>
-      </div>
+      </header>
 
-      {errorMessage || semesterError ? (
-        <p>{errorMessage || semesterError}</p>
-      ) : null}
-
-      <SemesterSelect
-        semesters={semesters}
-        value={selectedSemester}
-        onValueChange={setSelectedSemester}
-      />
-
-      <div className="mt-6">
+      <section className="mt-6" aria-live="polite">
         {loadingSemesters || loading ? <p>Cargando informacion...</p> : null}
 
         {!loadingSemesters &&
         !loading &&
         selectedSemester &&
         courses.length === 0 ? (
-          <p>No hay cursos asignados a este semestre.</p>
+          <p>There are no courses assigned this semester.</p>
         ) : null}
 
         {!loadingSemesters && !loading && courses.length > 0 ? (
-          <ul className="flex flex-col gap-4">
+          <ul className="flex flex-col gap-6">
             {courses.map((course) => {
               const courseAssessments =
                 assessmentsByCourse[course.course_name] || [];
 
               return (
-                <li key={course.course_id} className="border rounded-md p-4">
-                  <p className="font-semibold">{course.course_name}</p>
-                  <p>
-                    Profesor: {course.teacher || "Sin asignar"} | Creditos:{" "}
-                    {course.credits ?? "-"}
-                  </p>
+                <li key={course.course_id}>
+                  <article className="border-none p-4 space-y-3">
+                    <header>
+                      <h2 className="text-lg font-semibold">
+                        {course.course_name}
+                      </h2>
+                      <dl className="flex flex-wrap gap-x-5 gap-y-1 text-sm text-gray-700 mt-1">
+                        <div>
+                          <dt className="inline font-medium">Teacher: </dt>
+                          <dd className="inline">
+                            {course.teacher || "Sin asignar"}
+                          </dd>
+                        </div>
+                        <div>
+                          <dt className="inline font-medium">Credits: </dt>
+                          <dd className="inline">{course.credits ?? "-"}</dd>
+                        </div>
+                      </dl>
+                    </header>
 
-                  {courseAssessments.length === 0 ? (
-                    <p className="mt-2">Este curso no tiene assessments.</p>
-                  ) : (
-                    <ul className="mt-3 flex flex-col gap-2">
-                      {courseAssessments.map((assessment) => {
-                        const key = assessmentKey(
-                          assessment.assessment_name,
-                          assessment.due_date,
-                        );
-                        const gradeValue = gradeMap[key];
-                        const hasGrade = Number.isFinite(gradeValue);
+                    {courseAssessments.length === 0 ? (
+                      <p className="pl-6">This course has no assessments.</p>
+                    ) : (
+                      <section
+                        aria-label={`Assessments for ${course.course_name}`}
+                      >
+                        <ul className="flex flex-col gap-2">
+                          {courseAssessments.map((assessment) => {
+                            const key = assessmentKey(
+                              assessment.assessment_name,
+                              assessment.due_date,
+                            );
+                            const gradeValue = gradeMap[key];
+                            const hasGrade = Number.isFinite(gradeValue);
 
-                        return (
-                          <li
-                            key={assessment.assessment_id}
-                            className="rounded border p-3"
-                          >
-                            <p>
-                              <strong>{assessment.assessment_name}</strong>
-                            </p>
-                            <p>
-                              Tipo: {assessment.type} | Fecha:{" "}
-                              {assessment.due_date || "-"} | Porcentaje:{" "}
-                              {assessment.percentage ?? "-"}%
-                            </p>
-                            <p>Nota: {hasGrade ? gradeValue : "Pendiente"}</p>
-                          </li>
-                        );
-                      })}
-                    </ul>
-                  )}
+                            return (
+                              <li key={assessment.assessment_id}>
+                                <article className="rounded border p-3">
+                                  <div className="grid grid-cols-1 gap-2 md:grid-cols-[2fr_1fr_1fr_1fr] md:items-center">
+                                    <div>
+                                      <p className="text-sm text-gray-700">
+                                        {assessment.due_date
+                                          ? format(
+                                              assessment.due_date,
+                                              "MMMM d",
+                                            )
+                                          : "-"}
+                                      </p>
+                                      <h3 className="font-semibold">
+                                        {assessment.type} :{" "}
+                                        {assessment.assessment_name}
+                                      </h3>
+                                    </div>
+
+                                    <p className="text-sm md:text-base">
+                                      Percentage: {assessment.percentage ?? "-"}
+                                      %
+                                    </p>
+
+                                    <p className="text-sm md:text-base">
+                                      Grade: {hasGrade ? gradeValue : "Pending"}
+                                    </p>
+
+                                    {/* <button
+                                      type="button"
+                                      className="justify-self-start md:justify-self-end"
+                                    >
+                                      //
+                                    </button> */}
+                                  </div>
+                                </article>
+                              </li>
+                            );
+                          })}
+                        </ul>
+                      </section>
+                    )}
+                  </article>
                 </li>
               );
             })}
           </ul>
         ) : null}
-      </div>
+      </section>
     </div>
   );
 }
