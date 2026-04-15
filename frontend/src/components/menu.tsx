@@ -13,10 +13,10 @@ function Menu() {
   const navigate = useNavigate();
 
   const menuItems: MenuItem[] = [
-    { label: "Grados", path: "/grade-list", icon: "📊" },
-    { label: "Cursos", path: "/course-list", icon: "📚" },
-    { label: "Evaluaciones", path: "/assessment-list", icon: "📝" },
-    { label: "Semestres", path: "/semester", icon: "📅" },
+    { label: "Start a new semester", path: "/semester" },
+    { label: "Assessments", path: "/assessment-list" },
+    { label: "Courses", path: "/course-list" },
+    { label: "Qualifications", path: "/grade-list" },
   ];
 
   const handleMenuItemClick = (path: string) => {
@@ -33,7 +33,7 @@ function Menu() {
       <button
         className="menu-toggle-btn"
         onClick={toggleMenu}
-        aria-label="Abrir menú"
+        aria-label="Open menu"
       >
         <span className={`hamburger ${isOpen ? "open" : ""}`}>
           <span></span>
@@ -45,11 +45,11 @@ function Menu() {
       {isOpen && (
         <nav className="menu-dropdown">
           <div className="menu-header">
-            <h2>Menú</h2>
+            <h2>Menu</h2>
             <button
               className="menu-close-btn"
               onClick={toggleMenu}
-              aria-label="Cerrar menú"
+              aria-label="Close menu"
             >
               ✕
             </button>
