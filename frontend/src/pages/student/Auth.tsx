@@ -4,12 +4,15 @@ import { useForm } from "react-hook-form";
 import useAuth from "../../hooks/useAuth";
 import { loginRequest } from "../../api/students.api";
 import { supabase } from "../../integrations/supabase";
-import fondo from "../../assets/FondoDePantalla.jpg";
-import logo from "../../assets/logo.png";
+import { useStorageImage } from "../../hooks/useStorageImage";
 
 const Auth = () => {
   const navigate = useNavigate();
   const session = useAuth();
+  const getImageUrl = useStorageImage("images");
+  const fondoUrl = getImageUrl("FondoDePantalla.jpg");
+  const logoUrl = getImageUrl("logo.png");
+
   useEffect(() => {
     if (session) navigate("/home");
   }, [navigate, session]);
@@ -36,7 +39,7 @@ const Auth = () => {
   return (
     <div className="relative min-h-screen flex items-center justify-center">
       <img
-        src={fondo}
+        src={fondoUrl}
         alt="fondo"
         className="absolute inset-0 w-full h-full object-cover"
       />
@@ -44,7 +47,7 @@ const Auth = () => {
       <div className="absolute inset-0 bg-black/40"></div>
       <div className="relative z-10 w-[90%] max-w-md bg-white/40 sm:bg-white/30 backdrop-blur-md sm:backdrop-blur-lg rounded-3xl p-6 sm:p-8 shadow-lg text-center">
         <div className="flex flex-col items-center gap-4">
-          <img src={logo} alt="logo" className="w-44" />
+          <img src={logoUrl} alt="logo" className="w-44" />
 
           <h2 className="text-sm sm:text-base text-black">Login</h2>
 
@@ -71,15 +74,13 @@ const Auth = () => {
               Dont have an account?{" "}
               <span
                 className="underline cursor-pointer"
-                onClick={() => navigate("/register")}
-              >
+                onClick={() => navigate("/register")}>
                 Sign up here.
               </span>
             </p>
             <button
               type="submit"
-              className="w-full text-white py-3 rounded-full font-semibold transition"
-            >
+              className="w-full text-white py-3 rounded-full font-semibold transition">
               Login
             </button>
           </form>

@@ -3,13 +3,7 @@ import { useForm } from "react-hook-form";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { courseCreateRequest, courseUpdateRequest } from "../../api/course";
-import { semesterViewRequest } from "../../api/semester";
-
-// Estructura de cada semestre recibido desde la API.
-type Semester = {
-  semester_id: number;
-  semester_name: string;
-};
+import { loadSemesters, type Semester } from "../../utils/loadSemesters";
 
 // Datos que llegan por navegacion cuando se abre el formulario en modo edicion.
 type EditCourseState = {
@@ -71,17 +65,12 @@ const course = () => {
   // useEffect con []: corre una sola vez al montar el componente.
   // Aqui se usa para cargar semestres iniciales desde la API.
   useEffect(() => {
-    const loadSemesters = async () => {
-      try {
-        const { data } = await semesterViewRequest();
-        setSemesters(Array.isArray(data) ? data : []);
-      } catch (error) {
-        console.error(error);
-        setSemesters([]);
-      }
+    const initSemesters = async () => {
+      const semesters = await loadSemesters();
+      setSemesters(semesters);
     };
 
-    loadSemesters();
+    initSemesters();
   }, []);
 
   // useEffect con dependencias: corre al montar y cuando cambian esas dependencias.
@@ -147,8 +136,7 @@ Sin arreglo: se ejecuta en cada render.*/
             defaultValue=""
             {...register("color", {
               required: true,
-            })}
-          >
+            })}>
             <option value="" disabled>
               Select a color
             </option>
@@ -180,8 +168,7 @@ Sin arreglo: se ejecuta en cada render.*/
             className="formControl"
             defaultValue=""
             disabled={isEditMode}
-            {...register("semesterName", { required: true })}
-          >
+            {...register("semesterName", { required: true })}>
             <option value="" disabled>
               {semesters.length > 0
                 ? "Select a semester"
