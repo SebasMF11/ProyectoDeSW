@@ -112,24 +112,30 @@ function noteList() {
   }, [selectedSemester]);
 
   return (
-    <div>
-      {errorMessage || semesterError ? (
-        <p>{errorMessage || semesterError}</p>
-      ) : null}
-      <SemesterSelect
-        semesters={semesters}
-        value={selectedSemester}
-        onValueChange={setSelectedSemester}
-      />
-      <p>Qualifications</p>
+    <div className="p-6 max-w-5xl mx-auto">
+      <div className="flex items-center justify-between gap-3 mb-4">
+        <section className="space-y-3 w-40">
+          {errorMessage || semesterError ? (
+            <p>{errorMessage || semesterError}</p>
+          ) : null}
+          <SemesterSelect
+            semesters={semesters}
+            value={selectedSemester}
+            onValueChange={setSelectedSemester}
+          />
+        </section>
+        <p className="title">Qualifications</p>
+        {loadingSemesters || loadingGrades ? <p> </p> : null}
+        {semesterAverage ? (
+          <div>
+            <p className="inline-block bg-gray-200 text-gray-600 px-5 py-2 rounded-full text-[15px] font-semibold">
+              Semester average: {semesterAverage.semesterAverage}
+            </p>
+          </div>
+        ) : null}
+      </div>
 
-      {semesterAverage ? (
-        <div>
-          <p>Semester average: {semesterAverage.semesterAverage}</p>
-        </div>
-      ) : null}
-
-      {loadingSemesters || loadingGrades ? <p>Cargando cursos...</p> : null}
+      {loadingSemesters || loadingGrades ? <p>Loading grades...</p> : null}
 
       {!loadingSemesters &&
       !loadingGrades &&
@@ -139,18 +145,26 @@ function noteList() {
       ) : null}
 
       {!loadingSemesters && !loadingGrades && courses.length > 0 ? (
-        <ul>
+        <ul className="grid grid-cols-1 gap-4 md:grid-cols-2  justify-items-center">
           {courses.map((course) => {
             const progress = courseGradeMap[course.course_id];
 
             return (
-              <li key={course.course_id}>
-                <p>{course.course_name}</p>
-                <p>Teacher: {course.teacher || "Not assigned"}</p>
-                <p>Credits: {course.credits}</p>
-                <p>Current grade: {progress?.currentGrade ?? "-"}</p>
-                <p>Evaluated: {progress?.evaluatedPercentage ?? 0}%</p>
-              </li>
+              <div className="bg-gray-100 rounded-md p-4 mb-4 w-80">
+                <li
+                  key={course.course_id}
+                  className="flex flex-col items-center gap-2"
+                >
+                  <p className="font-semibold">{course.course_name}</p>
+                  <p>
+                    Current grade ({progress?.evaluatedPercentage ?? 0}%/100%)
+                  </p>
+                  <p className="font-semibold">
+                    {" "}
+                    {progress?.currentGrade ?? "-"}
+                  </p>
+                </li>
+              </div>
             );
           })}
         </ul>
