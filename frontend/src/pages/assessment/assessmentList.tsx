@@ -157,9 +157,15 @@ function AssessmentList() {
           />
         </section>
         <p className="title">Assessments By Semester</p>
-        <button type="button" onClick={() => navigate("/assessment")}>
-          Add assessment
-        </button>
+        <div className="flex gap-2">
+          <button type="button" onClick={() => navigate("/assessment")}>
+            Add assessment
+          </button>
+
+          <button type="button" onClick={() => navigate("/grade")}>
+            Add grade
+          </button>
+        </div>
       </header>
 
       <section className="mt-6" aria-live="polite">

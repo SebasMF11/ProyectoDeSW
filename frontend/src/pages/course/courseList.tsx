@@ -38,7 +38,7 @@ function CourseList() {
     } catch (error) {
       console.error(error);
       setCourses([]);
-      setErrorMessage("No se pudieron cargar los cursos del semestre");
+      setErrorMessage("The semester courses could not be loaded");
     } finally {
       setLoadingCourses(false);
     }
