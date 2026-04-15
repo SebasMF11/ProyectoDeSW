@@ -5,3 +5,9 @@ export const gradeCreateRequest = (grade: any) =>
 
 export const gradeByCourseRequest = (courseId: number) =>
   httpClient.get(`grade/view/course/${courseId}`);
+
+export const currentGradeByCourseRequest = (courseId: number) =>
+  httpClient.get(`grade/current/${courseId}`);
+
+export const getSemesterAverageRequest = (semesterId: number) =>
+  httpClient.get(`grade/average/${semesterId}`);

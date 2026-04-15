@@ -126,12 +126,12 @@ const grade = () => {
 
   return (
     <div>
-      <div>
-        <p>Crear cuenta</p>
+      <div className="formContainer">
         {errorMessage || semesterError ? (
           <p>{errorMessage || semesterError}</p>
         ) : null}
-        <form onSubmit={onSubmit}>
+        <form className="formLayout" onSubmit={onSubmit}>
+          <p className="title">Grade</p>
           <SemesterSelect
             semesters={semesters}
             placeholderOptionText="Selecciona un semestre"
@@ -175,12 +175,16 @@ const grade = () => {
               ...register("assessmentName", { required: true }),
             }}
           />
-          <input
-            placeholder="Nota"
-            type="number"
-            {...register("value", { required: true, valueAsNumber: true })}
-          />
-          <button type="submit">Registrarse</button>
+          <div className="w-28 p-3">
+            <input
+              placeholder="Nota"
+              type="number"
+              step="0.01"
+              className="formControl"
+              {...register("value", { required: true, valueAsNumber: true })}
+            />
+          </div>
+          <button type="submit">Save</button>
         </form>
       </div>
     </div>

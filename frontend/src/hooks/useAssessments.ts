@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { assessmentsByMonthRequest } from "../api/assessment.api";
 
+// Definir la estructura de los datos de evaluación recibidos de la API
 interface RawAssessment {
   assessment_id: number;
   assessment_name: string;
@@ -8,11 +9,12 @@ interface RawAssessment {
   due_date: string; // YYYY-MM-DD
   course: {
     course_name: string;
-    color: string; // Color asignado desde CourseController
+    color?: string; // Color asignado desde CourseController
   };
   percentage: number;
 }
 
+// Definir el tipo de retorno del hook
 interface UseAssessmentsReturn {
   assessments: Record<string, string[]>; // { "YYYY-MM-DD": ["#color1", "#color2"] }
   isLoading: boolean;
@@ -32,9 +34,7 @@ export function useAssessments(
       try {
         setIsLoading(true);
         setError(null);
-        console.log(`📅 Fetching assessments for ${year}-${month}`);
         const response = await assessmentsByMonthRequest(year, month);
-        console.log("📅 API Response:", response);
 
         // Transformar la respuesta a formato de colores por fecha
         const assessmentsByDate: Record<string, string[]> = {};
@@ -43,17 +43,10 @@ export function useAssessments(
           response.data.assessments &&
           Array.isArray(response.data.assessments)
         ) {
-          console.log(
-            `📅 Encontradas ${response.data.assessments.length} actividades`,
-          );
           response.data.assessments.forEach((assessment: RawAssessment) => {
-            const color = assessment.course.color;
+            const color = assessment.course?.color ?? "#808080";
             // Normalizar la fecha a YYYY-MM-DD (remove timestamp)
             const dateKey = assessment.due_date.split("T")[0];
-
-            console.log(
-              `  - ${assessment.assessment_name} (${assessment.course.course_name}) en ${dateKey} - Color: ${color}`,
-            );
 
             // Agregar el color a la fecha
             if (!assessmentsByDate[dateKey]) {
@@ -61,18 +54,9 @@ export function useAssessments(
             }
             assessmentsByDate[dateKey].push(color);
           });
-        } else {
-          console.log("📅 No assessments found or wrong data format");
         }
 
-        console.log("📅 Assessments by date:", assessmentsByDate);
         setAssessments(assessmentsByDate);
-      } catch (err) {
-        console.error("❌ Error fetching assessments:", err);
-        setError(
-          err instanceof Error ? err.message : "Error loading assessments",
-        );
-        setAssessments({});
       } finally {
         setIsLoading(false);
       }
