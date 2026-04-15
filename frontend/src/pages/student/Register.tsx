@@ -3,12 +3,14 @@ import { useForm } from "react-hook-form";
 import { authRequest } from "../../api/students.api";
 import { useEffect } from "react";
 import useAuth from "../../hooks/useAuth";
-import fondo from "../../assets/FondoDePantalla.jpg";
-import logo from "../../assets/logo.png";
+import { useStorageImage } from "../../hooks/useStorageImage";
 
 const Register = () => {
   const navigate = useNavigate();
   const session = useAuth();
+  const getImageUrl = useStorageImage("images");
+  const fondoUrl = getImageUrl("FondoDePantalla.jpg");
+  const logoUrl = getImageUrl("logo.png");
   useEffect(() => {
     if (session) navigate("/home");
   }, [navigate, session]);
@@ -25,7 +27,7 @@ const Register = () => {
     <div className="relative min-h-screen flex items-center justify-center">
       {/* Fondo */}
       <img
-        src={fondo}
+        src={fondoUrl}
         alt="fondo"
         className="absolute inset-0 w-full h-full object-cover"
       />
@@ -37,7 +39,7 @@ const Register = () => {
       <div className="relative z-10 w-[90%] max-w-md bg-white/40 sm:bg-white/30 backdrop-blur-md sm:backdrop-blur-lg rounded-3xl p-6 sm:p-8 shadow-lg text-center">
         <div className="flex flex-col items-center gap-4">
           {/* Logo */}
-          <img src={logo} alt="logo" className="w-44" />
+          <img src={logoUrl} alt="logo" className="w-44" />
 
           {/* Títulos */}
           <h2 className="text-sm sm:text-base text-black">Sign up</h2>
@@ -85,8 +87,7 @@ const Register = () => {
             {/* Botón */}
             <button
               type="submit"
-              className="bg-green-500 hover:bg-green-600 text-white rounded-full px-6 py-4 font-semibold transition mx-auto block"
-            >
+              className="bg-green-500 hover:bg-green-600 text-white rounded-full px-6 py-4 font-semibold transition mx-auto block">
               Registrarse
             </button>
 
@@ -95,8 +96,7 @@ const Register = () => {
               Do you already have an account?{" "}
               <span
                 className="underline cursor-pointer"
-                onClick={() => navigate("/auth")}
-              >
+                onClick={() => navigate("/auth")}>
                 Sign in here
               </span>
             </p>

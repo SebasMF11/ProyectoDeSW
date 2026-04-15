@@ -3,17 +3,10 @@ import { useForm } from "react-hook-form";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { assessmentCreateRequest } from "../../api/assessment.api";
-import { semesterViewRequest } from "../../api/semester";
-import { courseBySemesterRequest } from "../../api/course";
 import SemesterSelect from "../../components/SemesterSelect";
 import CourseSelect from "../../components/CourseSelect";
-
-type Semester = {
-  semester_id: number;
-  semester_name: string;
-  start_date: string;
-  end_date: string;
-};
+import { loadSemesters, type Semester } from "../../utils/loadSemesters";
+import { loadCoursesBySemester } from "../../utils/loadCoursesBySemester";
 
 type Course = {
   course_name: string;
@@ -40,46 +33,39 @@ const assessment = () => {
   );
 
   useEffect(() => {
-    const loadSemesters = async () => {
-      try {
-        const { data } = await semesterViewRequest();
-        setSemesters(Array.isArray(data) ? data : []);
-        // Seleccionar automáticamente el primer semestre si existe
-        if (Array.isArray(data) && data.length > 0) {
-          setValue("semesterName", data[0].semester_name);
-        }
-      } catch (error) {
-        console.error(error);
-        setSemesters([]);
+    const initSemesters = async () => {
+      // Cargar semestres
+      const semesters = await loadSemesters();
+      setSemesters(semesters);
+
+      // Seleccionar automáticamente el primer semestre si existe
+      if (semesters.length > 0) {
+        const semesterName = semesters[0].semester_name;
+        setValue("semesterName", semesterName, { shouldValidate: false });
+
+        // Cargar cursos del semestre seleccionado
+        const courses = await loadCoursesBySemester(semesterName);
+        setCourses(courses);
       }
     };
 
-    loadSemesters();
+    initSemesters();
   }, [setValue]);
 
   useEffect(() => {
-    const loadCoursesBySemester = async () => {
+    const loadCourses = async () => {
       if (!selectedSemester) {
         setCourses([]);
         setValue("courseName", "");
         return;
       }
 
-      try {
-        const { data } = await courseBySemesterRequest(selectedSemester);
-        const semesterCourses = Array.isArray(data?.courses)
-          ? data.courses
-          : [];
-        setCourses(semesterCourses);
-        setValue("courseName", "");
-      } catch (error) {
-        console.error(error);
-        setCourses([]);
-        setValue("courseName", "");
-      }
+      const courses = await loadCoursesBySemester(selectedSemester);
+      setCourses(courses);
+      setValue("courseName", "");
     };
 
-    loadCoursesBySemester();
+    loadCourses();
   }, [selectedSemester, setValue]);
 
   const onSubmit = handleSubmit(async (values) => {
@@ -146,8 +132,7 @@ const assessment = () => {
           <select
             className="formControl"
             defaultValue=""
-            {...register("type", { required: true })}
-          >
+            {...register("type", { required: true })}>
             <option value="" disabled>
               Select the assessment type
             </option>
