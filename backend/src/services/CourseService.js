@@ -4,10 +4,10 @@ exports.getAll = async (student_id) => {
   const { data, error } = await supabase
     .from("course")
     .select(
-      "course_id, course_name, teacher, credits, semester!inner(student_id)",
+      "course_id, teacher, credits, color, courses!inner(name), semester!inner(student_id)",
     )
     .eq("semester.student_id", student_id)
-    .eq("status", true);
+    .eq("status", "active");
 
   if (error) {
     console.error(error);
@@ -20,9 +20,9 @@ exports.getAll = async (student_id) => {
 exports.getBySemester = async (semester_id) => {
   const { data, error } = await supabase
     .from("course")
-    .select("course_id, course_name, teacher, credits, color")
+    .select("course_id, teacher, credits, color, courses!inner(name)")
     .eq("semester_id", semester_id)
-    .eq("status", true);
+    .eq("status", "active");
 
   if (error) {
     console.error(error);
@@ -36,7 +36,7 @@ exports.getSemesterByName = async (semesterName, student_id) => {
   const { data, error } = await supabase
     .from("semester")
     .select("*")
-    .eq("semester_name", semesterName)
+    .eq("name", semesterName)
     .eq("student_id", student_id)
     .single();
 
@@ -48,7 +48,7 @@ exports.create = async (course) => {
   const { data, error } = await supabase
     .from("course")
     .insert([course])
-    .select();
+    .select("course_id, teacher, credits, color, courses!inner(name)");
 
   if (error) {
     console.error(error);
@@ -79,7 +79,6 @@ exports.deleteCourse = async (courseId, student_id) => {
   }
 
   await supabase.from("assessment").delete().eq("course_id", courseId);
-
   await supabase.from("day").delete().eq("course_id", courseId);
 
   const { error } = await supabase
@@ -101,7 +100,7 @@ exports.updateCourse = async (courseId, student_id, fields) => {
     .select("course_id, semester!inner(student_id)")
     .eq("course_id", courseId)
     .eq("semester.student_id", student_id)
-    .eq("status", true)
+    .eq("status", "active")
     .single();
 
   if (findError || !course) return null;
@@ -110,7 +109,7 @@ exports.updateCourse = async (courseId, student_id, fields) => {
     .from("course")
     .update(fields)
     .eq("course_id", courseId)
-    .select();
+    .select("course_id, teacher, credits, color, courses!inner(name)");
 
   if (error) {
     console.error(error);
@@ -134,12 +133,31 @@ exports.updateStatus = async (courseId, student_id, status) => {
     .from("course")
     .update({ status })
     .eq("course_id", courseId)
-    .select();
+    .select("course_id, teacher, credits, color, status, courses!inner(name)");
 
   if (error) {
     console.error(error);
     throw error;
   }
 
+  return data;
+};
+
+// Busca un curso por su courses_id (catálogo) dentro de un semestre del estudiante
+exports.getCourseByCoursesIdAndSemester = async (
+  courses_id,
+  semesterName,
+  student_id,
+) => {
+  const { data, error } = await supabase
+    .from("course")
+    .select("course_id, courses_id, semester!inner(name, student_id)")
+    .eq("courses_id", courses_id)
+    .eq("semester.name", semesterName)
+    .eq("semester.student_id", student_id)
+    .eq("status", "active")
+    .single();
+
+  if (error) return null;
   return data;
 };

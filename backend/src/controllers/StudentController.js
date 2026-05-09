@@ -1,66 +1,29 @@
-/**
- * ARCHIVO: StudentController.js
- * PROPÓSITO: Maneja las peticiones HTTP relacionadas con estudiantes
- *
- * PATRÓN ARQUITECTÓNICO:
- * Los controladores siguen la arquitectura en capas:
- * Controller (http) -> Service (lógica) -> Supabase (BD)
- *
- * RESPONSABILIDADES:
- * 1. Validar datos de entrada (req.body)
- * 2. Llamar a StudentService para lógica de negocio
- * 3. Manejar errores y responder con HTTP apropiado
- * 4. Retornar respuestas JSON estructuradas
- */
-
 const studentService = require("../services/StudentService");
+const supabase = require("../config/supabase");
 
-/**
- * FUNCIÓN: authStudent
- * MÉTODO: POST /student/auth
- * PROPÓSITO: Registrar un nuevo estudiante
- *
- * ENTRADA: { name, lastName, email, password, password2 }
- * SALIDA: { message: "Confirmation email sent, check your inbox 📧" }
- *
- * VALIDACIONES:
- * - Todos los campos son obligatorios
- * - Las contraseñas deben coincidir
- * - Email debe ser único
- *
- * MANEJO DE ERRORES:
- * - 400: Datos inválidos o incompletos
- * - 429: Demasiados intentos de registro
- * - 503: No se puede conectar a Supabase
- * - 500: Error interno
- */
 exports.authStudent = async (req, res) => {
   try {
-    const { name, lastName, email, password, password2 } = req.body;
+    const { name, lastName, email, password, password2, career_id } = req.body;
     if (!name || !lastName || !email || !password || !password2) {
-      return res.status(400).json({
-        error: "All fields are required",
-      });
+      return res.status(400).json({ error: "All fields are required" });
     }
     if (password !== password2) {
       return res.status(400).json({ error: "Passwords do not match" });
     }
 
-    await studentService.authStudent({ name, lastName, email, password });
+    await studentService.authStudent({ name, lastName, email, password, career_id });
 
     res.status(201).json({
       message: "Confirmation email sent, check your inbox 📧",
     });
   } catch (error) {
     console.error("Error registro:", error);
-    //todos los signos de pregunta son para evitar errores en caso de que el error no tenga esa propiedad
     if (error?.code === "over_email_send_rate_limit" || error?.status === 429) {
       return res.status(429).json({
         error:
           "Too many registration attempts. Please wait a moment before trying again.",
       });
     }
-
     if (
       error?.name === "AuthRetryableFetchError" ||
       error?.status === 0 ||
@@ -71,7 +34,6 @@ exports.authStudent = async (req, res) => {
           "Could not connect to the authentication service. Check your connection and try again.",
       });
     }
-
     res.status(500).json({ error: "Internal error while registering student" });
   }
 };
@@ -84,10 +46,7 @@ exports.loginStudent = async (req, res) => {
       return res.status(400).json({ error: "Email and password are required" });
     }
 
-    const authResult = await studentService.loginStudent({
-      email,
-      password,
-    });
+    const authResult = await studentService.loginStudent({ email, password });
 
     res.status(200).json({
       token: authResult.session.access_token,
@@ -113,10 +72,10 @@ exports.getStudent = async (req, res) => {
 
 exports.updateStudent = async (req, res) => {
   try {
-    const { name, lastName, email } = req.body;
+    const { name, lastName, email, career_id } = req.body;
     const student_id = req.student.id;
 
-    if (!name && !lastName && !email) {
+    if (!name && !lastName && !email && !career_id) {
       return res.status(400).json({ error: "At least one field is required" });
     }
 
@@ -131,6 +90,7 @@ exports.updateStudent = async (req, res) => {
       ...(name && { name }),
       ...(lastName && { last_name: lastName }),
       ...(email && { email }),
+      ...(career_id && { career_id }),
     });
 
     res
@@ -145,7 +105,6 @@ exports.updateStudent = async (req, res) => {
 exports.updatePassword = async (req, res) => {
   try {
     const { currentPassword, newPassword, newPassword2 } = req.body;
-    const student_id = req.student.id;
 
     if (!currentPassword || !newPassword || !newPassword2) {
       return res.status(400).json({ error: "All fields are required" });
@@ -155,7 +114,6 @@ exports.updatePassword = async (req, res) => {
       return res.status(400).json({ error: "Passwords do not match" });
     }
 
-    // Verificar contraseña actual
     const { error: loginError } = await supabase.auth.signInWithPassword({
       email: req.student.email,
       password: currentPassword,

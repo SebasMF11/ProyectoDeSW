@@ -6,17 +6,13 @@ import { assessmentCreateRequest } from "../../api/assessment.api";
 import { semesterViewRequest } from "../../api/semester";
 import { courseBySemesterRequest } from "../../api/course";
 import SemesterSelect from "../../components/SemesterSelect";
-import CourseSelect from "../../components/CourseSelect";
+import CourseSelect, { type Course } from "../../components/CourseSelect";
 
 type Semester = {
-  semester_id: number;
-  semester_name: string;
+  semester_id: string;
+  name: string;
   start_date: string;
   end_date: string;
-};
-
-type Course = {
-  course_name: string;
 };
 
 const assessmentTypes = [
@@ -34,43 +30,40 @@ const assessment = () => {
   const [semesters, setSemesters] = useState<Semester[]>([]);
   const [courses, setCourses] = useState<Course[]>([]);
   const { register, handleSubmit, watch, setValue } = useForm();
-  const selectedSemester = watch("semesterName");
+  const selectedSemesterName = watch("semesterName");
   const selectedSemesterData = semesters.find(
-    (semester) => semester.semester_name === selectedSemester,
+    (semester) => semester.name === selectedSemesterName,
   );
 
   useEffect(() => {
     const loadSemesters = async () => {
       try {
         const { data } = await semesterViewRequest();
-        setSemesters(Array.isArray(data) ? data : []);
-        // Seleccionar automáticamente el primer semestre si existe
-        if (Array.isArray(data) && data.length > 0) {
-          setValue("semesterName", data[0].semester_name);
+        const list = Array.isArray(data) ? data : [];
+        setSemesters(list);
+        if (list.length > 0) {
+          setValue("semesterName", list[0].name);
         }
       } catch (error) {
         console.error(error);
         setSemesters([]);
       }
     };
-
     loadSemesters();
   }, [setValue]);
 
   useEffect(() => {
     const loadCoursesBySemester = async () => {
-      if (!selectedSemester) {
+      if (!selectedSemesterName) {
         setCourses([]);
         setValue("courseName", "");
         return;
       }
-
       try {
-        const { data } = await courseBySemesterRequest(selectedSemester);
-        const semesterCourses = Array.isArray(data?.courses)
-          ? data.courses
-          : [];
-        setCourses(semesterCourses);
+        const { data } = await courseBySemesterRequest(selectedSemesterName);
+        setCourses(
+          Array.isArray(data?.courses) ? data.courses : [],
+        );
         setValue("courseName", "");
       } catch (error) {
         console.error(error);
@@ -78,23 +71,21 @@ const assessment = () => {
         setValue("courseName", "");
       }
     };
-
     loadCoursesBySemester();
-  }, [selectedSemester, setValue]);
+  }, [selectedSemesterName, setValue]);
 
   const onSubmit = handleSubmit(async (values) => {
     try {
       setErrorMessage("");
       const res = await assessmentCreateRequest(values);
       console.log(res);
-      navigate("/");
+      navigate("/assessment-list");
     } catch (error) {
       if (axios.isAxiosError(error)) {
         const apiMessage = error.response?.data?.error;
         setErrorMessage(apiMessage || "Could not create the assessment");
         return;
       }
-
       setErrorMessage("An unexpected error occurred");
     }
   });
@@ -105,6 +96,7 @@ const assessment = () => {
         <form onSubmit={onSubmit} className="formLayout">
           <p className="title">Assessment</p>
           {errorMessage ? <p>{errorMessage}</p> : null}
+
           <SemesterSelect
             semesters={semesters}
             placeholderOptionText="Select a semester"
@@ -114,13 +106,14 @@ const assessment = () => {
               ...register("semesterName", { required: true }),
             }}
           />
+
           <CourseSelect
             courses={courses}
             placeholderOptionText={
-              selectedSemester ? "Select a course" : "Select a semester first"
+              selectedSemesterName ? "Select a course" : "Select a semester first"
             }
             emptyOptionText={
-              selectedSemester
+              selectedSemesterName
                 ? "No courses in this semester"
                 : "Select a semester first"
             }
@@ -129,12 +122,14 @@ const assessment = () => {
               ...register("courseName", { required: true }),
             }}
           />
+
           <input
             className="formControl"
             placeholder="Assessment name"
             type="text"
             {...register("assessmentName", { required: true })}
           />
+
           <input
             className="formControl"
             placeholder="Assessment date"
@@ -143,7 +138,12 @@ const assessment = () => {
             max={selectedSemesterData?.end_date}
             {...register("dueDate", { required: true })}
           />
+
+          <label className="formText" htmlFor="assessment-type">
+            Type
+          </label>
           <select
+            id="assessment-type"
             className="formControl"
             defaultValue=""
             {...register("type", { required: true })}
@@ -157,10 +157,14 @@ const assessment = () => {
               </option>
             ))}
           </select>
+
           <div className="flex flex-row items-center gap-2">
             <input
               className="formControl w-[50%]"
-              placeholder="--"
+              placeholder="Percentage"
+              type="number"
+              min={1}
+              max={100}
               {...register("percentage", {
                 required: true,
                 valueAsNumber: true,
@@ -168,10 +172,12 @@ const assessment = () => {
             />
             <p className="text-[25px] text-[#3d483f]">%</p>
           </div>
+
           <button type="submit">Create</button>
         </form>
       </div>
     </div>
   );
 };
+
 export default assessment;

@@ -2,13 +2,13 @@ import { useEffect, useState } from "react";
 import { assessmentsByMonthRequest } from "../api/assessment.api";
 
 interface RawAssessment {
-  assessment_id: number;
-  assessment_name: string;
+  assessment_id: string;
+  name: string;
   type: string;
-  due_date: string; // YYYY-MM-DD
+  due_date: string; // timestamptz — puede venir como ISO string
   course: {
-    course_name: string;
-    color: string; // Color asignado desde CourseController
+    courses: { name: string };
+    color: string;
   };
   percentage: number;
 }
@@ -32,43 +32,33 @@ export function useAssessments(
       try {
         setIsLoading(true);
         setError(null);
-        console.log(`📅 Fetching assessments for ${year}-${month}`);
         const response = await assessmentsByMonthRequest(year, month);
-        console.log("📅 API Response:", response);
 
-        // Transformar la respuesta a formato de colores por fecha
         const assessmentsByDate: Record<string, string[]> = {};
 
         if (
           response.data.assessments &&
           Array.isArray(response.data.assessments)
         ) {
-          console.log(
-            `📅 Encontradas ${response.data.assessments.length} actividades`,
-          );
           response.data.assessments.forEach((assessment: RawAssessment) => {
-            const color = assessment.course.color;
-            // Normalizar la fecha a YYYY-MM-DD (remove timestamp)
-            const dateKey = assessment.due_date.split("T")[0];
+            const color = assessment.course?.color;
+            // due_date es timestamptz, normalizar a YYYY-MM-DD
+            const dateKey = assessment.due_date
+              ? assessment.due_date.split("T")[0]
+              : null;
 
-            console.log(
-              `  - ${assessment.assessment_name} (${assessment.course.course_name}) en ${dateKey} - Color: ${color}`,
-            );
+            if (!dateKey || !color) return;
 
-            // Agregar el color a la fecha
             if (!assessmentsByDate[dateKey]) {
               assessmentsByDate[dateKey] = [];
             }
             assessmentsByDate[dateKey].push(color);
           });
-        } else {
-          console.log("📅 No assessments found or wrong data format");
         }
 
-        console.log("📅 Assessments by date:", assessmentsByDate);
         setAssessments(assessmentsByDate);
       } catch (err) {
-        console.error("❌ Error fetching assessments:", err);
+        console.error("Error fetching assessments:", err);
         setError(
           err instanceof Error ? err.message : "Error loading assessments",
         );

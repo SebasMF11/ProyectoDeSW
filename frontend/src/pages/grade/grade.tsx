@@ -7,19 +7,10 @@ import { courseBySemesterRequest } from "../../api/course";
 import { assessmentBySemesterRequest } from "../../api/assessment.api";
 import useSemesters from "../../hooks/useSemesters";
 import SemesterSelect from "../../components/SemesterSelect";
-import CourseSelect from "../../components/CourseSelect";
-import AssessmentSelect from "../../components/AssessmentSelect";
-
-type Course = {
-  course_name: string;
-};
-
-type Assessment = {
-  assessment_name: string;
-  course: {
-    course_name: string;
-  };
-};
+import CourseSelect, { type Course } from "../../components/CourseSelect";
+import AssessmentSelect, {
+  type Assessment,
+} from "../../components/AssessmentSelect";
 
 const grade = () => {
   const navigate = useNavigate();
@@ -33,17 +24,16 @@ const grade = () => {
   const selectedCourseName = watch("courseName");
 
   const selectedSemester = useMemo(
-    () =>
-      semesters.find(
-        (semester) => semester.semester_name === selectedSemesterName,
-      ),
+    () => semesters.find((semester) => semester.name === selectedSemesterName),
     [semesters, selectedSemesterName],
   );
 
+  // Filtrar assessments por el curso seleccionado
   const filteredAssessments = useMemo(
     () =>
       assessments.filter(
-        (assessment) => assessment.course?.course_name === selectedCourseName,
+        (assessment) =>
+          assessment.course?.courses?.name === selectedCourseName,
       ),
     [assessments, selectedCourseName],
   );
@@ -61,22 +51,16 @@ const grade = () => {
         setValue("assessmentName", "");
         return;
       }
-
       try {
         const { data } = await courseBySemesterRequest(selectedSemesterName);
-        const semesterCourses = Array.isArray(data?.courses)
-          ? data.courses
-          : [];
-        setCourses(semesterCourses);
+        setCourses(Array.isArray(data?.courses) ? data.courses : []);
       } catch (error) {
         console.error(error);
         setCourses([]);
       }
-
       setValue("courseName", "");
       setValue("assessmentName", "");
     };
-
     loadCourses();
   }, [selectedSemesterName, setValue]);
 
@@ -87,23 +71,19 @@ const grade = () => {
         setValue("assessmentName", "");
         return;
       }
-
       try {
         const { data } = await assessmentBySemesterRequest(
           selectedSemester.semester_id,
         );
-        const semesterAssessments = Array.isArray(data?.assessments)
-          ? data.assessments
-          : [];
-        setAssessments(semesterAssessments);
+        setAssessments(
+          Array.isArray(data?.assessments) ? data.assessments : [],
+        );
       } catch (error) {
         console.error(error);
         setAssessments([]);
       }
-
       setValue("assessmentName", "");
     };
-
     loadAssessments();
   }, [selectedSemester, setValue]);
 
@@ -112,35 +92,35 @@ const grade = () => {
       setErrorMessage("");
       const res = await gradeCreateRequest(values);
       console.log(res);
-      navigate("/home");
+      navigate("/grade-list");
     } catch (error) {
       if (axios.isAxiosError(error)) {
         const apiMessage = error.response?.data?.error;
         setErrorMessage(apiMessage || "No se pudo crear la nota");
         return;
       }
-
       setErrorMessage("Ocurrio un error inesperado");
     }
   });
 
   return (
     <div>
-      <div>
-        <p>Crear cuenta</p>
+      <div className="formContainer">
+        <p className="title">Registrar nota</p>
         {errorMessage || semesterError ? (
           <p>{errorMessage || semesterError}</p>
         ) : null}
-        <form onSubmit={onSubmit}>
+        <form onSubmit={onSubmit} className="formLayout">
           <SemesterSelect
             semesters={semesters}
             placeholderOptionText="Selecciona un semestre"
-            emptyOptionText={"No hay semestres registrados"}
+            emptyOptionText="No hay semestres registrados"
             selectProps={{
               defaultValue: "",
               ...semesterRegister,
             }}
           />
+
           <CourseSelect
             courses={courses}
             placeholderOptionText={
@@ -158,6 +138,7 @@ const grade = () => {
               ...register("courseName", { required: true }),
             }}
           />
+
           <AssessmentSelect
             assessments={filteredAssessments}
             placeholderOptionText={
@@ -175,15 +156,22 @@ const grade = () => {
               ...register("assessmentName", { required: true }),
             }}
           />
+
           <input
-            placeholder="Nota"
+            className="formControl"
+            placeholder="Nota (0.0 - 5.0)"
             type="number"
+            step="0.1"
+            min={0}
+            max={5}
             {...register("value", { required: true, valueAsNumber: true })}
           />
-          <button type="submit">Registrarse</button>
+
+          <button type="submit">Registrar</button>
         </form>
       </div>
     </div>
   );
 };
+
 export default grade;

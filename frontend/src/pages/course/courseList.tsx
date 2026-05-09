@@ -6,9 +6,13 @@ import SemesterSelect from "../../components/SemesterSelect";
 import axios from "axios";
 
 type Course = {
-  course_id: number;
-  course_name: string;
-  teacher: string;
+  course_id: string;
+  courses_id: string;
+  courses: {
+    name: string;
+    prerequisite_course: { name: string } | null;
+  };
+  teacher?: string;
   credits: number;
   color?: string;
 };
@@ -27,7 +31,6 @@ function courseList() {
       setCourses([]);
       return;
     }
-
     try {
       setLoadingCourses(true);
       setErrorMessage("");
@@ -44,18 +47,17 @@ function courseList() {
 
   useEffect(() => {
     if (!latestSemesterName) return;
-    setSelectedSemester((currentValue) => currentValue || latestSemesterName);
+    setSelectedSemester((current) => current || latestSemesterName);
   }, [latestSemesterName]);
 
   useEffect(() => {
     loadCoursesBySemester(selectedSemester);
   }, [selectedSemester]);
 
-  const onDeleteCourse = async (courseId: number) => {
+  const onDeleteCourse = async (courseId: string) => {
     const confirmed = window.confirm(
       "Esta accion eliminara el curso y sus datos relacionados. Deseas continuar?",
     );
-
     if (!confirmed) return;
 
     try {
@@ -69,7 +71,6 @@ function courseList() {
         );
         return;
       }
-
       setErrorMessage("No se pudo eliminar el curso");
     }
   };
@@ -78,7 +79,8 @@ function courseList() {
     navigate("/course", {
       state: {
         course_id: course.course_id,
-        course_name: course.course_name,
+        courses_id: course.courses_id,
+        course_name: course.courses.name,
         teacher: course.teacher,
         credits: course.credits,
         color: course.color,
@@ -94,7 +96,7 @@ function courseList() {
         <button type="button" onClick={() => navigate("/course")}>
           Agregar curso
         </button>
-        <button type="button" onClick={() => navigate("/day ")}>
+        <button type="button" onClick={() => navigate("/day")}>
           Agregar dias
         </button>
       </div>
@@ -123,12 +125,19 @@ function courseList() {
           <ul className="flex flex-col gap-3">
             {courses.map((course) => (
               <li
-                key={`${course.course_name}-${course.teacher}`}
+                key={course.course_id}
                 className="border rounded-md p-3"
+                style={{ borderLeftColor: course.color, borderLeftWidth: 4 }}
               >
                 <p>
-                  <strong>Curso:</strong> {course.course_name}
+                  <strong>Curso:</strong> {course.courses.name}
                 </p>
+                {course.courses.prerequisite_course && (
+                  <p className="text-sm text-gray-500">
+                    <strong>Prerequisito:</strong>{" "}
+                    {course.courses.prerequisite_course.name}
+                  </p>
+                )}
                 <p>
                   <strong>Profesor:</strong> {course.teacher || "Sin asignar"}
                 </p>

@@ -7,20 +7,20 @@ import useSemesters from "../../hooks/useSemesters";
 import SemesterSelect from "../../components/SemesterSelect";
 
 type Course = {
-  course_id: number;
-  course_name: string;
+  course_id: string;
+  courses: { name: string };
   teacher?: string;
   credits?: number;
 };
 
 type Assessment = {
-  assessment_id: number;
-  assessment_name: string;
+  assessment_id: string;
+  name: string;
   type: string;
   due_date?: string;
   percentage?: number;
   course?: {
-    course_name?: string;
+    courses?: { name: string };
   };
 };
 
@@ -32,8 +32,8 @@ type Grade = {
   };
 };
 
-const assessmentKey = (assessmentName?: string, dueDate?: string) =>
-  `${assessmentName || ""}::${dueDate || ""}`;
+const assessmentKey = (name?: string, dueDate?: string) =>
+  `${name || ""}::${dueDate || ""}`;
 
 function AssessmentList() {
   const navigate = useNavigate();
@@ -48,7 +48,7 @@ function AssessmentList() {
 
   useEffect(() => {
     if (!latestSemesterName) return;
-    setSelectedSemester((currentValue) => currentValue || latestSemesterName);
+    setSelectedSemester((current) => current || latestSemesterName);
   }, [latestSemesterName]);
 
   useEffect(() => {
@@ -66,13 +66,13 @@ function AssessmentList() {
 
         const { data: coursesData } =
           await courseBySemesterRequest(selectedSemester);
-        const semesterCourses = Array.isArray(coursesData?.courses)
+        const semesterCourses: Course[] = Array.isArray(coursesData?.courses)
           ? coursesData.courses
           : [];
         setCourses(semesterCourses);
 
         const currentSemester = semesters.find(
-          (semester) => semester.semester_name === selectedSemester,
+          (semester) => semester.name === selectedSemester,
         );
 
         if (!currentSemester?.semester_id) {
@@ -84,13 +84,15 @@ function AssessmentList() {
         const { data: assessmentsData } = await assessmentBySemesterRequest(
           currentSemester.semester_id,
         );
-        const semesterAssessments = Array.isArray(assessmentsData?.assessments)
+        const semesterAssessments: Assessment[] = Array.isArray(
+          assessmentsData?.assessments,
+        )
           ? assessmentsData.assessments
           : [];
         setAssessments(semesterAssessments);
 
         const gradeResponses = await Promise.all(
-          semesterCourses.map((course: Course) =>
+          semesterCourses.map((course) =>
             gradeByCourseRequest(course.course_id)
               .then((response) => ({
                 courseId: course.course_id,
@@ -103,7 +105,6 @@ function AssessmentList() {
         );
 
         const nextGradeMap: Record<string, number> = {};
-
         gradeResponses.forEach((gradeResponse) => {
           gradeResponse.grades.forEach((grade: Grade) => {
             const key = assessmentKey(
@@ -129,15 +130,15 @@ function AssessmentList() {
     loadSemesterContent();
   }, [selectedSemester, semesters]);
 
+  // Agrupar assessments por nombre del curso
   const assessmentsByCourse = useMemo(() => {
     const grouped: Record<string, Assessment[]> = {};
-
     assessments.forEach((assessment) => {
-      const courseName = assessment.course?.course_name || "Sin curso";
+      const courseName =
+        assessment.course?.courses?.name || "Sin curso";
       if (!grouped[courseName]) grouped[courseName] = [];
       grouped[courseName].push(assessment);
     });
-
     return grouped;
   }, [assessments]);
 
@@ -173,12 +174,12 @@ function AssessmentList() {
         {!loadingSemesters && !loading && courses.length > 0 ? (
           <ul className="flex flex-col gap-4">
             {courses.map((course) => {
-              const courseAssessments =
-                assessmentsByCourse[course.course_name] || [];
+              const courseName = course.courses.name;
+              const courseAssessments = assessmentsByCourse[courseName] || [];
 
               return (
                 <li key={course.course_id} className="border rounded-md p-4">
-                  <p className="font-semibold">{course.course_name}</p>
+                  <p className="font-semibold">{courseName}</p>
                   <p>
                     Profesor: {course.teacher || "Sin asignar"} | Creditos:{" "}
                     {course.credits ?? "-"}
@@ -190,11 +191,15 @@ function AssessmentList() {
                     <ul className="mt-3 flex flex-col gap-2">
                       {courseAssessments.map((assessment) => {
                         const key = assessmentKey(
-                          assessment.assessment_name,
+                          assessment.name,
                           assessment.due_date,
                         );
                         const gradeValue = gradeMap[key];
                         const hasGrade = Number.isFinite(gradeValue);
+                        // Mostrar solo la fecha (YYYY-MM-DD) si viene con timestamp
+                        const displayDate = assessment.due_date
+                          ? assessment.due_date.split("T")[0]
+                          : "-";
 
                         return (
                           <li
@@ -202,12 +207,11 @@ function AssessmentList() {
                             className="rounded border p-3"
                           >
                             <p>
-                              <strong>{assessment.assessment_name}</strong>
+                              <strong>{assessment.name}</strong>
                             </p>
                             <p>
-                              Tipo: {assessment.type} | Fecha:{" "}
-                              {assessment.due_date || "-"} | Porcentaje:{" "}
-                              {assessment.percentage ?? "-"}%
+                              Tipo: {assessment.type} | Fecha: {displayDate} |
+                              Porcentaje: {assessment.percentage ?? "-"}%
                             </p>
                             <p>Nota: {hasGrade ? gradeValue : "Pendiente"}</p>
                           </li>

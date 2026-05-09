@@ -1,50 +1,77 @@
 import { useNavigate } from "react-router";
 import { useForm } from "react-hook-form";
 import { authRequest } from "../../api/students.api";
-import { useEffect } from "react";
+import { careersRequest } from "../../api/catalog";
+import { useEffect, useState } from "react";
 import useAuth from "../../hooks/useAuth";
 import fondo from "../../assets/FondoDePantalla.jpg";
 import logo from "../../assets/logo.png";
 
+type Career = {
+  career_id: string;
+  name: string;
+};
+
 const Register = () => {
   const navigate = useNavigate();
   const session = useAuth();
+  const [careers, setCareers] = useState<Career[]>([]);
+  const [errorMessage, setErrorMessage] = useState("");
+
   useEffect(() => {
     if (session) navigate("/home");
   }, [navigate, session]);
-  const { register, handleSubmit } = useForm();
+
+  useEffect(() => {
+    const loadCareers = async () => {
+      try {
+        const { data } = await careersRequest();
+        setCareers(Array.isArray(data?.careers) ? data.careers : []);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+    loadCareers();
+  }, []);
+
+  const { register, handleSubmit, watch } = useForm();
+  const password = watch("password");
+
   const onSubmit = handleSubmit(async (values) => {
-    const res = await authRequest(values);
-    console.log(res);
-    navigate("/auth");
-    if (false) {
-      setTimeout(() => navigate("/home"), 1000);
+    try {
+      setErrorMessage("");
+      if (values.password !== values.password2) {
+        setErrorMessage("Las contraseñas no coinciden");
+        return;
+      }
+      const res = await authRequest(values);
+      console.log(res);
+      navigate("/auth");
+    } catch (error: any) {
+      setErrorMessage(
+        error?.response?.data?.error || "Error al registrar usuario",
+      );
     }
   });
+
   return (
     <div className="relative min-h-screen flex items-center justify-center">
-      {/* Fondo */}
       <img
         src={fondo}
         alt="fondo"
         className="absolute inset-0 w-full h-full object-cover"
       />
-
-      {/* Overlay */}
       <div className="absolute inset-0 bg-black/40"></div>
-
-      {/* Card */}
       <div className="relative z-10 w-[90%] max-w-md bg-white/40 sm:bg-white/30 backdrop-blur-md sm:backdrop-blur-lg rounded-3xl p-6 sm:p-8 shadow-lg text-center">
         <div className="flex flex-col items-center gap-4">
-          {/* Logo */}
           <img src={logo} alt="logo" className="w-44" />
-
-          {/* Títulos */}
           <h2 className="text-sm sm:text-base text-black">Sign up</h2>
 
-          {/* FORMULARIO */}
+          {errorMessage ? (
+            <p className="text-red-600 text-sm">{errorMessage}</p>
+          ) : null}
+
           <form onSubmit={onSubmit} className="w-full flex flex-col gap-3">
-            {/* Nombre */}
             <input
               placeholder="Name"
               type="text"
@@ -57,8 +84,6 @@ const Register = () => {
               {...register("lastName", { required: true })}
               className="w-full px-4 py-3 rounded-full text-gray-700 bg-white/70 outline-none"
             />
-
-            {/* Correo */}
             <input
               placeholder="Email"
               type="email"
@@ -66,23 +91,39 @@ const Register = () => {
               className="w-full px-4 py-3 rounded-full text-gray-700 bg-white/70 outline-none"
             />
 
-            {/* Contraseña */}
+            {/* Selector de carrera */}
+            <select
+              {...register("career_id", { required: true })}
+              className="w-full px-4 py-3 rounded-full text-gray-700 bg-white/70 outline-none"
+              defaultValue=""
+            >
+              <option value="" disabled>
+                {careers.length > 0 ? "Select your career" : "Loading careers..."}
+              </option>
+              {careers.map((career) => (
+                <option key={career.career_id} value={career.career_id}>
+                  {career.name}
+                </option>
+              ))}
+            </select>
+
             <input
               placeholder="Password"
               type="password"
-              {...register("password", { required: true })}
+              {...register("password", { required: true, minLength: 6 })}
               className="w-full px-4 py-3 rounded-full text-gray-700 bg-white/70 outline-none"
             />
-
-            {/* Confirmar contraseña */}
             <input
               placeholder="Confirm Password"
               type="password"
-              {...register("password2", { required: true })}
+              {...register("password2", {
+                required: true,
+                validate: (value) =>
+                  value === password || "Las contraseñas no coinciden",
+              })}
               className="w-full px-4 py-3 rounded-full text-gray-700 bg-white/70 outline-none"
             />
 
-            {/* Botón */}
             <button
               type="submit"
               className="bg-green-500 hover:bg-green-600 text-white rounded-full px-6 py-4 font-semibold transition mx-auto block"
@@ -90,7 +131,6 @@ const Register = () => {
               Registrarse
             </button>
 
-            {/* Para volver al login */}
             <p className="text-sm text-gray-900">
               Do you already have an account?{" "}
               <span
@@ -106,4 +146,5 @@ const Register = () => {
     </div>
   );
 };
+
 export default Register;

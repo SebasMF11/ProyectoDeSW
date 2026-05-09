@@ -38,7 +38,12 @@ exports.createSemester = async (req, res) => {
     const { semesterName, startDate, endDate, midtermWeek } = req.body;
     const student_id = req.student.id;
 
-    // Validar que midtermWeek esté dentro del rango del semestre
+    if (!semesterName || !startDate || !endDate || !midtermWeek) {
+      return res.status(400).json({
+        error: "semesterName, startDate, endDate and midtermWeek are required",
+      });
+    }
+
     const mid = toDate(midtermWeek);
     const start = toDate(startDate);
     const end = toDate(endDate);
@@ -57,7 +62,7 @@ exports.createSemester = async (req, res) => {
     );
     if (overlap && overlap.length > 0) {
       return res.status(400).json({
-        error: `The semester dates overlap with an existing semester: "${overlap[0].semester_name}"`,
+        error: `The semester dates overlap with an existing semester: "${overlap[0].name}"`,
       });
     }
 
@@ -65,7 +70,7 @@ exports.createSemester = async (req, res) => {
     const finalExamWeekRange = getFinalExamWeekRange(endDate);
 
     const semester = await semesterService.create({
-      semester_name: semesterName,
+      name: semesterName,
       start_date: startDate,
       end_date: endDate,
       midterm_week: midtermWeekRange,
@@ -100,7 +105,7 @@ exports.updateSemester = async (req, res) => {
     }
 
     const semester = await semesterService.update(semesterId, student_id, {
-      ...(semesterName && { semester_name: semesterName }),
+      ...(semesterName && { name: semesterName }),
       ...(startDate && { start_date: startDate }),
       ...(endDate && { end_date: endDate }),
       ...(midtermWeekRange && { midterm_week: midtermWeekRange }),

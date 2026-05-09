@@ -36,6 +36,7 @@ const courseRoutes = require("./routes/CourseRoutes");
 const assessmentRoutes = require("./routes/AssessmentRoutes");
 const dayRoutes = require("./routes/DayRoutes");
 const gradeRoutes = require("./routes/GradeRoutes");
+const catalogRoutes = require("./routes/CatalogRoutes");
 
 // Registrar rutas en la aplicación
 app.use("/grade", gradeRoutes);
@@ -43,6 +44,7 @@ app.use("/day", dayRoutes);
 app.use("/assessment", assessmentRoutes);
 app.use("/course", courseRoutes);
 app.use("/semester", semesterRoutes);
+app.use("/catalog", catalogRoutes);
 app.use(cors({ origin: "http://localhost:5173" })); // Permitir origen del frontend
 app.use("/student", studentRoutes);
 
