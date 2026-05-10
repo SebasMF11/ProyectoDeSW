@@ -193,7 +193,7 @@ exports.updateCourseStatus = async (req, res) => {
     };
 
     res.status(200).json({
-      message: `Course ${statusMessages[status]} successfully`,
+      message: `Course ${statusMessages[status] || `status changed to ${status}`} successfully`,
       course: result,
     });
   } catch (error) {

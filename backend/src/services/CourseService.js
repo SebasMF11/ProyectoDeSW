@@ -94,6 +94,8 @@ exports.deleteCourse = async (courseId, student_id) => {
   return true;
 };
 
+// Updates course content (teacher, credits, color) - only for active courses
+// For status changes, use updateStatus() instead
 exports.updateCourse = async (courseId, student_id, fields) => {
   const { data: course, error: findError } = await supabase
     .from("course")
