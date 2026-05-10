@@ -49,3 +49,4 @@ coverage/
 
 .agents
 skills-lock.json
+.kiro

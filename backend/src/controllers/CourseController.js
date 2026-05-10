@@ -1,4 +1,5 @@
 const courseService = require("../services/CourseService");
+const catalogService = require("../services/CatalogService");
 
 const colorMap = {
   red: "#FF5733",
@@ -63,6 +64,14 @@ exports.createCourse = async (req, res) => {
     if (!colorHex) {
       return res.status(400).json({
         error: `Invalid color. Use: ${Object.keys(colorMap).join(", ")}`,
+      });
+    }
+
+    // Validar prerequisito antes de crear
+    const prereqCheck = await catalogService.checkPrerequisite(student_id, courses_id);
+    if (!prereqCheck.allowed) {
+      return res.status(400).json({
+        error: `Debes completar el prerequisito "${prereqCheck.prerequisite.name}" antes de agregar esta materia.`,
       });
     }
 
@@ -158,7 +167,7 @@ exports.updateCourseStatus = async (req, res) => {
     const { status } = req.body;
     const student_id = req.student.id;
 
-    const validStatuses = ["active", "inactive"];
+    const validStatuses = ["active", "inactive", "completed", "failed"];
     if (!status || !validStatuses.includes(status)) {
       return res
         .status(400)

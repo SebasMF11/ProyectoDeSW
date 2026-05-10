@@ -100,7 +100,6 @@ exports.updateCourse = async (courseId, student_id, fields) => {
     .select("course_id, semester!inner(student_id)")
     .eq("course_id", courseId)
     .eq("semester.student_id", student_id)
-    .eq("status", "active")
     .single();
 
   if (findError || !course) return null;

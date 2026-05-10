@@ -12,6 +12,11 @@ router.get("/faculties", authMiddleware, catalogController.getFaculties);
 // Catálogo de materias
 router.get("/courses", authMiddleware, catalogController.getCoursesCatalog);
 router.get(
+  "/courses/available",
+  authMiddleware,
+  catalogController.getAvailableCourses,
+);
+router.get(
   "/courses/faculty/:facultyId",
   authMiddleware,
   catalogController.getCoursesCatalogByFaculty,

@@ -1,5 +1,28 @@
 const catalogService = require("../services/CatalogService");
 
+/**
+ * GET /catalog/courses/available
+ * Retorna las materias disponibles para el estudiante autenticado.
+ * Filtra por carrera del estudiante, excluye las ya activas/completadas,
+ * e incluye info de prerequisito.
+ * Query param opcional: ?facultyId=<uuid>
+ */
+exports.getAvailableCourses = async (req, res) => {
+  try {
+    const student_id = req.student.id;
+    const { facultyId } = req.query;
+
+    const courses = await catalogService.getAvailableCoursesForStudent(
+      student_id,
+      facultyId || null
+    );
+    res.status(200).json({ courses });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: error.message || "Internal server error" });
+  }
+};
+
 exports.getCareers = async (req, res) => {
   try {
     const careers = await catalogService.getAllCareers();

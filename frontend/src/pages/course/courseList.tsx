@@ -1,6 +1,10 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
-import { courseBySemesterRequest, courseDeleteRequest } from "../../api/course";
+import {
+  courseBySemesterRequest,
+  courseDeleteRequest,
+  courseStatusRequest,
+} from "../../api/course";
 import useSemesters from "../../hooks/useSemesters";
 import SemesterSelect from "../../components/SemesterSelect";
 import axios from "axios";
@@ -15,7 +19,11 @@ type Course = {
   teacher?: string;
   credits: number;
   color?: string;
+  status?: string;
 };
+
+// Qué acción de confirmación está pendiente para cada curso
+type PendingAction = "complete" | "fail" | "delete" | null;
 
 function courseList() {
   const navigate = useNavigate();
@@ -25,6 +33,11 @@ function courseList() {
   const [courses, setCourses] = useState<Course[]>([]);
   const [loadingCourses, setLoadingCourses] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+
+  // Mapa courseId → acción pendiente de confirmación
+  const [pendingActions, setPendingActions] = useState<
+    Record<string, PendingAction>
+  >({});
 
   const loadCoursesBySemester = async (semesterName: string) => {
     if (!semesterName) {
@@ -54,15 +67,55 @@ function courseList() {
     loadCoursesBySemester(selectedSemester);
   }, [selectedSemester]);
 
-  const onDeleteCourse = async (courseId: string) => {
-    const confirmed = window.confirm(
-      "Esta accion eliminara el curso y sus datos relacionados. Deseas continuar?",
-    );
-    if (!confirmed) return;
+  // Abre el panel de confirmación para un curso
+  const requestAction = (courseId: string, action: PendingAction) => {
+    setPendingActions((prev) => ({ ...prev, [courseId]: action }));
+  };
 
+  // Cancela la confirmación
+  const cancelAction = (courseId: string) => {
+    setPendingActions((prev) => ({ ...prev, [courseId]: null }));
+  };
+
+  const onCompleteCourse = async (courseId: string) => {
+    try {
+      setErrorMessage("");
+      await courseStatusRequest(courseId, "completed");
+      cancelAction(courseId);
+      await loadCoursesBySemester(selectedSemester);
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        setErrorMessage(
+          error.response?.data?.error || "No se pudo completar el curso",
+        );
+        return;
+      }
+      setErrorMessage("No se pudo completar el curso");
+    }
+  };
+
+  const onFailCourse = async (courseId: string) => {
+    try {
+      setErrorMessage("");
+      await courseStatusRequest(courseId, "failed");
+      cancelAction(courseId);
+      await loadCoursesBySemester(selectedSemester);
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        setErrorMessage(
+          error.response?.data?.error || "No se pudo cancelar el curso",
+        );
+        return;
+      }
+      setErrorMessage("No se pudo cancelar el curso");
+    }
+  };
+
+  const onDeleteCourse = async (courseId: string) => {
     try {
       setErrorMessage("");
       await courseDeleteRequest(courseId);
+      cancelAction(courseId);
       await loadCoursesBySemester(selectedSemester);
     } catch (error) {
       if (axios.isAxiosError(error)) {
@@ -102,7 +155,9 @@ function courseList() {
       </div>
 
       {errorMessage || semesterError ? (
-        <p>{errorMessage || semesterError}</p>
+        <p className="text-red-600 text-sm mb-2">
+          {errorMessage || semesterError}
+        </p>
       ) : null}
 
       <SemesterSelect
@@ -123,40 +178,141 @@ function courseList() {
 
         {!loadingSemesters && !loadingCourses && courses.length > 0 ? (
           <ul className="flex flex-col gap-3">
-            {courses.map((course) => (
-              <li
-                key={course.course_id}
-                className="border rounded-md p-3"
-                style={{ borderLeftColor: course.color, borderLeftWidth: 4 }}
-              >
-                <p>
-                  <strong>Curso:</strong> {course.courses.name}
-                </p>
-                {course.courses.prerequisite_course && (
-                  <p className="text-sm text-gray-500">
-                    <strong>Prerequisito:</strong>{" "}
-                    {course.courses.prerequisite_course.name}
+            {courses.map((course) => {
+              const pending = pendingActions[course.course_id] ?? null;
+
+              return (
+                <li
+                  key={course.course_id}
+                  className="border rounded-md p-3"
+                  style={{ borderLeftColor: course.color, borderLeftWidth: 4 }}
+                >
+                  <p>
+                    <strong>Curso:</strong> {course.courses.name}
                   </p>
-                )}
-                <p>
-                  <strong>Profesor:</strong> {course.teacher || "Sin asignar"}
-                </p>
-                <p>
-                  <strong>Creditos:</strong> {course.credits}
-                </p>
-                <div className="flex gap-2 mt-3">
-                  <button type="button" onClick={() => onEditCourse(course)}>
-                    Editar
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => onDeleteCourse(course.course_id)}
-                  >
-                    Eliminar
-                  </button>
-                </div>
-              </li>
-            ))}
+                  {course.courses.prerequisite_course && (
+                    <p className="text-sm text-gray-500">
+                      <strong>Prerequisito:</strong>{" "}
+                      {course.courses.prerequisite_course.name}
+                    </p>
+                  )}
+                  <p>
+                    <strong>Profesor:</strong> {course.teacher || "Sin asignar"}
+                  </p>
+                  <p>
+                    <strong>Creditos:</strong> {course.credits}
+                  </p>
+
+                  {/* Botones principales */}
+                  <div className="flex flex-wrap gap-2 mt-3">
+                    <button
+                      type="button"
+                      onClick={() => onEditCourse(course)}
+                    >
+                      Editar
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => requestAction(course.course_id, "complete")}
+                    >
+                      Completar curso
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => requestAction(course.course_id, "fail")}
+                    >
+                      Cancelar materia
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => requestAction(course.course_id, "delete")}
+                    >
+                      Eliminar curso
+                    </button>
+                  </div>
+
+                  {/* Panel de confirmación inline */}
+                  {pending === "complete" && (
+                    <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-md text-sm">
+                      <p className="font-medium text-green-800 mb-2">
+                        ¿Marcar "{course.courses.name}" como completado?
+                      </p>
+                      <p className="text-green-700 mb-3">
+                        El curso pasará a estado completado y ya no aparecerá en
+                        tu lista activa.
+                      </p>
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          onClick={() => onCompleteCourse(course.course_id)}
+                        >
+                          Sí, completar
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => cancelAction(course.course_id)}
+                        >
+                          Cancelar
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {pending === "fail" && (
+                    <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded-md text-sm">
+                      <p className="font-medium text-yellow-800 mb-2">
+                        ¿Cancelar "{course.courses.name}"?
+                      </p>
+                      <p className="text-yellow-700 mb-3">
+                        El curso pasará a estado cancelado. Podrás volver a
+                        registrarlo en un semestre futuro.
+                      </p>
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          onClick={() => onFailCourse(course.course_id)}
+                        >
+                          Sí, cancelar
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => cancelAction(course.course_id)}
+                        >
+                          Volver
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {pending === "delete" && (
+                    <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-md text-sm">
+                      <p className="font-medium text-red-800 mb-2">
+                        ¿Eliminar "{course.courses.name}"?
+                      </p>
+                      <p className="text-red-700 mb-3">
+                        Esta acción eliminará el curso y todos sus datos
+                        relacionados (evaluaciones, notas, horarios). No se
+                        puede deshacer.
+                      </p>
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          onClick={() => onDeleteCourse(course.course_id)}
+                        >
+                          Sí, eliminar
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => cancelAction(course.course_id)}
+                        >
+                          Cancelar
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </li>
+              );
+            })}
           </ul>
         ) : null}
       </div>
