@@ -191,9 +191,11 @@ exports.updateCourseStatus = async (req, res) => {
       completed: "marked as completed",
       failed: "marked as failed"
     };
+    
+    const statusMessage = statusMessages[status] || `status changed to ${status}`;
 
     res.status(200).json({
-      message: `Course ${statusMessages[status] || `status changed to ${status}`} successfully`,
+      message: `Course ${statusMessage} successfully`,
       course: result,
     });
   } catch (error) {

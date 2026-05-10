@@ -34,7 +34,7 @@ exports.loginStudent = async ({ email, password }) => {
         throw new Error("No career_id provided and unable to fetch default career");
       }
       
-      career_id = careers?.career_id || null;
+      career_id = careers?.career_id;
       
       if (!career_id) {
         throw new Error("No career_id provided and no careers available in the system");
