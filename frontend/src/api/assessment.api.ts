@@ -1,6 +1,6 @@
 import { httpClient } from "./httpClient";
 
-export const assessmentBySemesterRequest = (semesterId: number) =>
+export const assessmentBySemesterRequest = (semesterId: string) =>
   httpClient.get(`assessment/view/semester/${semesterId}`);
 
 export const assessmentCreateRequest = (assessment: any) =>

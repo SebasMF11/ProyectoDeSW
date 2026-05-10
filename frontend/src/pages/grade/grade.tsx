@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import { gradeCreateRequest } from "../../api/grade";
@@ -18,7 +18,7 @@ const grade = () => {
   const { semesters, semesterError, latestSemesterName } = useSemesters();
   const [courses, setCourses] = useState<Course[]>([]);
   const [assessments, setAssessments] = useState<Assessment[]>([]);
-  const { register, handleSubmit, watch, setValue } = useForm();
+  const { register, handleSubmit, watch, setValue, control } = useForm();
   const semesterRegister = register("semesterName", { required: true });
   const selectedSemesterName = watch("semesterName");
   const selectedCourseName = watch("courseName");
@@ -157,14 +157,27 @@ const grade = () => {
             }}
           />
 
-          <input
-            className="formControl"
-            placeholder="Nota (0.0 - 5.0)"
-            type="number"
-            step="0.1"
-            min={0}
-            max={5}
-            {...register("value", { required: true, valueAsNumber: true })}
+          <Controller
+            name="value"
+            control={control}
+            rules={{ required: true, min: 0, max: 5 }}
+            render={({ field: { onChange, onBlur, ref, value } }) => (
+              <input
+                className="formControl"
+                placeholder="Nota (0.0 - 5.0)"
+                type="number"
+                step="0.1"
+                min={0}
+                max={5}
+                value={value ?? ""}
+                onChange={(e) => {
+                  const parsed = parseFloat(e.target.value);
+                  onChange(isNaN(parsed) ? "" : parsed);
+                }}
+                onBlur={onBlur}
+                ref={ref}
+              />
+            )}
           />
 
           <button type="submit">Registrar</button>

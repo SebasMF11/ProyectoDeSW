@@ -38,7 +38,20 @@ export function useAssessmentsByDay(selectedDate: Date): UseAssessmentsReturn {
           response.data.assessments &&
           Array.isArray(response.data.assessments)
         ) {
-          setAssessments(response.data.assessments);
+          const mapped: Assessment[] = response.data.assessments.map(
+            (a: any) => ({
+              assessment_id: a.assessment_id,
+              assessment_name: a.name,
+              type: a.type,
+              due_date: a.due_date,
+              percentage: a.percentage,
+              course: {
+                course_name: a.course?.courses?.name ?? "",
+                color: a.course?.color ?? undefined,
+              },
+            }),
+          );
+          setAssessments(mapped);
         } else {
           setAssessments([]);
         }

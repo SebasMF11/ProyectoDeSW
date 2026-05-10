@@ -4,8 +4,7 @@ import { authRequest } from "../../api/students.api";
 import { careersRequest } from "../../api/catalog";
 import { useEffect, useState } from "react";
 import useAuth from "../../hooks/useAuth";
-import fondo from "../../assets/FondoDePantalla.jpg";
-import logo from "../../assets/logo.png";
+import { useStorageImage } from "../../hooks/useStorageImage";
 
 type Career = {
   career_id: string;
@@ -15,6 +14,9 @@ type Career = {
 const Register = () => {
   const navigate = useNavigate();
   const session = useAuth();
+  const getImageUrl = useStorageImage("images");
+  const fondoUrl = getImageUrl("FondoDePantalla.jpg");
+  const logoUrl = getImageUrl("logo.png");
   const [careers, setCareers] = useState<Career[]>([]);
   const [errorMessage, setErrorMessage] = useState("");
 
@@ -57,14 +59,14 @@ const Register = () => {
   return (
     <div className="relative min-h-screen flex items-center justify-center">
       <img
-        src={fondo}
+        src={fondoUrl}
         alt="fondo"
         className="absolute inset-0 w-full h-full object-cover"
       />
       <div className="absolute inset-0 bg-black/40"></div>
       <div className="relative z-10 w-[90%] max-w-md bg-white/40 sm:bg-white/30 backdrop-blur-md sm:backdrop-blur-lg rounded-3xl p-6 sm:p-8 shadow-lg text-center">
         <div className="flex flex-col items-center gap-4">
-          <img src={logo} alt="logo" className="w-44" />
+          <img src={logoUrl} alt="logo" className="w-44" />
           <h2 className="text-sm sm:text-base text-black">Sign up</h2>
 
           {errorMessage ? (

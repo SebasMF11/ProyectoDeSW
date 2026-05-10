@@ -1,18 +1,14 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
-<<<<<<< HEAD
+import { FaRegTrashCan } from "react-icons/fa6";
+import { RiEdit2Line } from "react-icons/ri";
+import SemesterSelect from "../../components/SemesterSelect";
 import {
   courseBySemesterRequest,
   courseDeleteRequest,
   courseStatusRequest,
 } from "../../api/course";
-=======
-import { FaRegTrashCan } from "react-icons/fa6";
-import { RiEdit2Line } from "react-icons/ri";
-import SemesterSelect from "../../components/SemesterSelect";
-import { courseBySemesterRequest, courseDeleteRequest } from "../../api/course";
->>>>>>> origin/main
 import useSemesters from "../../hooks/useSemesters";
 
 type Course = {
@@ -28,14 +24,10 @@ type Course = {
   status?: string;
 };
 
-<<<<<<< HEAD
 // Qué acción de confirmación está pendiente para cada curso
 type PendingAction = "complete" | "fail" | "delete" | null;
 
-function courseList() {
-=======
 function CourseList() {
->>>>>>> origin/main
   const navigate = useNavigate();
   const { semesters, loadingSemesters, semesterError, latestSemesterName } =
     useSemesters();
@@ -153,40 +145,20 @@ function CourseList() {
   };
 
   return (
-<<<<<<< HEAD
-    <div className="p-6 max-w-3xl mx-auto">
-      <div className="flex items-center justify-between gap-3 mb-4">
-        <h1 className="text-xl font-semibold">Cursos por semestre</h1>
-        <button type="button" onClick={() => navigate("/course")}>
-          Agregar curso
-        </button>
-        <button type="button" onClick={() => navigate("/day")}>
-          Agregar dias
-        </button>
-      </div>
-
-      {errorMessage || semesterError ? (
-        <p className="text-red-600 text-sm mb-2">
-          {errorMessage || semesterError}
-        </p>
-      ) : null}
-=======
     <main className="p-6 max-w-5xl mx-auto">
       <header className="flex items-center justify-between gap-3 mb-4">
         <section aria-label="Semester selection" className="space-y-3 w-40">
           {errorMessage || semesterError ? (
-            <p>{errorMessage || semesterError}</p>
+            <p className="text-red-600 text-sm">{errorMessage || semesterError}</p>
           ) : null}
-
           <SemesterSelect
             semesters={semesters}
             value={selectedSemester}
             onValueChange={setSelectedSemester}
           />
         </section>
->>>>>>> origin/main
 
-        <h1 className="title">Courses By Semester</h1>
+        <h1 className="text-xl font-semibold">Courses By Semester</h1>
 
         <div className="flex gap-2">
           <button
@@ -217,7 +189,6 @@ function CourseList() {
         ) : null}
 
         {!loadingSemesters && !loadingCourses && courses.length > 0 ? (
-<<<<<<< HEAD
           <ul className="flex flex-col gap-3">
             {courses.map((course) => {
               const pending = pendingActions[course.course_id] ?? null;
@@ -250,7 +221,7 @@ function CourseList() {
                       type="button"
                       onClick={() => onEditCourse(course)}
                     >
-                      Editar
+                      <RiEdit2Line size={18} />
                     </button>
                     <button
                       type="button"
@@ -268,7 +239,7 @@ function CourseList() {
                       type="button"
                       onClick={() => requestAction(course.course_id, "delete")}
                     >
-                      Eliminar curso
+                      <FaRegTrashCan size={18} />
                     </button>
                   </div>
 
@@ -354,43 +325,6 @@ function CourseList() {
                 </li>
               );
             })}
-=======
-          <ul className="flex flex-col gap-4">
-            <li>
-              <article className=" grid grid-cols-1 gap-3 border-none p-4 font-bold text-gray-700 md:grid-cols-[2fr_1fr_1fr_140px] md:items-center">
-                <p>Course</p>
-                <p>Teacher</p>
-                <p>Credits</p>
-                <p>Actions</p>
-              </article>
-            </li>
-
-            {courses.map((course) => (
-              <li key={course.course_id}>
-                <article className="grid grid-cols-1 gap-3 rounded-md border p-4 md:grid-cols-[2fr_1fr_1fr_140px] md:items-center">
-                  <div>
-                    <h2 className="font-semibold">{course.course_name}</h2>
-                  </div>
-
-                  <p>{course.teacher || "Not assigned"}</p>
-
-                  <p>{course.credits}</p>
-
-                  <div className="flex gap-2 md:justify-self-end">
-                    <button type="button" onClick={() => onEditCourse(course)}>
-                      <RiEdit2Line size={20} color="white" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => onDeleteCourse(course.course_id)}
-                    >
-                      <FaRegTrashCan size={20} color="white" />
-                    </button>
-                  </div>
-                </article>
-              </li>
-            ))}
->>>>>>> origin/main
           </ul>
         ) : null}
       </section>

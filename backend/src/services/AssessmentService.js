@@ -223,7 +223,7 @@ exports.getAssessmentsByDay = async (date, student_id) => {
   const { data, error } = await supabase
     .from("assessment")
     .select(
-      "assessment_id, name, type, due_date, percentage, course!inner(courses!inner(name), semester!inner(student_id))",
+      "assessment_id, name, type, due_date, percentage, course!inner(color, courses!inner(name), semester!inner(student_id))",
     )
     .gte("due_date", dayStart)
     .lte("due_date", dayEnd)
@@ -247,7 +247,7 @@ exports.getAssessmentsByMonth = async (year, month, student_id) => {
   const { data, error } = await supabase
     .from("assessment")
     .select(
-      "assessment_id, name, type, due_date, percentage, course!inner(courses!inner(name), semester!inner(student_id))",
+      "assessment_id, name, type, due_date, percentage, course!inner(color, courses!inner(name), semester!inner(student_id))",
     )
     .gte("due_date", startDate)
     .lt("due_date", endDate)

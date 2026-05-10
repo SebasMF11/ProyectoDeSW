@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { dayCreateRequest } from "../../api/day.api";
 import { semesterViewRequest } from "../../api/semester";
 import { courseBySemesterRequest } from "../../api/course";
@@ -31,7 +31,7 @@ const Day = () => {
   const [errorMessage, setErrorMessage] = useState("");
   const [semesters, setSemesters] = useState<Semester[]>([]);
   const [courses, setCourses] = useState<Course[]>([]);
-  const { register, handleSubmit, watch, setValue } = useForm();
+  const { register, handleSubmit, watch, setValue, control } = useForm();
   const selectedSemesterName = watch("semesterName");
 
   useEffect(() => {
@@ -163,21 +163,51 @@ const Day = () => {
             type="text"
             {...register("classroom")}
           />
-          <input
-            className="formControl"
-            placeholder="Start Time"
-            type="time"
-            min="06:00"
-            max="22:00"
-            {...register("startTime", { required: true })}
+
+          {/* Start Time — usando Controller para que RHF detecte el valor correctamente */}
+          <label className="formText" htmlFor="day-start-time">
+            Start Time
+          </label>
+          <Controller
+            name="startTime"
+            control={control}
+            rules={{ required: true }}
+            render={({ field }) => (
+              <input
+                id="day-start-time"
+                className="formControl"
+                type="time"
+                min="06:00"
+                max="22:00"
+                value={field.value ?? ""}
+                onChange={(e) => field.onChange(e.target.value)}
+                onBlur={field.onBlur}
+                ref={field.ref}
+              />
+            )}
           />
-          <input
-            className="formControl"
-            placeholder="End Time"
-            type="time"
-            min="06:00"
-            max="22:00"
-            {...register("endTime", { required: true })}
+
+          {/* End Time */}
+          <label className="formText" htmlFor="day-end-time">
+            End Time
+          </label>
+          <Controller
+            name="endTime"
+            control={control}
+            rules={{ required: true }}
+            render={({ field }) => (
+              <input
+                id="day-end-time"
+                className="formControl"
+                type="time"
+                min="06:00"
+                max="22:00"
+                value={field.value ?? ""}
+                onChange={(e) => field.onChange(e.target.value)}
+                onBlur={field.onBlur}
+                ref={field.ref}
+              />
+            )}
           />
           <button type="submit">Create</button>
         </form>
