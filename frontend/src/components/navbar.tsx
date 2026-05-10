@@ -1,6 +1,6 @@
 import { supabase } from "../integrations/supabase";
 import { useNavigate } from "react-router";
-import logo from "../assets/logo2.png";
+import { useStorageImage } from "../hooks/useStorageImage";
 import { FiUser } from "react-icons/fi";
 import { IoMdSettings } from "react-icons/io";
 import { IoIosLogOut } from "react-icons/io";
@@ -8,6 +8,8 @@ import Menu from "./menu";
 
 function navbar() {
   const navigate = useNavigate();
+  const getImageUrl = useStorageImage("images");
+  const logoUrl = getImageUrl("logo2.png");
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
     if (error) throw error;
@@ -21,9 +23,8 @@ function navbar() {
         <button
           type="button"
           onClick={() => navigate("/home")}
-          className="flex items-center gap-2 cursor-pointer"
-        >
-          <img src={logo} alt="Logo" className="h-10 w-10" />
+          className="flex items-center gap-2 cursor-pointer">
+          <img src={logoUrl} alt="Logo" className="h-10 w-10" />
           <p className="text-[25px] font-bold font-sans text-white">PoliPlan</p>
         </button>
       </div>

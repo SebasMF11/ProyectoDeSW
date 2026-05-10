@@ -24,8 +24,8 @@ export default function DayCell({
   const isSelected = isSameDay(day, selected);
   const isCurrentMonth = isSameMonth(day, currentMonth);
 
-  // Obtener eventos para el día actual desde props
-  const key = day.toISOString().split("T")[0];
+  // Obtener eventos para el día actual desde props usando la fecha local
+  const key = format(day, "yyyy-MM-dd");
   const dots = assessments[key] ?? [];
 
   return (
