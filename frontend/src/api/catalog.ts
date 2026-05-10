@@ -18,6 +18,6 @@ export const coursesCatalogByFacultyRequest = (facultyId: string) =>
  * @param facultyId - UUID de facultad para filtrar (opcional)
  */
 export const availableCoursesRequest = (facultyId?: string) => {
-  const params = facultyId ? `?facultyId=${facultyId}` : "";
+  const params = facultyId ? `?facultyId=${encodeURIComponent(facultyId)}` : "";
   return httpClient.get(`catalog/courses/available${params}`);
 };

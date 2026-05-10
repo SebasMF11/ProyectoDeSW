@@ -168,16 +168,6 @@ const course = () => {
     try {
       setErrorMessage("");
 
-      // Validación de prerequisito en el frontend (informativa, el backend también valida)
-      if (!isEditMode && selectedCatalogCourse?.prerequisito) {
-        if (!selectedCatalogCourse.prerequisite_course) {
-          setErrorMessage(
-            "Esta materia tiene un prerequisito que no has completado.",
-          );
-          return;
-        }
-      }
-
       const payload: { color: string; courses_id: string; teacher: string; credits: number; semesterName: string } = { ...values, credits: Number(values.credits) };
       const res = isEditMode
         ? await courseUpdateRequest(editCourse!.course_id, payload)

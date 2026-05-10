@@ -23,12 +23,22 @@ exports.loginStudent = async ({ email, password }) => {
 
     // Si career_id es null, usar el primer career disponible como fallback
     if (!career_id) {
-      const { data: careers } = await supabase
+      const { data: careers, error: careerError } = await supabase
         .from("career")
         .select("career_id")
         .limit(1)
         .single();
+      
+      if (careerError) {
+        console.error("Failed to fetch fallback career:", careerError);
+        throw new Error("No career_id provided and unable to fetch default career");
+      }
+      
       career_id = careers?.career_id || null;
+      
+      if (!career_id) {
+        throw new Error("No career_id provided and no careers available in the system");
+      }
     }
 
     const { error: insertError } = await supabase.from("student").insert({

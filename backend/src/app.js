@@ -26,7 +26,7 @@ const cors = require("cors");
 const app = express();
 
 // Configurar middleware global
-app.use(cors());
+app.use(cors({ origin: "http://localhost:5173" }));
 app.use(express.json());
 
 // Importar todas las rutas del módulo
@@ -45,7 +45,6 @@ app.use("/assessment", assessmentRoutes);
 app.use("/course", courseRoutes);
 app.use("/semester", semesterRoutes);
 app.use("/catalog", catalogRoutes);
-app.use(cors({ origin: "http://localhost:5173" })); // Permitir origen del frontend
 app.use("/student", studentRoutes);
 
 // Endpoint de verificación

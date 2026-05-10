@@ -185,8 +185,15 @@ exports.updateCourseStatus = async (req, res) => {
         .json({ error: "Course not found or you don't have permission" });
     }
 
+    const statusMessages = {
+      active: "activated",
+      inactive: "deactivated",
+      completed: "marked as completed",
+      failed: "marked as failed"
+    };
+
     res.status(200).json({
-      message: `Course ${status === "active" ? "activated" : "deactivated"} successfully`,
+      message: `Course ${statusMessages[status]} successfully`,
       course: result,
     });
   } catch (error) {
