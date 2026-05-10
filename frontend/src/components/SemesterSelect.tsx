@@ -52,8 +52,8 @@ function SemesterSelect({
         ) : null}
 
         {semesters.map((semester) => (
-          <option key={semester.semester_id} value={semester.semester_name}>
-            {semester.semester_name}
+          <option key={semester.semester_id} value={semester.name}>
+            {semester.name}
           </option>
         ))}
       </select>

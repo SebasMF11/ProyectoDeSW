@@ -1,20 +1,18 @@
 import { useEffect, useState } from "react";
 import { assessmentsByMonthRequest } from "../api/assessment.api";
 
-// Definir la estructura de los datos de evaluación recibidos de la API
 interface RawAssessment {
-  assessment_id: number;
-  assessment_name: string;
+  assessment_id: string;
+  name: string;
   type: string;
-  due_date: string; // YYYY-MM-DD
+  due_date: string; // timestamptz — puede venir como ISO string
   course: {
-    course_name: string;
-    color?: string; // Color asignado desde CourseController
+    courses: { name: string };
+    color: string;
   };
   percentage: number;
 }
 
-// Definir el tipo de retorno del hook
 interface UseAssessmentsReturn {
   assessments: Record<string, string[]>; // { "YYYY-MM-DD": ["#color1", "#color2"] }
   isLoading: boolean;
@@ -36,7 +34,6 @@ export function useAssessments(
         setError(null);
         const response = await assessmentsByMonthRequest(year, month);
 
-        // Transformar la respuesta a formato de colores por fecha
         const assessmentsByDate: Record<string, string[]> = {};
 
         if (
@@ -44,11 +41,14 @@ export function useAssessments(
           Array.isArray(response.data.assessments)
         ) {
           response.data.assessments.forEach((assessment: RawAssessment) => {
-            const color = assessment.course?.color ?? "#808080";
-            // Normalizar la fecha a YYYY-MM-DD (remove timestamp)
-            const dateKey = assessment.due_date.split("T")[0];
+            const color = assessment.course?.color;
+            // due_date es timestamptz, normalizar a YYYY-MM-DD
+            const dateKey = assessment.due_date
+              ? assessment.due_date.split("T")[0]
+              : null;
 
-            // Agregar el color a la fecha
+            if (!dateKey || !color) return;
+
             if (!assessmentsByDate[dateKey]) {
               assessmentsByDate[dateKey] = [];
             }
@@ -57,6 +57,12 @@ export function useAssessments(
         }
 
         setAssessments(assessmentsByDate);
+      } catch (err) {
+        console.error("Error fetching assessments:", err);
+        setError(
+          err instanceof Error ? err.message : "Error loading assessments",
+        );
+        setAssessments({});
       } finally {
         setIsLoading(false);
       }

@@ -5,23 +5,22 @@ import { courseBySemesterRequest } from "../../api/course";
 import { gradeByCourseRequest } from "../../api/grade";
 import useSemesters from "../../hooks/useSemesters";
 import SemesterSelect from "../../components/SemesterSelect";
-import { format } from "date-fns";
 
 type Course = {
-  course_id: number;
-  course_name: string;
+  course_id: string;
+  courses: { name: string };
   teacher?: string;
   credits?: number;
 };
 
 type Assessment = {
-  assessment_id: number;
-  assessment_name: string;
+  assessment_id: string;
+  name: string;
   type: string;
   due_date?: string;
   percentage?: number;
   course?: {
-    course_name?: string;
+    courses?: { name: string };
   };
 };
 
@@ -33,8 +32,8 @@ type Grade = {
   };
 };
 
-const assessmentKey = (assessmentName?: string, dueDate?: string) =>
-  `${assessmentName || ""}::${dueDate || ""}`;
+const assessmentKey = (name?: string, dueDate?: string) =>
+  `${name || ""}::${dueDate || ""}`;
 
 function AssessmentList() {
   const navigate = useNavigate();
@@ -49,7 +48,7 @@ function AssessmentList() {
 
   useEffect(() => {
     if (!latestSemesterName) return;
-    setSelectedSemester((currentValue) => currentValue || latestSemesterName);
+    setSelectedSemester((current) => current || latestSemesterName);
   }, [latestSemesterName]);
 
   useEffect(() => {
@@ -67,13 +66,13 @@ function AssessmentList() {
 
         const { data: coursesData } =
           await courseBySemesterRequest(selectedSemester);
-        const semesterCourses = Array.isArray(coursesData?.courses)
+        const semesterCourses: Course[] = Array.isArray(coursesData?.courses)
           ? coursesData.courses
           : [];
         setCourses(semesterCourses);
 
         const currentSemester = semesters.find(
-          (semester) => semester.semester_name === selectedSemester,
+          (semester) => semester.name === selectedSemester,
         );
 
         if (!currentSemester?.semester_id) {
@@ -85,13 +84,15 @@ function AssessmentList() {
         const { data: assessmentsData } = await assessmentBySemesterRequest(
           currentSemester.semester_id,
         );
-        const semesterAssessments = Array.isArray(assessmentsData?.assessments)
+        const semesterAssessments: Assessment[] = Array.isArray(
+          assessmentsData?.assessments,
+        )
           ? assessmentsData.assessments
           : [];
         setAssessments(semesterAssessments);
 
         const gradeResponses = await Promise.all(
-          semesterCourses.map((course: Course) =>
+          semesterCourses.map((course) =>
             gradeByCourseRequest(course.course_id)
               .then((response) => ({
                 courseId: course.course_id,
@@ -104,7 +105,6 @@ function AssessmentList() {
         );
 
         const nextGradeMap: Record<string, number> = {};
-
         gradeResponses.forEach((gradeResponse) => {
           gradeResponse.grades.forEach((grade: Grade) => {
             const key = assessmentKey(
@@ -130,145 +130,101 @@ function AssessmentList() {
     loadSemesterContent();
   }, [selectedSemester, semesters]);
 
+  // Agrupar assessments por nombre del curso
   const assessmentsByCourse = useMemo(() => {
     const grouped: Record<string, Assessment[]> = {};
-
     assessments.forEach((assessment) => {
-      const courseName = assessment.course?.course_name || "Sin curso";
+      const courseName =
+        assessment.course?.courses?.name || "Sin curso";
       if (!grouped[courseName]) grouped[courseName] = [];
       grouped[courseName].push(assessment);
     });
-
     return grouped;
   }, [assessments]);
 
   return (
-    <div className="p-6 max-w-5xl mx-auto">
-      <header className="flex items-center justify-between gap-3 mb-4">
-        <section aria-label="Semester selection" className="space-y-3 w-30">
-          {errorMessage || semesterError ? (
-            <p>{errorMessage || semesterError}</p>
-          ) : null}
+    <div className="p-6 max-w-4xl mx-auto">
+      <div className="flex items-center justify-between gap-3 mb-4">
+        <h1 className="text-xl font-semibold">Actividades por semestre</h1>
+        <button type="button" onClick={() => navigate("/assessment")}>
+          Agregar assessment
+        </button>
+      </div>
 
-          <SemesterSelect
-            semesters={semesters}
-            value={selectedSemester}
-            onValueChange={setSelectedSemester}
-          />
-        </section>
-        <p className="title">Assessments By Semester</p>
-        <div className="flex gap-2">
-          <button type="button" onClick={() => navigate("/assessment")}>
-            Add assessment
-          </button>
+      {errorMessage || semesterError ? (
+        <p>{errorMessage || semesterError}</p>
+      ) : null}
 
-          <button type="button" onClick={() => navigate("/grade")}>
-            Add grade
-          </button>
-        </div>
-      </header>
+      <SemesterSelect
+        semesters={semesters}
+        value={selectedSemester}
+        onValueChange={setSelectedSemester}
+      />
 
-      <section className="mt-6" aria-live="polite">
+      <div className="mt-6">
         {loadingSemesters || loading ? <p>Cargando informacion...</p> : null}
 
         {!loadingSemesters &&
         !loading &&
         selectedSemester &&
         courses.length === 0 ? (
-          <p>There are no courses assigned this semester.</p>
+          <p>No hay cursos asignados a este semestre.</p>
         ) : null}
 
         {!loadingSemesters && !loading && courses.length > 0 ? (
-          <ul className="flex flex-col gap-6">
+          <ul className="flex flex-col gap-4">
             {courses.map((course) => {
-              const courseAssessments =
-                assessmentsByCourse[course.course_name] || [];
+              const courseName = course.courses.name;
+              const courseAssessments = assessmentsByCourse[courseName] || [];
 
               return (
-                <li key={course.course_id}>
-                  <article className="border-none p-4 space-y-3">
-                    <header>
-                      <h2 className="text-lg font-semibold">
-                        {course.course_name}
-                      </h2>
-                      <dl className="flex flex-wrap gap-x-5 gap-y-1 text-sm text-gray-700 mt-1">
-                        <div>
-                          <dt className="inline font-medium">Teacher: </dt>
-                          <dd className="inline">
-                            {course.teacher || "Sin asignar"}
-                          </dd>
-                        </div>
-                        <div>
-                          <dt className="inline font-medium">Credits: </dt>
-                          <dd className="inline">{course.credits ?? "-"}</dd>
-                        </div>
-                      </dl>
-                    </header>
+                <li key={course.course_id} className="border rounded-md p-4">
+                  <p className="font-semibold">{courseName}</p>
+                  <p>
+                    Profesor: {course.teacher || "Sin asignar"} | Creditos:{" "}
+                    {course.credits ?? "-"}
+                  </p>
 
-                    {courseAssessments.length === 0 ? (
-                      <p className="pl-6">This course has no assessments.</p>
-                    ) : (
-                      <section
-                        aria-label={`Assessments for ${course.course_name}`}
-                      >
-                        <ul className="flex flex-col gap-2">
-                          {courseAssessments.map((assessment) => {
-                            const key = assessmentKey(
-                              assessment.assessment_name,
-                              assessment.due_date,
-                            );
-                            const gradeValue = gradeMap[key];
-                            const hasGrade = Number.isFinite(gradeValue);
+                  {courseAssessments.length === 0 ? (
+                    <p className="mt-2">Este curso no tiene assessments.</p>
+                  ) : (
+                    <ul className="mt-3 flex flex-col gap-2">
+                      {courseAssessments.map((assessment) => {
+                        const key = assessmentKey(
+                          assessment.name,
+                          assessment.due_date,
+                        );
+                        const gradeValue = gradeMap[key];
+                        const hasGrade = Number.isFinite(gradeValue);
+                        // Mostrar solo la fecha (YYYY-MM-DD) si viene con timestamp
+                        const displayDate = assessment.due_date
+                          ? assessment.due_date.split("T")[0]
+                          : "-";
 
-                            return (
-                              <li key={assessment.assessment_id}>
-                                <article className="rounded border p-3">
-                                  <div className="grid grid-cols-1 gap-2 md:grid-cols-[2fr_1fr_1fr_1fr] md:items-center">
-                                    <div>
-                                      <p className="text-sm text-gray-700">
-                                        {assessment.due_date
-                                          ? format(
-                                              assessment.due_date,
-                                              "MMMM d",
-                                            )
-                                          : "-"}
-                                      </p>
-                                      <h3 className="font-semibold">
-                                        {assessment.type} :{" "}
-                                        {assessment.assessment_name}
-                                      </h3>
-                                    </div>
-
-                                    <p className="text-sm md:text-base">
-                                      Percentage: {assessment.percentage ?? "-"}
-                                      %
-                                    </p>
-
-                                    <p className="text-sm md:text-base">
-                                      Grade: {hasGrade ? gradeValue : "Pending"}
-                                    </p>
-
-                                    {/* <button
-                                      type="button"
-                                      className="justify-self-start md:justify-self-end"
-                                    >
-                                      //
-                                    </button> */}
-                                  </div>
-                                </article>
-                              </li>
-                            );
-                          })}
-                        </ul>
-                      </section>
-                    )}
-                  </article>
+                        return (
+                          <li
+                            key={assessment.assessment_id}
+                            className="rounded border p-3"
+                          >
+                            <p>
+                              <strong>{assessment.name}</strong>
+                            </p>
+                            <p>
+                              Tipo: {assessment.type} | Fecha: {displayDate} |
+                              Porcentaje: {assessment.percentage ?? "-"}%
+                            </p>
+                            <p>Nota: {hasGrade ? gradeValue : "Pendiente"}</p>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  )}
                 </li>
               );
             })}
           </ul>
         ) : null}
-      </section>
+      </div>
     </div>
   );
 }

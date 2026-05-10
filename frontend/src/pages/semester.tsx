@@ -4,15 +4,13 @@ import { semesterCreateRequest, semesterViewRequest } from "../api/semester";
 import axios from "axios";
 import { useEffect, useState } from "react";
 
-// Modelo de cada semestre que llega desde la API y se guarda en estado local.
 type SemesterItem = {
-  semester_id: number;
-  semester_name: string;
+  semester_id: string;
+  name: string;
   start_date: string;
   end_date: string;
 };
 
-// Valida si el rango [startDate, endDate] se cruza con un semestre existente.
 const overlaps = (
   startDate: string,
   endDate: string,
@@ -22,9 +20,6 @@ const overlaps = (
   const end = new Date(`${endDate}T00:00:00Z`);
   const existingStart = new Date(`${existing.start_date}T00:00:00Z`);
   const existingEnd = new Date(`${existing.end_date}T00:00:00Z`);
-
-  // Si el nuevo inicio ocurre antes del fin existente y el nuevo fin despues
-  // del inicio existente, entonces hay superposicion.
   return start < existingEnd && end > existingStart;
 };
 
@@ -46,7 +41,6 @@ const Semester = () => {
         setSemesters([]);
       }
     };
-
     loadSemesters();
   }, []);
 
@@ -76,21 +70,20 @@ const Semester = () => {
 
       if (overlappingSemester) {
         setErrorMessage(
-          `Las fechas del semestre se sobreponen con "${overlappingSemester.semester_name}"`,
+          `Las fechas del semestre se sobreponen con "${overlappingSemester.name}"`,
         );
         return;
       }
 
       const res = await semesterCreateRequest(values);
       console.log(res);
-      navigate("/");
+      navigate("/home");
     } catch (error) {
       if (axios.isAxiosError(error)) {
         const apiMessage = error.response?.data?.error;
         setErrorMessage(apiMessage || "No se pudo crear el semestre");
         return;
       }
-
       setErrorMessage("Ocurrio un error inesperado");
     }
   });
@@ -113,7 +106,6 @@ const Semester = () => {
             className="formControl"
             {...register("startDate", { required: true })}
           />
-
           <p className="formText">End date</p>
           <input
             type="date"
@@ -121,7 +113,6 @@ const Semester = () => {
             min={startDate || undefined}
             {...register("endDate", { required: true })}
           />
-
           <p className="formText">Midterm week start date</p>
           <input
             type="date"
@@ -132,6 +123,19 @@ const Semester = () => {
           />
           <button type="submit">Create</button>
         </form>
+
+        {semesters.length > 0 && (
+          <div className="mt-6">
+            <p className="formText font-semibold mb-2">Semestres existentes</p>
+            <ul className="flex flex-col gap-2">
+              {semesters.map((s) => (
+                <li key={s.semester_id} className="border rounded p-2 text-sm">
+                  <strong>{s.name}</strong> — {s.start_date} → {s.end_date}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
       </div>
     </div>
   );

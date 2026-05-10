@@ -1,4 +1,5 @@
 const courseService = require("../services/CourseService");
+const catalogService = require("../services/CatalogService");
 
 const colorMap = {
   red: "#FF5733",
@@ -49,19 +50,28 @@ exports.getCoursesBySemester = async (req, res) => {
 
 exports.createCourse = async (req, res) => {
   try {
-    const { courseName, credits, teacher, color, semesterName } = req.body;
+    // courses_id: UUID del catálogo de materias (tabla courses)
+    const { courses_id, credits, teacher, color, semesterName } = req.body;
     const student_id = req.student.id;
 
-    if (!courseName || !credits || !semesterName) {
+    if (!courses_id || !credits || !semesterName) {
       return res
         .status(400)
-        .json({ error: "courseName, credits and semesterName are required" });
+        .json({ error: "courses_id, credits and semesterName are required" });
     }
 
     const colorHex = colorMap[color?.toLowerCase()];
     if (!colorHex) {
       return res.status(400).json({
         error: `Invalid color. Use: ${Object.keys(colorMap).join(", ")}`,
+      });
+    }
+
+    // Validar prerequisito antes de crear
+    const prereqCheck = await catalogService.checkPrerequisite(student_id, courses_id);
+    if (!prereqCheck.allowed) {
+      return res.status(400).json({
+        error: `Debes completar el prerequisito "${prereqCheck.prerequisite.name}" antes de agregar esta materia.`,
       });
     }
 
@@ -76,11 +86,11 @@ exports.createCourse = async (req, res) => {
     }
 
     const course = await courseService.create({
-      course_name: courseName,
+      courses_id,
       credits,
       teacher,
       color: colorHex,
-      status: true,
+      status: "active",
       semester_id: semester.semester_id,
     });
 
@@ -116,7 +126,7 @@ exports.deleteCourse = async (req, res) => {
 exports.updateCourse = async (req, res) => {
   try {
     const { courseId } = req.params;
-    const { courseName, credits, teacher, color } = req.body;
+    const { credits, teacher, color } = req.body;
     const student_id = req.student.id;
 
     let colorHex;
@@ -130,7 +140,6 @@ exports.updateCourse = async (req, res) => {
     }
 
     const result = await courseService.updateCourse(courseId, student_id, {
-      ...(courseName && { course_name: courseName }),
       ...(credits && { credits }),
       ...(teacher && { teacher }),
       ...(colorHex && { color: colorHex }),
@@ -158,8 +167,11 @@ exports.updateCourseStatus = async (req, res) => {
     const { status } = req.body;
     const student_id = req.student.id;
 
-    if (status === undefined || typeof status !== "boolean") {
-      return res.status(400).json({ error: "status must be a boolean value" });
+    const validStatuses = ["active", "inactive", "completed", "failed"];
+    if (!status || !validStatuses.includes(status)) {
+      return res
+        .status(400)
+        .json({ error: `status must be one of: ${validStatuses.join(", ")}` });
     }
 
     const result = await courseService.updateStatus(
@@ -173,8 +185,17 @@ exports.updateCourseStatus = async (req, res) => {
         .json({ error: "Course not found or you don't have permission" });
     }
 
+    const statusMessages = {
+      active: "activated",
+      inactive: "deactivated",
+      completed: "marked as completed",
+      failed: "marked as failed"
+    };
+    
+    const statusMessage = statusMessages[status] || `status changed to ${status}`;
+
     res.status(200).json({
-      message: `Course ${status ? "activated" : "deactivated"} successfully`,
+      message: `Course ${statusMessage} successfully`,
       course: result,
     });
   } catch (error) {

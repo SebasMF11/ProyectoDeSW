@@ -1,7 +1,11 @@
 import type { ChangeEvent, SelectHTMLAttributes } from "react";
 
-type Course = {
-  course_name: string;
+export type Course = {
+  course_id: string;
+  courses: { name: string };
+  teacher?: string;
+  credits?: number;
+  color?: string;
 };
 
 type CourseSelectProps = {
@@ -55,8 +59,8 @@ function CourseSelect({
         ) : null}
 
         {courses.map((course) => (
-          <option key={course.course_name} value={course.course_name}>
-            {course.course_name}
+          <option key={course.course_id} value={course.courses.name}>
+            {course.courses.name}
           </option>
         ))}
       </select>

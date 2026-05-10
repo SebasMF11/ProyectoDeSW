@@ -7,12 +7,13 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 
 type Semester = {
-  semester_id: number;
-  semester_name: string;
+  semester_id: string;
+  name: string;
 };
 
 type Course = {
-  course_name: string;
+  course_id: string;
+  courses: { name: string };
 };
 
 const dayOptions = [
@@ -43,7 +44,6 @@ const Day = () => {
         setSemesters([]);
       }
     };
-
     loadSemesters();
   }, []);
 
@@ -54,21 +54,17 @@ const Day = () => {
         setValue("courseName", "");
         return;
       }
-
       try {
         const { data } = await courseBySemesterRequest(selectedSemesterName);
-        const semesterCourses = Array.isArray(data?.courses)
-          ? data.courses
-          : [];
-        setCourses(semesterCourses);
+        setCourses(
+          Array.isArray(data?.courses) ? data.courses : [],
+        );
       } catch (error) {
         console.error(error);
         setCourses([]);
       }
-
       setValue("courseName", "");
     };
-
     loadCourses();
   }, [selectedSemesterName, setValue]);
 
@@ -77,24 +73,30 @@ const Day = () => {
       setErrorMessage("");
       const res = await dayCreateRequest(values);
       console.log(res);
-      navigate("/");
+      navigate("/course-list");
     } catch (error) {
       if (axios.isAxiosError(error)) {
         const apiMessage = error.response?.data?.error;
         setErrorMessage(apiMessage || "Could not create the day");
         return;
       }
-
       setErrorMessage("An unexpected error occurred");
     }
   });
+
   return (
     <div>
       <div className="formContainer">
         <form onSubmit={onSubmit} className="formLayout">
           <p className="title">Day</p>
           {errorMessage ? <p>{errorMessage}</p> : null}
+
+          {/* Semestre */}
+          <label className="formText" htmlFor="day-semester">
+            Semestre
+          </label>
           <select
+            id="day-semester"
             className="formControl"
             defaultValue=""
             {...register("semesterName", { required: true })}
@@ -105,12 +107,18 @@ const Day = () => {
                 : "No semesters available"}
             </option>
             {semesters.map((semester) => (
-              <option key={semester.semester_id} value={semester.semester_name}>
-                {semester.semester_name}
+              <option key={semester.semester_id} value={semester.name}>
+                {semester.name}
               </option>
             ))}
           </select>
+
+          {/* Curso */}
+          <label className="formText" htmlFor="day-course">
+            Curso
+          </label>
           <select
+            id="day-course"
             className="formControl"
             defaultValue=""
             {...register("courseName", { required: true })}
@@ -123,12 +131,18 @@ const Day = () => {
                 : "Select a semester first"}
             </option>
             {courses.map((course) => (
-              <option key={course.course_name} value={course.course_name}>
-                {course.course_name}
+              <option key={course.course_id} value={course.courses.name}>
+                {course.courses.name}
               </option>
             ))}
           </select>
+
+          {/* Día de la semana */}
+          <label className="formText" htmlFor="day-of-week">
+            Día de la semana
+          </label>
           <select
+            id="day-of-week"
             className="formControl"
             defaultValue=""
             {...register("dayOfWeek", { required: true })}
@@ -142,11 +156,12 @@ const Day = () => {
               </option>
             ))}
           </select>
+
           <input
             className="formControl"
             placeholder="Classroom"
             type="text"
-            {...register("classroom", { required: true })}
+            {...register("classroom")}
           />
           <input
             className="formControl"
@@ -170,4 +185,5 @@ const Day = () => {
     </div>
   );
 };
+
 export default Day;

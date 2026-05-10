@@ -18,6 +18,7 @@ frontend/.env.*
 node_modules/
 backend/node_modules/
 frontend/node_modules/
+supabase
 
 # Logs
 *.log
@@ -29,3 +30,23 @@ yarn-error.log*
 dist/
 frontend/dist/
 backend/dist/
+
+# OS / Windows
+desktop.ini
+Thumbs.db
+
+# OS / macOS
+.DS_Store
+
+# Editor
+.vscode/
+.idea/
+
+# Testing / TypeScript cache
+coverage/
+*.tsbuildinfo
+
+
+.agents
+skills-lock.json
+.kiro

@@ -3,8 +3,8 @@ import { semesterViewRequest } from "../api/semester";
 import { toSortableTimestamp } from "../utils/date";
 
 export type Semester = {
-  semester_id: number;
-  semester_name: string;
+  semester_id: string;
+  name: string;
   start_date?: string;
   end_date?: string;
 };
@@ -23,7 +23,7 @@ const getLatestSemesterName = (semesters: Semester[]) => {
     );
   });
 
-  return sortedSemesters[0].semester_name;
+  return sortedSemesters[0].name;
 };
 
 const useSemesters = () => {

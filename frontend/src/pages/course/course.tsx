@@ -3,11 +3,30 @@ import { useForm } from "react-hook-form";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { courseCreateRequest, courseUpdateRequest } from "../../api/course";
-import { loadSemesters, type Semester } from "../../utils/loadSemesters";
+import { semesterViewRequest } from "../../api/semester";
+import { facultiesRequest, availableCoursesRequest } from "../../api/catalog";
 
-// Datos que llegan por navegacion cuando se abre el formulario en modo edicion.
+type Semester = {
+  semester_id: string;
+  name: string;
+};
+
+type Faculty = {
+  faculty_id: string;
+  name: string;
+};
+
+type CatalogCourse = {
+  courses_id: string;
+  name: string;
+  faculty: { faculty_id: string; name: string };
+  prerequisito: string | null;
+  prerequisite_course: { courses_id: string; name: string } | null;
+};
+
 type EditCourseState = {
-  course_id: number;
+  course_id: string;
+  courses_id: string;
   course_name: string;
   teacher: string;
   credits: number;
@@ -15,10 +34,9 @@ type EditCourseState = {
   semester_name: string;
 };
 
-// Valores que maneja react-hook-form dentro del formulario.
 type FormValues = {
   color: string;
-  courseName: string;
+  courses_id: string;
   teacher: string;
   credits: number;
   semesterName: string;
@@ -37,55 +55,109 @@ const colorOptions = [
   "gray",
 ];
 
+const colorHexToName: Record<string, string> = {
+  "#FF5733": "red",
+  "#3380FF": "blue",
+  "#33FF57": "green",
+  "#FFD700": "yellow",
+  "#FFA500": "orange",
+  "#800080": "purple",
+  "#FF69B4": "pink",
+  "#000000": "black",
+  "#FFFFFF": "white",
+  "#808080": "gray",
+};
+
 const course = () => {
   const navigate = useNavigate();
   const location = useLocation();
+
   const [errorMessage, setErrorMessage] = useState("");
   const [semesters, setSemesters] = useState<Semester[]>([]);
-  const { register, handleSubmit, setValue } = useForm<FormValues>();
+  const [faculties, setFaculties] = useState<Faculty[]>([]);
+  const [selectedFacultyId, setSelectedFacultyId] = useState("");
+  const [catalogCourses, setCatalogCourses] = useState<CatalogCourse[]>([]);
+  const [loadingCourses, setLoadingCourses] = useState(false);
+  const [selectedCatalogCourse, setSelectedCatalogCourse] =
+    useState<CatalogCourse | null>(null);
+
+  const { register, handleSubmit, setValue, watch } = useForm<FormValues>();
 
   const editCourse = location.state as EditCourseState | undefined;
   const isEditMode = Boolean(editCourse?.course_id);
 
-  // En BD el color del curso se guarda como HEX, pero el select usa nombres.
-  // Este mapa traduce HEX -> nombre para precargar el valor correcto al editar.
-  const colorHexToName: Record<string, string> = {
-    "#FF5733": "red",
-    "#3380FF": "blue",
-    "#33FF57": "green",
-    "#FFD700": "yellow",
-    "#FFA500": "orange",
-    "#800080": "purple",
-    "#FF69B4": "pink",
-    "#000000": "black",
-    "#FFFFFF": "white",
-    "#808080": "gray",
-  };
+  const watchedCoursesId = watch("courses_id");
 
-  // useEffect con []: corre una sola vez al montar el componente.
-  // Aqui se usa para cargar semestres iniciales desde la API.
+  // Actualizar el curso seleccionado del catálogo cuando cambia el select
   useEffect(() => {
-    const initSemesters = async () => {
-      const semesters = await loadSemesters();
-      setSemesters(semesters);
-    };
+    if (!watchedCoursesId) {
+      setSelectedCatalogCourse(null);
+      return;
+    }
+    const found = catalogCourses.find((c) => c.courses_id === watchedCoursesId);
+    setSelectedCatalogCourse(found ?? null);
+  }, [watchedCoursesId, catalogCourses]);
 
-    initSemesters();
+  // Cargar semestres y facultades al montar
+  useEffect(() => {
+    const loadInitialData = async () => {
+      try {
+        const [semestersRes, facultiesRes] = await Promise.all([
+          semesterViewRequest(),
+          facultiesRequest(),
+        ]);
+        setSemesters(Array.isArray(semestersRes.data) ? semestersRes.data : []);
+        setFaculties(
+          Array.isArray(facultiesRes.data?.faculties)
+            ? facultiesRes.data.faculties
+            : [],
+        );
+      } catch (error) {
+        console.error(error);
+      }
+    };
+    loadInitialData();
   }, []);
 
-  // useEffect con dependencias: corre al montar y cuando cambian esas dependencias.
-  // Aqui rellena el formulario cuando hay curso a editar y cuando cambian sus datos.
-  /*Qué es useEffect:
-useEffect es un hook de React para ejecutar efectos secundarios después de renderizar, como pedir datos, sincronizar estado externo o precargar valores.
-Depende del arreglo de dependencias:
+  // Cargar materias disponibles cuando cambia la facultad seleccionada
+  // Si no hay facultades disponibles, carga todas las materias de la carrera sin filtro de facultad
+  useEffect(() => {
+    if (isEditMode) return;
 
-[]: se ejecuta una vez al montar.
-[a, b]: se ejecuta al montar y cada vez que cambie a o b.
-Sin arreglo: se ejecuta en cada render.*/
+    // Si hay facultades pero ninguna seleccionada aún, esperar selección
+    if (faculties.length > 0 && !selectedFacultyId) {
+      setCatalogCourses([]);
+      setValue("courses_id", "");
+      return;
+    }
+
+    // Si no hay facultades O ya hay una seleccionada, cargar materias
+    const loadCourses = async () => {
+      try {
+        setLoadingCourses(true);
+        setErrorMessage("");
+        // Pasar facultyId solo si hay facultades y una está seleccionada
+        const facultyParam = faculties.length > 0 && selectedFacultyId ? selectedFacultyId : undefined;
+        const res = await availableCoursesRequest(facultyParam);
+        setCatalogCourses(
+          Array.isArray(res.data?.courses) ? res.data.courses : [],
+        );
+        setValue("courses_id", "");
+      } catch (error) {
+        console.error(error);
+        setCatalogCourses([]);
+      } finally {
+        setLoadingCourses(false);
+      }
+    };
+
+    loadCourses();
+  }, [selectedFacultyId, faculties, isEditMode, setValue]);
+
+  // Pre-llenar formulario en modo edición
   useEffect(() => {
     if (!isEditMode || !editCourse) return;
-
-    setValue("courseName", editCourse.course_name || "");
+    setValue("courses_id", editCourse.courses_id || "");
     setValue("teacher", editCourse.teacher || "");
     setValue("credits", editCourse.credits);
     setValue("semesterName", editCourse.semester_name || "");
@@ -96,15 +168,10 @@ Sin arreglo: se ejecuta en cada render.*/
     try {
       setErrorMessage("");
 
-      const payload = {
-        ...values,
-        credits: Number(values.credits),
-      };
-
+      const payload: { color: string; courses_id: string; teacher: string; credits: number; semesterName: string } = { ...values, credits: Number(values.credits) };
       const res = isEditMode
         ? await courseUpdateRequest(editCourse!.course_id, payload)
         : await courseCreateRequest(payload);
-
       console.log(res);
       navigate("/course-list");
     } catch (error) {
@@ -113,13 +180,12 @@ Sin arreglo: se ejecuta en cada render.*/
         setErrorMessage(
           apiMessage ||
             (isEditMode
-              ? "Could not update the course"
-              : "Could not create the course"),
+              ? "No se pudo actualizar el curso"
+              : "No se pudo crear el curso"),
         );
         return;
       }
-
-      setErrorMessage("An unexpected error occurred");
+      setErrorMessage("Ocurrió un error inesperado");
     }
   });
 
@@ -128,17 +194,25 @@ Sin arreglo: se ejecuta en cada render.*/
       <div className="formContainer">
         <form onSubmit={onSubmit} className="formLayout">
           <p className="title">
-            {isEditMode ? "Edit course" : "Create course"}
+            {isEditMode ? "Editar curso" : "Agregar curso"}
           </p>
-          {errorMessage ? <p>{errorMessage}</p> : null}
+
+          {errorMessage ? (
+            <p className="text-red-600 text-sm">{errorMessage}</p>
+          ) : null}
+
+          {/* Color */}
+          <label className="formText" htmlFor="color-select">
+            Color
+          </label>
           <select
+            id="color-select"
             className="formControl"
             defaultValue=""
-            {...register("color", {
-              required: true,
-            })}>
+            {...register("color", { required: true })}
+          >
             <option value="" disabled>
-              Select a color
+              Selecciona un color
             </option>
             {colorOptions.map((color) => (
               <option key={color} value={color}>
@@ -146,46 +220,119 @@ Sin arreglo: se ejecuta en cada render.*/
               </option>
             ))}
           </select>
-          <input
-            className="formControl"
-            placeholder="Name"
-            type="text"
-            {...register("courseName", { required: true })}
-          />
-          <input
-            className="formControl"
-            placeholder="Teacher"
-            type="text"
-            {...register("teacher", { required: true })}
-          />
-          <input
-            className="formControl"
-            placeholder="Credits"
-            type="number"
-            {...register("credits", { required: true })}
-          />
+
+          {/* Facultad — solo en modo creación */}
+          {!isEditMode && (
+            <>
+              <label className="formText" htmlFor="faculty-select">
+                Facultad
+              </label>
+              <select
+                id="faculty-select"
+                className="formControl"
+                value={selectedFacultyId}
+                onChange={(e) => setSelectedFacultyId(e.target.value)}
+              >
+                <option value="" disabled>
+                  {faculties.length > 0
+                    ? "Selecciona una facultad"
+                    : "No hay facultades disponibles"}
+                </option>
+                {faculties.map((f) => (
+                  <option key={f.faculty_id} value={f.faculty_id}>
+                    {f.name}
+                  </option>
+                ))}
+              </select>
+            </>
+          )}
+
+          {/* Materia del catálogo */}
+          <label className="formText" htmlFor="courses-select">
+            Materia
+          </label>
           <select
+            id="courses-select"
             className="formControl"
             defaultValue=""
-            disabled={isEditMode}
-            {...register("semesterName", { required: true })}>
+            disabled={isEditMode || (faculties.length > 0 && !selectedFacultyId)}
+            {...register("courses_id", { required: !isEditMode })}
+          >
             <option value="" disabled>
-              {semesters.length > 0
-                ? "Select a semester"
-                : "No semesters available"}
+              {isEditMode
+                ? editCourse?.course_name
+                : faculties.length > 0 && !selectedFacultyId
+                  ? "Primero selecciona una facultad"
+                  : loadingCourses
+                    ? "Cargando materias..."
+                    : catalogCourses.length > 0
+                      ? "Selecciona una materia"
+                      : "No hay materias disponibles"}
             </option>
-            {semesters.map((semester) => (
-              <option key={semester.semester_id} value={semester.semester_name}>
-                {semester.semester_name}
+            {catalogCourses.map((c) => (
+              <option key={c.courses_id} value={c.courses_id}>
+                {c.name}
               </option>
             ))}
           </select>
+
+          {/* Prerequisito — informativo */}
+          {!isEditMode && selectedCatalogCourse && (
+            <div className="formControl bg-gray-50 text-sm flex items-center gap-2">
+              <span className="font-medium">Prerequisito:</span>
+              {selectedCatalogCourse.prerequisite_course ? (
+                <span className="text-gray-700">
+                  {selectedCatalogCourse.prerequisite_course.name}
+                </span>
+              ) : (
+                <span className="italic text-gray-400">Ninguno</span>
+              )}
+            </div>
+          )}
+
+          <input
+            className="formControl"
+            placeholder="Profesor"
+            type="text"
+            {...register("teacher")}
+          />
+          <input
+            className="formControl"
+            placeholder="Créditos"
+            type="number"
+            {...register("credits", { required: true, valueAsNumber: true })}
+          />
+
+          {/* Semestre */}
+          <label className="formText" htmlFor="semester-select">
+            Semestre
+          </label>
+          <select
+            id="semester-select"
+            className="formControl"
+            defaultValue=""
+            disabled={isEditMode}
+            {...register("semesterName", { required: !isEditMode })}
+          >
+            <option value="" disabled>
+              {semesters.length > 0
+                ? "Selecciona un semestre"
+                : "No hay semestres disponibles"}
+            </option>
+            {semesters.map((semester) => (
+              <option key={semester.semester_id} value={semester.name}>
+                {semester.name}
+              </option>
+            ))}
+          </select>
+
           <button type="submit">
-            {isEditMode ? "Save changes" : "Create"}
+            {isEditMode ? "Guardar cambios" : "Crear"}
           </button>
         </form>
       </div>
     </div>
   );
 };
+
 export default course;

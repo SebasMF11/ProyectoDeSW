@@ -1,25 +1,6 @@
 const supabase = require("../config/supabase");
 
-/**
- * FUNCIÓN: loginStudent
- * PROPÓSITO: Autenticar estudiante y obtener token JWT
- *
- * FLUJO:
- * 1. Enviar email/password a Supabase Auth
- * 2. Supabase retorna JWT token si credenciales son válidas
- * 3. Verificar si existe registro en tabla 'student'
- * 4. Si no existe, crear registro con datos de Auth
- * 5. Retornar token y datos del usuario
- *
- * ENTRADA: { email, password }
- * SALIDA: { session: { access_token, ... }, user: {...} }
- *
- * ERRORES:
- * - Credenciales inválidas → error de Supabase Auth
- * - Problema accediendo tabla student → error de BD
- */
 exports.loginStudent = async ({ email, password }) => {
-  // Paso 1: Autenticar contra Supabase Auth
   const { data, error } = await supabase.auth.signInWithPassword({
     email,
     password,
@@ -27,7 +8,6 @@ exports.loginStudent = async ({ email, password }) => {
 
   if (error) throw error;
 
-  // Paso 2: Verificar si existe registro en tabla 'student'
   const { data: existing, error: checkError } = await supabase
     .from("student")
     .select("*")
@@ -38,13 +18,35 @@ exports.loginStudent = async ({ email, password }) => {
     throw checkError;
   }
 
-  // Paso 3: Si no existe, crear registro en tabla 'student'
   if (!existing || existing.length === 0) {
+    let career_id = data.user.user_metadata?.career_id || null;
+
+    // Si career_id es null, usar el primer career disponible como fallback
+    if (!career_id) {
+      const { data: careers, error: careerError } = await supabase
+        .from("career")
+        .select("career_id")
+        .limit(1)
+        .single();
+      
+      if (careerError) {
+        console.error("Failed to fetch fallback career:", careerError);
+        throw new Error("No career_id provided and unable to fetch default career");
+      }
+      
+      career_id = careers?.career_id;
+      
+      if (!career_id) {
+        throw new Error("No career_id provided and no careers available in the system");
+      }
+    }
+
     const { error: insertError } = await supabase.from("student").insert({
       student_id: data.user.id,
       name: data.user.user_metadata?.name || "",
       last_name: data.user.user_metadata?.lastName || "",
       email: data.user.email,
+      career_id,
     });
 
     if (insertError) {
@@ -53,22 +55,20 @@ exports.loginStudent = async ({ email, password }) => {
     }
   }
 
-  // Retornar datos de autenticación
   return data;
 };
 
 exports.authStudent = async (student) => {
-  const { name, lastName, email, password } = student;
+  const { name, lastName, email, password, career_id } = student;
 
-  // Crear usuario en Supabase Auth
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
     options: {
-      // Guardar nombre en user_metadata (accesible después)
       data: {
         name,
         lastName,
+        career_id: career_id || null,
       },
     },
   });
@@ -78,7 +78,21 @@ exports.authStudent = async (student) => {
     throw error;
   }
 
-  // Supabase automáticamente envía email de confirmación
+  return data;
+};
+
+exports.getStudent = async (student_id) => {
+  const { data, error } = await supabase
+    .from("student")
+    .select("student_id, name, last_name, email, created_at, career!left(name)")
+    .eq("student_id", student_id)
+    .single();
+
+  if (error) {
+    console.error(error);
+    throw error;
+  }
+
   return data;
 };
 
@@ -87,7 +101,7 @@ exports.updateStudent = async (student_id, fields) => {
     .from("student")
     .update(fields)
     .eq("student_id", student_id)
-    .select();
+    .select("student_id, name, last_name, email, career_id");
 
   if (error) {
     console.error(error);

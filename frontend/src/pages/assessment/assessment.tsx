@@ -3,13 +3,16 @@ import { useForm } from "react-hook-form";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { assessmentCreateRequest } from "../../api/assessment.api";
+import { semesterViewRequest } from "../../api/semester";
+import { courseBySemesterRequest } from "../../api/course";
 import SemesterSelect from "../../components/SemesterSelect";
-import CourseSelect from "../../components/CourseSelect";
-import { loadSemesters, type Semester } from "../../utils/loadSemesters";
-import { loadCoursesBySemester } from "../../utils/loadCoursesBySemester";
+import CourseSelect, { type Course } from "../../components/CourseSelect";
 
-type Course = {
-  course_name: string;
+type Semester = {
+  semester_id: string;
+  name: string;
+  start_date: string;
+  end_date: string;
 };
 
 const assessmentTypes = [
@@ -27,60 +30,62 @@ const assessment = () => {
   const [semesters, setSemesters] = useState<Semester[]>([]);
   const [courses, setCourses] = useState<Course[]>([]);
   const { register, handleSubmit, watch, setValue } = useForm();
-  const selectedSemester = watch("semesterName");
+  const selectedSemesterName = watch("semesterName");
   const selectedSemesterData = semesters.find(
-    (semester) => semester.semester_name === selectedSemester,
+    (semester) => semester.name === selectedSemesterName,
   );
 
   useEffect(() => {
-    const initSemesters = async () => {
-      // Cargar semestres
-      const semesters = await loadSemesters();
-      setSemesters(semesters);
-
-      // Seleccionar automáticamente el primer semestre si existe
-      if (semesters.length > 0) {
-        const semesterName = semesters[0].semester_name;
-        setValue("semesterName", semesterName, { shouldValidate: false });
-
-        // Cargar cursos del semestre seleccionado
-        const courses = await loadCoursesBySemester(semesterName);
-        setCourses(courses);
+    const loadSemesters = async () => {
+      try {
+        const { data } = await semesterViewRequest();
+        const list = Array.isArray(data) ? data : [];
+        setSemesters(list);
+        if (list.length > 0) {
+          setValue("semesterName", list[0].name);
+        }
+      } catch (error) {
+        console.error(error);
+        setSemesters([]);
       }
     };
-
-    initSemesters();
+    loadSemesters();
   }, [setValue]);
 
   useEffect(() => {
-    const loadCourses = async () => {
-      if (!selectedSemester) {
+    const loadCoursesBySemester = async () => {
+      if (!selectedSemesterName) {
         setCourses([]);
         setValue("courseName", "");
         return;
       }
-
-      const courses = await loadCoursesBySemester(selectedSemester);
-      setCourses(courses);
-      setValue("courseName", "");
+      try {
+        const { data } = await courseBySemesterRequest(selectedSemesterName);
+        setCourses(
+          Array.isArray(data?.courses) ? data.courses : [],
+        );
+        setValue("courseName", "");
+      } catch (error) {
+        console.error(error);
+        setCourses([]);
+        setValue("courseName", "");
+      }
     };
-
-    loadCourses();
-  }, [selectedSemester, setValue]);
+    loadCoursesBySemester();
+  }, [selectedSemesterName, setValue]);
 
   const onSubmit = handleSubmit(async (values) => {
     try {
       setErrorMessage("");
       const res = await assessmentCreateRequest(values);
       console.log(res);
-      navigate("/");
+      navigate("/assessment-list");
     } catch (error) {
       if (axios.isAxiosError(error)) {
         const apiMessage = error.response?.data?.error;
         setErrorMessage(apiMessage || "Could not create the assessment");
         return;
       }
-
       setErrorMessage("An unexpected error occurred");
     }
   });
@@ -91,6 +96,7 @@ const assessment = () => {
         <form onSubmit={onSubmit} className="formLayout">
           <p className="title">Assessment</p>
           {errorMessage ? <p>{errorMessage}</p> : null}
+
           <SemesterSelect
             semesters={semesters}
             placeholderOptionText="Select a semester"
@@ -100,13 +106,14 @@ const assessment = () => {
               ...register("semesterName", { required: true }),
             }}
           />
+
           <CourseSelect
             courses={courses}
             placeholderOptionText={
-              selectedSemester ? "Select a course" : "Select a semester first"
+              selectedSemesterName ? "Select a course" : "Select a semester first"
             }
             emptyOptionText={
-              selectedSemester
+              selectedSemesterName
                 ? "No courses in this semester"
                 : "Select a semester first"
             }
@@ -115,12 +122,14 @@ const assessment = () => {
               ...register("courseName", { required: true }),
             }}
           />
+
           <input
             className="formControl"
             placeholder="Assessment name"
             type="text"
             {...register("assessmentName", { required: true })}
           />
+
           <input
             className="formControl"
             placeholder="Assessment date"
@@ -129,10 +138,16 @@ const assessment = () => {
             max={selectedSemesterData?.end_date}
             {...register("dueDate", { required: true })}
           />
+
+          <label className="formText" htmlFor="assessment-type">
+            Type
+          </label>
           <select
+            id="assessment-type"
             className="formControl"
             defaultValue=""
-            {...register("type", { required: true })}>
+            {...register("type", { required: true })}
+          >
             <option value="" disabled>
               Select the assessment type
             </option>
@@ -142,10 +157,14 @@ const assessment = () => {
               </option>
             ))}
           </select>
+
           <div className="flex flex-row items-center gap-2">
             <input
               className="formControl w-[50%]"
-              placeholder="--"
+              placeholder="Percentage"
+              type="number"
+              min={1}
+              max={100}
               {...register("percentage", {
                 required: true,
                 valueAsNumber: true,
@@ -153,10 +172,12 @@ const assessment = () => {
             />
             <p className="text-[25px] text-[#3d483f]">%</p>
           </div>
+
           <button type="submit">Create</button>
         </form>
       </div>
     </div>
   );
 };
+
 export default assessment;
