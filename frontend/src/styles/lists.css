@@ -1,0 +1,361 @@
+/* ========================================
+   Lists Styles - Course List Components
+   ======================================== */
+
+/* CSS Variables - Color Palette */
+:root {
+  --color-primary-dark: #3d483f;
+  --color-primary-medium: #516053;
+  --color-primary-light: #8aa18c;
+  --color-row-default: #f0f3f1;
+  --color-row-hover: #e8ebe8;
+  --color-green-success: #059669;
+  --color-green-hover: #047857;
+  --color-yellow-warning: #ca8a04;
+  --color-yellow-hover: #a16207;
+  --color-red-danger: #dc2626;
+  --color-red-hover: #b91c1c;
+  --color-gray-button: #9ca3af;
+  --color-gray-button-hover: #6b7280;
+}
+
+/* ========================================
+   Course List Table Base Styles
+   ======================================== */
+
+.course-list-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.course-list-table-locked {
+  table-layout: auto;
+}
+
+.course-list-table-wrapper {
+  overflow-x: auto;
+}
+
+/* ========================================
+   Table Header
+   ======================================== */
+
+.course-list-header-row {
+  background-color: transparent;
+}
+
+.course-list-header-cell {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-primary-dark);
+}
+
+.course-list-col-course {
+  width: 35%;
+}
+
+.course-list-col-teacher {
+  width: 23%;
+}
+
+.course-list-col-credits {
+  width: 10%;
+}
+
+.course-list-col-actions {
+  width: 32%;
+}
+
+/* ========================================
+   Table Body Rows
+   ======================================== */
+
+.course-list-body-row {
+  transition: background-color 0.2s ease;
+}
+
+.course-list-body-row:hover {
+  background-color: var(--color-row-hover);
+}
+
+/* ========================================
+   Table Cells
+   ======================================== */
+
+.course-list-cell {
+  padding: 1rem;
+  font-size: 0.875rem;
+}
+
+/* Course Name Cell - First Column */
+.course-list-cell-course {
+  font-weight: 500;
+  color: var(--color-primary-dark);
+  border-left-width: 4px;
+  border-left-style: solid;
+  padding-left: calc(1rem - 1px);
+}
+
+.course-list-course-name {
+  font-weight: 600;
+}
+
+.course-list-course-prerequisite {
+  font-size: 0.75rem;
+  color: var(--color-primary-light);
+  margin-top: 0.25rem;
+}
+
+/* Teacher Cell */
+.course-list-cell-teacher {
+  color: var(--color-primary-medium);
+}
+
+/* Credits Cell */
+.course-list-cell-credits {
+  color: var(--color-primary-medium);
+  text-align: center;
+}
+
+/* Actions Cell */
+.course-list-cell-actions {
+  padding: 1rem;
+}
+
+.course-list-actions-container {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+/* ========================================
+   Action Buttons
+   ======================================== */
+
+.course-list-btn {
+  font-size: 0.75rem;
+  font-weight: 500;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.course-list-btn:hover {
+  transform: translateY(-1px);
+}
+
+.course-list-btn:active {
+  transform: translateY(0);
+}
+
+/* Text Button Style */
+.course-list-btn-text {
+  padding: 0.375rem 0.75rem;
+  border-radius: 9999px;
+  color: white;
+  background-color: var(--color-green-success);
+}
+
+.course-list-btn-text:hover {
+  background-color: var(--color-green-hover);
+}
+
+/* Icon Button Style */
+.course-list-btn-icon {
+  padding: 0.5rem;
+  border-radius: 9999px;
+  color: white;
+  background-color: var(--color-green-success);
+}
+
+.course-list-btn-icon:hover {
+  background-color: var(--color-green-hover);
+}
+
+/* ========================================
+   Confirmation Modals
+   ======================================== */
+
+.course-list-modal {
+  margin-top: 0.5rem;
+  padding: 0.75rem;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+}
+
+.course-list-modal-title {
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.course-list-modal-description {
+  margin-bottom: 0.75rem;
+  font-size: 0.75rem;
+}
+
+.course-list-modal-buttons {
+  display: flex;
+  gap: 0.5rem;
+}
+
+/* Success Modal - Mark as Completed */
+.course-list-modal-success {
+  background-color: #f0fdf4;
+  border: 1px solid #86efac;
+}
+
+.course-list-modal-success .course-list-modal-title {
+  color: #15803d;
+}
+
+.course-list-modal-success .course-list-modal-description {
+  color: #166534;
+}
+
+.course-list-modal-btn-success {
+  padding: 0.25rem 0.75rem;
+  background-color: #16a34a;
+  color: white;
+  border: none;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  font-size: 0.75rem;
+  transition: background-color 0.2s ease;
+}
+
+.course-list-modal-btn-success:hover {
+  background-color: #15803d;
+}
+
+/* Warning Modal - Cancel Course */
+.course-list-modal-warning {
+  background-color: #fffbeb;
+  border: 1px solid #fcd34d;
+}
+
+.course-list-modal-warning .course-list-modal-title {
+  color: #92400e;
+}
+
+.course-list-modal-warning .course-list-modal-description {
+  color: #b45309;
+}
+
+.course-list-modal-btn-warning {
+  padding: 0.25rem 0.75rem;
+  background-color: #ca8a04;
+  color: white;
+  border: none;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  font-size: 0.75rem;
+  transition: background-color 0.2s ease;
+}
+
+.course-list-modal-btn-warning:hover {
+  background-color: #a16207;
+}
+
+/* Danger Modal - Delete */
+.course-list-modal-danger {
+  background-color: #fef2f2;
+  border: 1px solid #fecaca;
+}
+
+.course-list-modal-danger .course-list-modal-title {
+  color: #991b1b;
+}
+
+.course-list-modal-danger .course-list-modal-description {
+  color: #dc2626;
+}
+
+.course-list-modal-btn-danger {
+  padding: 0.25rem 0.75rem;
+  background-color: #dc2626;
+  color: white;
+  border: none;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  font-size: 0.75rem;
+  transition: background-color 0.2s ease;
+}
+
+.course-list-modal-btn-danger:hover {
+  background-color: #991b1b;
+}
+
+/* Cancel/Secondary Button */
+.course-list-modal-btn-cancel {
+  padding: 0.25rem 0.75rem;
+  background-color: var(--color-gray-button);
+  color: white;
+  border: none;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  font-size: 0.75rem;
+  transition: background-color 0.2s ease;
+}
+
+.course-list-modal-btn-cancel:hover {
+  background-color: var(--color-gray-button-hover);
+}
+
+/* ========================================
+   Responsive Design
+   ======================================== */
+
+@media (max-width: 768px) {
+  .course-list-actions-container {
+    flex-wrap: wrap;
+  }
+
+  .course-list-cell {
+    padding: 0.75rem 0.5rem;
+  }
+
+  .course-list-cell-course {
+    border-left-width: 3px;
+  }
+
+  .course-list-btn-text {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.7rem;
+  }
+
+  .course-list-btn-icon {
+    padding: 0.375rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .course-list-header-cell {
+    padding: 0.5rem;
+    font-size: 0.75rem;
+  }
+
+  .course-list-cell {
+    padding: 0.5rem;
+  }
+
+  .course-list-actions-container {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .course-list-btn-text {
+    width: 100%;
+    padding: 0.25rem;
+  }
+
+  .course-list-modal {
+    margin-top: 0.25rem;
+    padding: 0.5rem;
+  }
+}
