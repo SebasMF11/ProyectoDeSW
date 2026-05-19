@@ -3,6 +3,7 @@ import { useState } from "react";
 import Calendar from "../components/calendar/Calendar";
 import DayAssessmentsList from "../components/DayAssessmentsList";
 import { format } from "date-fns";
+import FloatingActionMenu from "../components/FloatingActionMenu";
 
 function Home() {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
@@ -42,6 +43,7 @@ function Home() {
         <button className="w-50 text-white rounded" onClick={handleSession}>
           View Session
         </button>
+        <FloatingActionMenu ariaLabel="Home actions" />
       </div>
     </div>
   );

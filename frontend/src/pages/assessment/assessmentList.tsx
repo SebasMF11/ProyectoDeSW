@@ -1,10 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router";
+import FloatingActionMenu from "../../components/FloatingActionMenu";
 import { assessmentBySemesterRequest } from "../../api/assessment.api";
 import { courseBySemesterRequest } from "../../api/course";
 import { gradeByCourseRequest } from "../../api/grade";
-import { FaRegTrashCan } from "react-icons/fa6";
-import { RiEdit2Line } from "react-icons/ri";
 import useSemesters from "../../hooks/useSemesters";
 import SemesterSelect from "../../components/SemesterSelect";
 
@@ -234,6 +233,7 @@ function AssessmentList() {
           </ul>
         ) : null}
       </div>
+      <FloatingActionMenu ariaLabel="Assessment actions" />
     </div>
   );
 }

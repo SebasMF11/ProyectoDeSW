@@ -6,6 +6,7 @@ import {
   getSemesterAverageRequest,
 } from "../../api/grade";
 import { courseBySemesterRequest } from "../../api/course";
+import FloatingActionMenu from "../../components/FloatingActionMenu";
 
 type CurrentCourseGrade = {
   currentGrade: number;
@@ -168,6 +169,7 @@ function noteList() {
           })}
         </ul>
       ) : null}
+    <FloatingActionMenu ariaLabel="Grades actions" />
     </div>
   );
 }

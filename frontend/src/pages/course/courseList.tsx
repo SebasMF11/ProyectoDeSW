@@ -4,6 +4,7 @@ import { useNavigate } from "react-router";
 import { FaRegTrashCan } from "react-icons/fa6";
 import { RiEdit2Line } from "react-icons/ri";
 import SemesterSelect from "../../components/SemesterSelect";
+import FloatingActionMenu from "../../components/FloatingActionMenu";
 import {
   courseBySemesterRequest,
   courseDeleteRequest,
@@ -357,6 +358,8 @@ function CourseList() {
           </div>
         ) : null}
       </section>
+
+      <FloatingActionMenu ariaLabel="Course actions" />
     </main>
   );
 }
