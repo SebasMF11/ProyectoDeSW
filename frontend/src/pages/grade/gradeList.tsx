@@ -14,8 +14,8 @@ type CurrentCourseGrade = {
 };
 
 type Course = {
-  course_id: number;
-  course_name: string;
+  course_id: string;
+  courses?: { name?: string };
   teacher: string;
   credits: number;
   color?: string;
@@ -29,7 +29,7 @@ function noteList() {
   const [loadingGrades, setLoadingGrades] = useState(false);
   const [courses, setCourses] = useState<Course[]>([]);
   const [courseGradeMap, setCourseGradeMap] = useState<
-    Record<number, CurrentCourseGrade>
+    Record<string, CurrentCourseGrade>
   >({});
   const [semesterAverage, setSemesterAverage] = useState<{
     semesterAverage: number;
@@ -55,7 +55,7 @@ function noteList() {
       setCourses(semesterCourses);
 
       const currentSemester = semesters.find(
-        (semester) => semester.semester_name === semesterName,
+        (semester) => semester.name === semesterName,
       );
 
       if (currentSemester?.semester_id) {
@@ -85,7 +85,7 @@ function noteList() {
         ),
       );
 
-      const nextCourseGradeMap: Record<number, CurrentCourseGrade> = {};
+      const nextCourseGradeMap: Record<string, CurrentCourseGrade> = {};
       courseGradeResponses.forEach((response) => {
         nextCourseGradeMap[response.courseId] = response.result;
       });
@@ -126,7 +126,7 @@ function noteList() {
         </section>
         <p className="title">Qualifications</p>
         {loadingSemesters || loadingGrades ? <p> </p> : null}
-        {semesterAverage ? (
+        {semesterAverage !== null ? (
           <div>
             <p className="inline-block bg-gray-200 text-gray-600 px-5 py-2 rounded-full text-[15px] font-semibold">
               Semester average: {semesterAverage.semesterAverage}
@@ -148,14 +148,14 @@ function noteList() {
         <ul className="grid grid-cols-1 gap-4 md:grid-cols-2  justify-items-center">
           {courses.map((course) => {
             const progress = courseGradeMap[course.course_id];
+            const courseName = course.courses?.name || "Sin nombre";
 
             return (
-              <div className="bg-gray-100 rounded-md p-4 mb-4 w-80">
-                <li
-                  key={course.course_id}
-                  className="flex flex-col items-center gap-2"
-                >
-                  <p className="font-semibold">{course.course_name}</p>
+              <li
+                key={course.course_id}
+                className="bg-gray-100 rounded-md p-4 mb-4 w-80 flex flex-col items-center gap-2"
+              >
+                <p className="font-semibold">{courseName}</p>
                   <p>
                     Current grade ({progress?.evaluatedPercentage ?? 0}%/100%)
                   </p>
@@ -163,8 +163,7 @@ function noteList() {
                     {" "}
                     {progress?.currentGrade ?? "-"}
                   </p>
-                </li>
-              </div>
+              </li>
             );
           })}
         </ul>

@@ -3,6 +3,8 @@ import { useNavigate } from "react-router";
 import { assessmentBySemesterRequest } from "../../api/assessment.api";
 import { courseBySemesterRequest } from "../../api/course";
 import { gradeByCourseRequest } from "../../api/grade";
+import { FaRegTrashCan } from "react-icons/fa6";
+import { RiEdit2Line } from "react-icons/ri";
 import useSemesters from "../../hooks/useSemesters";
 import SemesterSelect from "../../components/SemesterSelect";
 
@@ -147,7 +149,13 @@ function AssessmentList() {
       <div className="flex items-center justify-between gap-3 mb-4">
         <h1 className="text-xl font-semibold">Actividades por semestre</h1>
         <button type="button" onClick={() => navigate("/assessment")}>
-          Agregar assessment
+          Add assessment
+        </button>
+        <button
+          type="button"
+
+        >
+          Add grade
         </button>
       </div>
 
@@ -214,6 +222,7 @@ function AssessmentList() {
                               Porcentaje: {assessment.percentage ?? "-"}%
                             </p>
                             <p>Nota: {hasGrade ? gradeValue : "Pendiente"}</p>
+                            
                           </li>
                         );
                       })}

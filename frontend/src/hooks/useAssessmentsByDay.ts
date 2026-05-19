@@ -3,7 +3,7 @@ import { assessmentsByDayRequest } from "../api/assessment.api";
 import { format } from "date-fns";
 
 export interface Assessment {
-  assessment_id: number;
+  assessment_id: string;
   assessment_name: string;
   type: string;
   due_date: string;
