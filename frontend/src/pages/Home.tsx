@@ -32,7 +32,7 @@ function Home() {
             Your classes today
           </p>
           <div className="pl-10 pt-2 text-gray-600">
-            <p>You dont have classes</p>
+            <p>You don't have classes</p>
           </div>
           <p className="text-[25px] font-bold text-black pt-8">Assessments</p>
 

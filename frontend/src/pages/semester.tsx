@@ -52,14 +52,14 @@ const Semester = () => {
 
       if (startDate > endDate) {
         setErrorMessage(
-          "La fecha de inicio no puede ser mayor que la fecha de fin",
+          "The start date cannot be later than the end date",
         );
         return;
       }
 
       if (midtermWeek < startDate || midtermWeek > endDate) {
         setErrorMessage(
-          "La fecha de inicio de parciales debe estar entre inicio y fin del semestre",
+          "The midterm start date must be between the semester start and end dates",
         );
         return;
       }
@@ -70,7 +70,7 @@ const Semester = () => {
 
       if (overlappingSemester) {
         setErrorMessage(
-          `Las fechas del semestre se sobreponen con "${overlappingSemester.name}"`,
+          `The semester dates overlap with "${overlappingSemester.name}"`,
         );
         return;
       }
@@ -81,10 +81,10 @@ const Semester = () => {
     } catch (error) {
       if (axios.isAxiosError(error)) {
         const apiMessage = error.response?.data?.error;
-        setErrorMessage(apiMessage || "No se pudo crear el semestre");
+        setErrorMessage(apiMessage || "The semester could not be created");
         return;
       }
-      setErrorMessage("Ocurrio un error inesperado");
+      setErrorMessage("An unexpected error occurred");
     }
   });
 
@@ -100,7 +100,7 @@ const Semester = () => {
             className="formControl"
             {...register("semesterName", { required: true })}
           />
-          <p className="formText">Fecha de inicio</p>
+          <p className="formText">Start date</p>
           <input
             type="date"
             className="formControl"
@@ -126,7 +126,7 @@ const Semester = () => {
 
         {semesters.length > 0 && (
           <div className="mt-6">
-            <p className="formText font-semibold mb-2">Semestres existentes</p>
+            <p className="formText font-semibold mb-2">Existing semesters</p>
             <ul className="flex flex-col gap-2">
               {semesters.map((s) => (
                 <li key={s.semester_id} className="border rounded p-2 text-sm">

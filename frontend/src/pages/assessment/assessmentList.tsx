@@ -10,6 +10,7 @@ import SemesterSelect from "../../components/SemesterSelect";
 type Course = {
   course_id: string;
   courses: { name: string };
+  status?: string;
   teacher?: string;
   credits?: number;
 };
@@ -35,6 +36,9 @@ type Grade = {
 
 const assessmentKey = (name?: string, dueDate?: string) =>
   `${name || ""}::${dueDate || ""}`;
+
+const isActiveStatus = (status?: string) =>
+  typeof status === "string" && status.trim().toLowerCase() === "active";
 
 function AssessmentList() {
   const navigate = useNavigate();
@@ -70,7 +74,10 @@ function AssessmentList() {
         const semesterCourses: Course[] = Array.isArray(coursesData?.courses)
           ? coursesData.courses
           : [];
-        setCourses(semesterCourses);
+        const activeCourses = semesterCourses.filter((course) =>
+          isActiveStatus(course.status),
+        );
+        setCourses(activeCourses);
 
         const currentSemester = semesters.find(
           (semester) => semester.name === selectedSemester,
@@ -90,10 +97,17 @@ function AssessmentList() {
         )
           ? assessmentsData.assessments
           : [];
-        setAssessments(semesterAssessments);
+        const activeCourseNames = new Set(
+          activeCourses.map((course) => course.courses.name),
+        );
+        setAssessments(
+          semesterAssessments.filter((assessment) =>
+            activeCourseNames.has(assessment.course?.courses?.name || ""),
+          ),
+        );
 
         const gradeResponses = await Promise.all(
-          semesterCourses.map((course) =>
+          activeCourses.map((course) =>
             gradeByCourseRequest(course.course_id)
               .then((response) => ({
                 courseId: course.course_id,
@@ -122,7 +136,7 @@ function AssessmentList() {
         setCourses([]);
         setAssessments([]);
         setGradeMap({});
-        setErrorMessage("No se pudo cargar la informacion del semestre");
+        setErrorMessage("The semester information could not be loaded");
       } finally {
         setLoading(false);
       }
@@ -136,7 +150,7 @@ function AssessmentList() {
     const grouped: Record<string, Assessment[]> = {};
     assessments.forEach((assessment) => {
       const courseName =
-        assessment.course?.courses?.name || "Sin curso";
+        assessment.course?.courses?.name || "No course assigned";
       if (!grouped[courseName]) grouped[courseName] = [];
       grouped[courseName].push(assessment);
     });
@@ -146,7 +160,7 @@ function AssessmentList() {
   return (
     <div className="p-6 max-w-4xl mx-auto">
       <div className="flex items-center justify-between gap-3 mb-4">
-        <h1 className="text-xl font-semibold">Actividades por semestre</h1>
+        <h1 className="text-xl font-semibold">Assessments by semester</h1>
         <button type="button" onClick={() => navigate("/assessment")}>
           Add assessment
         </button>
@@ -169,13 +183,13 @@ function AssessmentList() {
       />
 
       <div className="mt-6">
-        {loadingSemesters || loading ? <p>Cargando informacion...</p> : null}
+        {loadingSemesters || loading ? <p>Loading information...</p> : null}
 
         {!loadingSemesters &&
         !loading &&
         selectedSemester &&
         courses.length === 0 ? (
-          <p>No hay cursos asignados a este semestre.</p>
+          <p>No courses are assigned to this semester.</p>
         ) : null}
 
         {!loadingSemesters && !loading && courses.length > 0 ? (
@@ -188,12 +202,12 @@ function AssessmentList() {
                 <li key={course.course_id} className="border rounded-md p-4">
                   <p className="font-semibold">{courseName}</p>
                   <p>
-                    Profesor: {course.teacher || "Sin asignar"} | Creditos:{" "}
+                    Professor: {course.teacher || "Unassigned"} | Credits:{" "}
                     {course.credits ?? "-"}
                   </p>
 
                   {courseAssessments.length === 0 ? (
-                    <p className="mt-2">Este curso no tiene assessments.</p>
+                    <p className="mt-2">This course has no assessments.</p>
                   ) : (
                     <ul className="mt-3 flex flex-col gap-2">
                       {courseAssessments.map((assessment) => {
@@ -217,10 +231,10 @@ function AssessmentList() {
                               <strong>{assessment.name}</strong>
                             </p>
                             <p>
-                              Tipo: {assessment.type} | Fecha: {displayDate} |
-                              Porcentaje: {assessment.percentage ?? "-"}%
+                              Type: {assessment.type} | Date: {displayDate} |
+                              Percentage: {assessment.percentage ?? "-"}%
                             </p>
-                            <p>Nota: {hasGrade ? gradeValue : "Pendiente"}</p>
+                            <p>Grade: {hasGrade ? gradeValue : "Pending"}</p>
                             
                           </li>
                         );

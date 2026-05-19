@@ -42,6 +42,7 @@ function CourseList() {
   const [pendingActions, setPendingActions] = useState<
     Record<string, PendingAction>
   >({});
+  const [showAll, setShowAll] = useState(false);
 
   const loadCoursesBySemester = async (semesterName: string) => {
     if (!semesterName) {
@@ -90,11 +91,11 @@ function CourseList() {
     } catch (error) {
       if (axios.isAxiosError(error)) {
         setErrorMessage(
-          error.response?.data?.error || "No se pudo completar el curso",
+          error.response?.data?.error || "The course could not be completed",
         );
         return;
       }
-      setErrorMessage("No se pudo completar el curso");
+      setErrorMessage("The course could not be completed");
     }
   };
 
@@ -107,11 +108,11 @@ function CourseList() {
     } catch (error) {
       if (axios.isAxiosError(error)) {
         setErrorMessage(
-          error.response?.data?.error || "No se pudo cancelar el curso",
+          error.response?.data?.error || "The course could not be canceled",
         );
         return;
       }
-      setErrorMessage("No se pudo cancelar el curso");
+      setErrorMessage("The course could not be canceled");
     }
   };
 
@@ -124,11 +125,11 @@ function CourseList() {
     } catch (error) {
       if (axios.isAxiosError(error)) {
         setErrorMessage(
-          error.response?.data?.error || "No se pudo eliminar el curso",
+          error.response?.data?.error || "The course could not be deleted",
         );
         return;
       }
-      setErrorMessage("No se pudo eliminar el curso");
+      setErrorMessage("The course could not be deleted");
     }
   };
 
@@ -150,13 +151,19 @@ function CourseList() {
     return courses.reduce((sum, c) => sum + (c.credits ?? 0), 0);
   }, [courses]);
 
-  // Visible courses in the table should be only active ones
+  // Visible courses in the table - active by default, or all if toggled
   const visibleCourses = useMemo(() => {
+    if (showAll) {
+      return courses;
+    }
     return courses.filter((c) => (c.status || "").toLowerCase() === "active");
-  }, [courses]);
+  }, [courses, showAll]);
 
   // Totals / counters
-  const activeCoursesCount = useMemo(() => visibleCourses.length, [visibleCourses]);
+  const activeCoursesCount = useMemo(
+    () => visibleCourses.length,
+    [visibleCourses],
+  );
 
   const inactiveCoursesCount = useMemo(() => {
     return courses.filter((c) => {
@@ -170,7 +177,9 @@ function CourseList() {
       <header className="flex items-center justify-between gap-3 mb-4">
         <section aria-label="Semester selection" className="space-y-3 w-40">
           {errorMessage || semesterError ? (
-            <p className="text-red-600 text-sm">{errorMessage || semesterError}</p>
+            <p className="text-red-600 text-sm">
+              {errorMessage || semesterError}
+            </p>
           ) : null}
           <SemesterSelect
             semesters={semesters}
@@ -180,24 +189,55 @@ function CourseList() {
         </section>
 
         <div className="flex items-center gap-4">
-          <h1 className="text-xl font-semibold">Courses</h1>
-          
+          <h1 className="text-xl font-semibold">Courses by semester</h1>
         </div>
-<div className="flex flex-col gap-4">
-            <div className="text-sm font-medium text-gray-700">Total credits: {totalCredits}</div>
-            <div className="text-sm font-medium text-gray-700">Active courses: {activeCoursesCount}</div>
-            <div className="text-sm font-medium text-gray-700">Inactive courses: {inactiveCoursesCount}</div>
+        <div className="w-40">
+          <label htmlFor="course-view-select" className="formText">
+            View
+          </label>
+          <select
+            id="course-view-select"
+            className="formControl"
+            value={showAll ? "all" : "active"}
+            onChange={(e) => setShowAll(e.target.value === "all")}
+          >
+            <option value="active">Active Courses</option>
+            <option value="all">All Courses</option>
+          </select>
+        </div>
+      </header>
+      <div className="flex flex-row">
+        <div className="bg-gray-50 border border-gray-200 rounded p-3 mb-4">
+          <div className="grid grid-cols-3 gap-3">
+            <div className="text-center">
+              <p className="text-lg font-bold text-gray-700">{totalCredits}</p>
+              <p className="text-xs text-gray-500">Total Credits</p>
+            </div>
+            <div className="text-center">
+              <p className="text-lg font-bold text-gray-700">
+                {activeCoursesCount}
+              </p>
+              <p className="text-xs text-gray-500">Active</p>
+            </div>
+            <div className="text-center">
+              <p className="text-lg font-bold text-gray-700">
+                {inactiveCoursesCount}
+              </p>
+              <p className="text-xs text-gray-500">Inactive</p>
+            </div>
           </div>
+        </div>
+
         <div className="flex gap-2">
           <button
             className="p-2"
             type="button"
             onClick={() => navigate("/day")}
           >
-            Add days to course
+            Add class times
           </button>
         </div>
-      </header>
+      </div>
 
       <section className="mt-6" aria-live="polite">
         {loadingSemesters || loadingCourses ? <p>Loading courses...</p> : null}
@@ -206,7 +246,11 @@ function CourseList() {
         !loadingCourses &&
         selectedSemester &&
         visibleCourses.length === 0 ? (
-          <p>There are no active courses available for the selected semester.</p>
+          <p>
+            {showAll
+              ? "No courses available for the selected semester."
+              : "There are no active courses available for the selected semester."}
+          </p>
         ) : null}
 
         {!loadingSemesters && !loadingCourses && visibleCourses.length > 0 ? (
@@ -214,10 +258,21 @@ function CourseList() {
             <table className="course-list-table course-list-table-locked">
               <thead>
                 <tr className="course-list-header-row">
-                  <th className="course-list-header-cell course-list-col-course">COURSE</th>
-                  <th className="course-list-header-cell course-list-col-teacher">TEACHER</th>
-                  <th className="course-list-header-cell course-list-col-credits">CREDITS</th>
-                  <th className="course-list-header-cell course-list-col-actions">ACTIONS</th>
+                  <th className="course-list-header-cell course-list-col-course">
+                    COURSE
+                  </th>
+                  <th className="course-list-header-cell course-list-col-teacher">
+                    TEACHER
+                  </th>
+                  <th className="course-list-header-cell course-list-col-credits">
+                    CREDITS
+                  </th>
+                  {showAll && (
+                    <th className="course-list-header-cell">STATUS</th>
+                  )}
+                  <th className="course-list-header-cell course-list-col-actions">
+                    ACTIONS
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -225,21 +280,21 @@ function CourseList() {
                   const pending = pendingActions[course.course_id] ?? null;
 
                   return (
-                    <tr 
-                      key={course.course_id} 
-                      className="course-list-body-row"
-                    >
-                      <td 
+                    <tr key={course.course_id} className="course-list-body-row">
+                      <td
                         className="course-list-cell course-list-cell-course course-list-col-course"
                         style={{
                           borderLeftColor: course.color,
                         }}
                       >
                         <div>
-                          <p className="course-list-course-name">{course.courses.name}</p>
+                          <p className="course-list-course-name">
+                            {course.courses.name}
+                          </p>
                           {course.courses.prerequisite_course && (
                             <p className="course-list-course-prerequisite">
-                              Prerequisite: {course.courses.prerequisite_course.name}
+                              Prerequisite:{" "}
+                              {course.courses.prerequisite_course.name}
                             </p>
                           )}
                         </div>
@@ -250,25 +305,55 @@ function CourseList() {
                       <td className="course-list-cell course-list-cell-credits course-list-col-credits">
                         {course.credits}
                       </td>
+                      {showAll && (
+                        <td className="course-list-cell">
+                          <span
+                            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                              course.status?.toLowerCase() === "active"
+                                ? "bg-green-100 text-green-800"
+                                : course.status?.toLowerCase() === "completed"
+                                  ? "bg-blue-100 text-blue-800"
+                                  : course.status?.toLowerCase() === "failed"
+                                    ? "bg-red-100 text-red-800"
+                                    : "bg-gray-100 text-gray-800"
+                            }`}
+                          >
+                            {course.status
+                              ? course.status.charAt(0).toUpperCase() +
+                                course.status.slice(1).toLowerCase()
+                              : "Unknown"}
+                          </span>
+                        </td>
+                      )}
                       <td className="course-list-cell course-list-cell-actions course-list-col-actions">
                         <div className="course-list-actions-container">
+                          {course.status?.toLowerCase() === "active" && (
+                            <>
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  requestAction(course.course_id, "complete")
+                                }
+                                className="course-list-btn course-list-btn-text"
+                              >
+                                Mark as completed
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  requestAction(course.course_id, "fail")
+                                }
+                                className="course-list-btn course-list-btn-text"
+                              >
+                                Cancel course
+                              </button>
+                            </>
+                          )}
                           <button
                             type="button"
-                            onClick={() => requestAction(course.course_id, "complete")}
-                            className="course-list-btn course-list-btn-text"
-                          >
-                            Mark as completed
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => requestAction(course.course_id, "fail")}
-                            className="course-list-btn course-list-btn-text"
-                          >
-                            Cancel course
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => requestAction(course.course_id, "delete")}
+                            onClick={() =>
+                              requestAction(course.course_id, "delete")
+                            }
                             className="course-list-btn course-list-btn-icon"
                             title="Delete course"
                           >
@@ -291,13 +376,15 @@ function CourseList() {
                               Mark "{course.courses.name}" as completed?
                             </p>
                             <p className="course-list-modal-description">
-                              The course will be marked as completed and will no longer appear in
-                              your active list.
+                              The course will be marked as completed and will no
+                              longer appear in your active list.
                             </p>
                             <div className="course-list-modal-buttons">
                               <button
                                 type="button"
-                                onClick={() => onCompleteCourse(course.course_id)}
+                                onClick={() =>
+                                  onCompleteCourse(course.course_id)
+                                }
                                 className="course-list-modal-btn-success"
                               >
                                 Yes, mark as completed
@@ -319,8 +406,8 @@ function CourseList() {
                               Cancel "{course.courses.name}"?
                             </p>
                             <p className="course-list-modal-description">
-                              The course will be marked as canceled. You can re-register
-                              it in a future semester.
+                              The course will be marked as canceled. You can
+                              re-register it in a future semester.
                             </p>
                             <div className="course-list-modal-buttons">
                               <button
@@ -347,8 +434,9 @@ function CourseList() {
                               Delete "{course.courses.name}"?
                             </p>
                             <p className="course-list-modal-description">
-                              This action will delete the course and all its related
-                              data (evaluations, grades, schedules). This cannot be undone.
+                              This action will delete the course and all its
+                              related data (evaluations, grades, schedules).
+                              This cannot be undone.
                             </p>
                             <div className="course-list-modal-buttons">
                               <button

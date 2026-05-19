@@ -77,7 +77,7 @@ const Day = () => {
     } catch (error) {
       if (axios.isAxiosError(error)) {
         const apiMessage = error.response?.data?.error;
-        setErrorMessage(apiMessage || "Could not create the day");
+        setErrorMessage(apiMessage || "Could not create the schedule day");
         return;
       }
       setErrorMessage("An unexpected error occurred");
@@ -93,7 +93,7 @@ const Day = () => {
 
           {/* Semestre */}
           <label className="formText" htmlFor="day-semester">
-            Semestre
+            Semester
           </label>
           <select
             id="day-semester"
@@ -115,7 +115,7 @@ const Day = () => {
 
           {/* Curso */}
           <label className="formText" htmlFor="day-course">
-            Curso
+            Course
           </label>
           <select
             id="day-course"
@@ -139,7 +139,7 @@ const Day = () => {
 
           {/* Día de la semana */}
           <label className="formText" htmlFor="day-of-week">
-            Día de la semana
+            Day of the week
           </label>
           <select
             id="day-of-week"

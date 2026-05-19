@@ -125,7 +125,7 @@ function noteList() {
             onValueChange={setSelectedSemester}
           />
         </section>
-        <p className="title">Qualifications</p>
+        <p className="title">Grades</p>
         {loadingSemesters || loadingGrades ? <p> </p> : null}
         {semesterAverage !== null ? (
           <div>
@@ -149,7 +149,7 @@ function noteList() {
         <ul className="grid grid-cols-1 gap-4 md:grid-cols-2  justify-items-center">
           {courses.map((course) => {
             const progress = courseGradeMap[course.course_id];
-            const courseName = course.courses?.name || "Sin nombre";
+            const courseName = course.courses?.name || "Unnamed";
 
             return (
               <li
