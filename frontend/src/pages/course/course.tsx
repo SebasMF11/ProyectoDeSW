@@ -173,7 +173,8 @@ const course = () => {
         ? await courseUpdateRequest(editCourse!.course_id, payload)
         : await courseCreateRequest(payload);
       console.log(res);
-      navigate("/course-list");
+
+      navigate(isEditMode ? "/course-list" : "/day");
     } catch (error) {
       if (axios.isAxiosError(error)) {
         const apiMessage = error.response?.data?.error;

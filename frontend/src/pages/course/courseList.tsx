@@ -1,5 +1,5 @@
 import axios from "axios";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router";
 import { FaRegTrashCan } from "react-icons/fa6";
 import { RiEdit2Line } from "react-icons/ri";
@@ -146,6 +146,25 @@ function CourseList() {
     });
   };
 
+  const totalCredits = useMemo(() => {
+    return courses.reduce((sum, c) => sum + (c.credits ?? 0), 0);
+  }, [courses]);
+
+  // Visible courses in the table should be only active ones
+  const visibleCourses = useMemo(() => {
+    return courses.filter((c) => (c.status || "").toLowerCase() === "active");
+  }, [courses]);
+
+  // Totals / counters
+  const activeCoursesCount = useMemo(() => visibleCourses.length, [visibleCourses]);
+
+  const inactiveCoursesCount = useMemo(() => {
+    return courses.filter((c) => {
+      const s = (c.status || "").toLowerCase();
+      return s === "completed" || s === "failed" || s === "inactive";
+    }).length;
+  }, [courses]);
+
   return (
     <main className="p-6 max-w-7xl mx-auto">
       <header className="flex items-center justify-between gap-3 mb-4">
@@ -160,16 +179,16 @@ function CourseList() {
           />
         </section>
 
-        <h1 className="text-xl font-semibold">Courses</h1>
-
+        <div className="flex items-center gap-4">
+          <h1 className="text-xl font-semibold">Courses</h1>
+          
+        </div>
+<div className="flex flex-col gap-4">
+            <div className="text-sm font-medium text-gray-700">Total credits: {totalCredits}</div>
+            <div className="text-sm font-medium text-gray-700">Active courses: {activeCoursesCount}</div>
+            <div className="text-sm font-medium text-gray-700">Inactive courses: {inactiveCoursesCount}</div>
+          </div>
         <div className="flex gap-2">
-          <button
-            className="p-2"
-            type="button"
-            onClick={() => navigate("/course")}
-          >
-            Add course
-          </button>
           <button
             className="p-2"
             type="button"
@@ -186,11 +205,11 @@ function CourseList() {
         {!loadingSemesters &&
         !loadingCourses &&
         selectedSemester &&
-        courses.length === 0 ? (
-          <p>There are no courses available for the selected semester.</p>
+        visibleCourses.length === 0 ? (
+          <p>There are no active courses available for the selected semester.</p>
         ) : null}
 
-        {!loadingSemesters && !loadingCourses && courses.length > 0 ? (
+        {!loadingSemesters && !loadingCourses && visibleCourses.length > 0 ? (
           <div className="course-list-table-wrapper">
             <table className="course-list-table course-list-table-locked">
               <thead>
@@ -202,7 +221,7 @@ function CourseList() {
                 </tr>
               </thead>
               <tbody>
-                {courses.map((course) => {
+                {visibleCourses.map((course) => {
                   const pending = pendingActions[course.course_id] ?? null;
 
                   return (

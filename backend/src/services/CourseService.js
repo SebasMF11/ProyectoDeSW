@@ -20,9 +20,8 @@ exports.getAll = async (student_id) => {
 exports.getBySemester = async (semester_id) => {
   const { data, error } = await supabase
     .from("course")
-    .select("course_id, teacher, credits, color, courses!inner(name)")
-    .eq("semester_id", semester_id)
-    .eq("status", "active");
+    .select("course_id, teacher, credits, color, status, courses!inner(name)")
+    .eq("semester_id", semester_id);
 
   if (error) {
     console.error(error);
