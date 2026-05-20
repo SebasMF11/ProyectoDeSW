@@ -191,6 +191,7 @@ function CourseList() {
         <div className="flex items-center gap-4">
           <h1 className="text-xl font-semibold">Courses by semester</h1>
         </div>
+
         <div className="w-40">
           <label htmlFor="course-view-select" className="formText">
             View
@@ -206,8 +207,8 @@ function CourseList() {
           </select>
         </div>
       </header>
-      <div className="flex flex-row">
-        <div className="bg-gray-50 border border-gray-200 rounded p-3 mb-4">
+      <div className="mb-4 flex w-full flex-row items-center gap-3">
+        <div className="basis-4/5 bg-gray-50 border border-gray-200 rounded p-3 min-w-0">
           <div className="grid grid-cols-3 gap-3">
             <div className="text-center">
               <p className="text-lg font-bold text-gray-700">{totalCredits}</p>
@@ -228,9 +229,9 @@ function CourseList() {
           </div>
         </div>
 
-        <div className="flex gap-2">
+        <div className="flex min-w-[10%] max-w-[20%] flex-1 justify-end self-center">
           <button
-            className="p-2"
+            className="p-2 whitespace-nowrap"
             type="button"
             onClick={() => navigate("/day")}
           >

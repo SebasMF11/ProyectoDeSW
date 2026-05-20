@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router";
+import { FaRegTrashCan } from "react-icons/fa6";
+import { RiEdit2Line } from "react-icons/ri";
 import FloatingActionMenu from "../../components/FloatingActionMenu";
 import { assessmentBySemesterRequest } from "../../api/assessment.api";
 import { courseBySemesterRequest } from "../../api/course";
@@ -39,6 +41,21 @@ const assessmentKey = (name?: string, dueDate?: string) =>
 
 const isActiveStatus = (status?: string) =>
   typeof status === "string" && status.trim().toLowerCase() === "active";
+
+const formatAssessmentDate = (dateValue?: string) => {
+  if (!dateValue) return "No date";
+  const parsed = new Date(dateValue);
+  if (Number.isNaN(parsed.getTime())) return dateValue;
+  return new Intl.DateTimeFormat("en-US", {
+    month: "long",
+    day: "numeric",
+  }).format(parsed);
+};
+
+const formatGradeValue = (grade?: number) => {
+  if (!Number.isFinite(grade)) return "Pending";
+  return Number(grade).toFixed(1);
+};
 
 function AssessmentList() {
   const navigate = useNavigate();
@@ -157,98 +174,166 @@ function AssessmentList() {
     return grouped;
   }, [assessments]);
 
-  return (
-    <div className="p-6 max-w-4xl mx-auto">
-      <div className="flex items-center justify-between gap-3 mb-4">
-        <h1 className="text-xl font-semibold">Assessments by semester</h1>
-        <button type="button" onClick={() => navigate("/assessment")}>
-          Add assessment
-        </button>
-        <button
-          type="button"
+  // Use course-provided color when available; fallback to a neutral color
+  const fallbackCourseColor = "#0f93ad";
 
-        >
-          Add grade
-        </button>
-      </div>
+  return (
+    <main className="mx-auto max-w-6xl bg-white px-4 py-6 sm:px-6">
+      <header className="flex items-center justify-between gap-3 mb-4">
+        <section aria-label="Semester selection" className="space-y-3 w-40">
+          <SemesterSelect
+            semesters={semesters}
+            value={selectedSemester}
+            onValueChange={setSelectedSemester}
+          />
+        </section>
+        <div className="flex items-center gap-4">
+          <h1 className="text-xl font-semibold text-center">
+            Assessments by semester
+          </h1>
+        </div>
+      </header>
 
       {errorMessage || semesterError ? (
-        <p>{errorMessage || semesterError}</p>
+        <p className="mb-4 rounded-md border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-700">
+          {errorMessage || semesterError}
+        </p>
       ) : null}
 
-      <SemesterSelect
-        semesters={semesters}
-        value={selectedSemester}
-        onValueChange={setSelectedSemester}
-      />
-
-      <div className="mt-6">
-        {loadingSemesters || loading ? <p>Loading information...</p> : null}
+      <section className="mt-2" aria-live="polite">
+        {loadingSemesters || loading ? (
+          <p className="text-sm text-[#425047]">Loading information...</p>
+        ) : null}
 
         {!loadingSemesters &&
         !loading &&
         selectedSemester &&
         courses.length === 0 ? (
-          <p>No courses are assigned to this semester.</p>
+          <p className="text-sm text-[#425047]">
+            No courses are assigned to this semester.
+          </p>
         ) : null}
 
         {!loadingSemesters && !loading && courses.length > 0 ? (
-          <ul className="flex flex-col gap-4">
+          <div className="space-y-7">
+            <div className="mb-1 hidden sm:grid sm:grid-cols-[minmax(0,1fr)_96px_120px_92px] sm:items-center sm:gap-3">
+              <p className="col-start-3 text-center text-base font-bold uppercase tracking-wide text-[#1a1a1a]">
+                Grade
+              </p>
+            </div>
+
             {courses.map((course) => {
               const courseName = course.courses.name;
-              const courseAssessments = assessmentsByCourse[courseName] || [];
+              const courseAssessments = [
+                ...(assessmentsByCourse[courseName] || []),
+              ].sort((a, b) => {
+                const first = a.due_date ? new Date(a.due_date).getTime() : 0;
+                const second = b.due_date ? new Date(b.due_date).getTime() : 0;
+                return first - second;
+              });
 
               return (
-                <li key={course.course_id} className="border rounded-md p-4">
-                  <p className="font-semibold">{courseName}</p>
-                  <p>
-                    Professor: {course.teacher || "Unassigned"} | Credits:{" "}
-                    {course.credits ?? "-"}
-                  </p>
+                <article key={course.course_id} className="relative pl-10">
+                  <span
+                    className="absolute left-2 top-1 h-5 w-5 rounded-full"
+                    style={{
+                      backgroundColor:
+                        (course as any).color || fallbackCourseColor,
+                    }}
+                    aria-hidden="true"
+                  />
+                  <span
+                    className="absolute left-[18px] top-6 bottom-0 w-px bg-[#8f8f8f]"
+                    aria-hidden="true"
+                  />
+
+                  <header className="mb-2 flex items-baseline justify-between gap-3">
+                    <h2 className="text-xl leading-7 font-bold text-[#0f1412] sm:text-2xl">
+                      {courseName}
+                    </h2>
+                    <p className="text-xs text-[#55635a]">
+                      {course.teacher || "Unassigned"} • {course.credits ?? "-"}{" "}
+                      credits
+                    </p>
+                  </header>
 
                   {courseAssessments.length === 0 ? (
-                    <p className="mt-2">This course has no assessments.</p>
+                    <p className="text-[#47554c]">
+                      This course has no assessments.
+                    </p>
                   ) : (
-                    <ul className="mt-3 flex flex-col gap-2">
+                    <ul className="space-y-3">
                       {courseAssessments.map((assessment) => {
                         const key = assessmentKey(
                           assessment.name,
                           assessment.due_date,
                         );
                         const gradeValue = gradeMap[key];
-                        const hasGrade = Number.isFinite(gradeValue);
-                        // Mostrar solo la fecha (YYYY-MM-DD) si viene con timestamp
-                        const displayDate = assessment.due_date
-                          ? assessment.due_date.split("T")[0]
-                          : "-";
 
                         return (
                           <li
                             key={assessment.assessment_id}
-                            className="rounded border p-3"
+                            className="grid grid-cols-1 items-center gap-3 rounded-xl bg-transparent p-1 sm:grid-cols-[minmax(0,1fr)_96px_120px_92px]"
                           >
-                            <p>
-                              <strong>{assessment.name}</strong>
-                            </p>
-                            <p>
-                              Type: {assessment.type} | Date: {displayDate} |
-                              Percentage: {assessment.percentage ?? "-"}%
-                            </p>
-                            <p>Grade: {hasGrade ? gradeValue : "Pending"}</p>
-                            
+                            <div>
+                              <p className="text-sm capitalize text-[#6b6b6b]">
+                                {formatAssessmentDate(assessment.due_date)}
+                              </p>
+                              <p className="text-lg leading-6 font-semibold text-[#131313] sm:text-xl">
+                                {assessment.type}: {assessment.name}
+                              </p>
+                            </div>
+
+                            <span className="inline-flex h-11 items-center justify-center rounded-full bg-[#c9cdca] px-4 text-lg font-semibold text-[#1f2521]">
+                              {assessment.percentage ?? "-"}%
+                            </span>
+
+                            <span className="inline-flex h-11 items-center justify-center rounded-full bg-[#c9cdca] px-4 text-lg font-semibold text-[#1f2521]">
+                              {formatGradeValue(gradeValue)}
+                            </span>
+
+                            <div className="flex items-center justify-start gap-2 sm:justify-end">
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setErrorMessage(
+                                    "Delete assessment is not available yet.",
+                                  )
+                                }
+                                className="course-list-btn course-list-btn-icon"
+                                title="Delete assessment"
+                              >
+                                <FaRegTrashCan size={16} />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  navigate("/assessment", {
+                                    state: {
+                                      assessment_id: assessment.assessment_id,
+                                    },
+                                  })
+                                }
+                                className="course-list-btn course-list-btn-icon"
+                                title="Edit assessment"
+                              >
+                                <RiEdit2Line size={16} />
+                              </button>
+                            </div>
                           </li>
                         );
                       })}
                     </ul>
                   )}
-                </li>
+                </article>
               );
             })}
-          </ul>
+          </div>
         ) : null}
-      </div>
+      </section>
+
       <FloatingActionMenu ariaLabel="Assessment actions" />
-    </div>
+    </main>
   );
 }
 
