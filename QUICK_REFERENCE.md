@@ -21,7 +21,8 @@ ProyectoDeSW/
 │       │   ├── SemesterRoutes.js
 │       │   ├── GradeRoutes.js
 │       │   ├── AssessmentRoutes.js
-│       │   └── DayRoutes.js
+│       │   ├── DayRoutes.js
+│       │   └── CatalogRoutes.js
 │       ├── controllers/              ← Maneja HTTP requests
 │       │   ├── StudentController.js
 │       │   ├── CourseController.js
@@ -69,7 +70,7 @@ ProyectoDeSW/
 │       │   └── calendar/
 │       │       └── Calendar.tsx
 │       ├── hooks/                   ← Custom hooks
-│       │   └── useAuth.tsx         ← Gestiona sesión
+│       │   └── useAuth.ts          ← Gestiona sesión
 │       ├── api/                     ← Clientes HTTP
 │       │   ├── httpClient.ts       ← Axios core (+ JWT interceptor)
 │       │   ├── course.ts
@@ -155,7 +156,7 @@ ProyectoDeSW/
 │    → Valida con Supabase: supabase.auth.getUser(token)  │
 │    → Si falla Supabase, fallback: validar JWT localmente │
 │    → Agrega req.student = { id, email, ... }            │
-│    ↓ CourseController.getCourseList()                     │
+│    ↓ CourseController.getCourses()                        │
 │    → Accede a req.student.id para filtrar                │
 │    ← Response: List de cursos del estudiante             │
 │                                                             │
@@ -221,12 +222,12 @@ Usuario ve error → Corrije → Reintenta
 PASO 1: Frontend
 ────────────────
 course.tsx
-  └─ Form: { courseName: "Math", teacher: "García", credits: 3, color: "blue", semesterName: "2025-1" }
+  └─ Form: { courses_id: "uuid", teacher: "García", credits: 3, color: "blue", semesterName: "2025-1" }
   └─ onSubmit → courseCreateRequest(formData)
 
 PASO 2: Frontend API
 ────────────────────
-httpClient.post("/course", formData)
+httpClient.post("course/create", formData)
   └─ Interceptor:
       ├─ getSession() de Supabase
       ├─ Si expira pronto, refreshSession()
@@ -234,12 +235,12 @@ httpClient.post("/course", formData)
 
 PASO 3: Request HTTP
 ────────────────────
-POST http://localhost:3000/course
+POST http://localhost:3000/course/create
 Authorization: Bearer eyJhbGc...
 Content-Type: application/json
 
 {
-  "courseName": "Math",
+  "courses_id": "uuid",
   "teacher": "García",
   "credits": 3,
   "color": "blue",
@@ -249,7 +250,7 @@ Content-Type: application/json
 PASO 4: Backend Routes
 ──────────────────────
 CourseRoutes.js
-  └─ router.post("/course", authMiddleware, courseController.createCourse)
+  └─ router.post("/create", authMiddleware, courseController.createCourse)
 
 PASO 5: authMiddleware
 ──────────────────────
@@ -262,7 +263,7 @@ PASO 5: authMiddleware
 PASO 6: Backend Controller
 ──────────────────────────
 CourseController.createCourse()
-├─ Obtiene: req.body = { courseName, teacher, credits, color, semesterName }
+├─ Obtiene: req.body = { courses_id, teacher, credits, color, semesterName }
 ├─ Valida: todos los campos presentes, credits es número
 ├─ Llama: courseService.createCourse(...)
 ├─ Maneja errores
@@ -271,10 +272,10 @@ CourseController.createCourse()
 PASO 7: Backend Service
 ───────────────────────
 CourseService.createCourse()
-├─ Valida lógica: semestre existe, conversión de color
+├─ Valida lógica: semestre existe, prerequisito y conversión de color
 ├─ Query Supabase:
-│   INSERT INTO course (course_name, teacher, credits, color, semester_id)
-│   VALUES ('Math', 'García', 3, '#3380FF', 1)
+│   INSERT INTO course (courses_id, teacher, credits, color, semester_id, status)
+│   VALUES ('uuid', 'García', 3, '#3380FF', 'semester-uuid', 'active')
 ├─ Retorna: { course_id: 5, ... }
 └─ Si error: lanza exception
 
@@ -284,13 +285,14 @@ PASO 8: Response HTTP
 Content-Type: application/json
 
 {
-  "course_id": 5,
-  "course_name": "Math",
+  "course_id": "uuid",
+  "courses_id": "catalog-uuid",
   "teacher": "García",
   "credits": 3,
   "color": "#3380FF",
-  "semester_id": 1,
-  "message": "Course created"
+  "semester_id": "semester-uuid",
+  "status": "active",
+  "message": "Course created successfully"
 }
 
 PASO 9: Frontend
@@ -304,7 +306,7 @@ PASO 10: Page Reload
 ────────────────────
 courseList.tsx
 ├─ useEffect: carga lista de cursos
-├─ GET /course
+├─ GET /course/view/:semesterName
 ├─ Renderiza nuevo curso en tabla
 └─ Usuario ve cambio
 ```
@@ -338,7 +340,7 @@ git push                            # Subir a GitHub
 
 | Error                                       | Causa                       | Solución                                      |
 | ------------------------------------------- | --------------------------- | --------------------------------------------- |
-| `Cannot GET /course`                        | Ruta no definida            | Verificar path en AppRouters + backend routes |
+| `Cannot GET /course/view`                   | Ruta no definida            | Verificar path en AppRouters + backend routes |
 | `Token no proporcionado`                    | Falta Authorization header  | Verificar que httpClient agregue Bearer token |
 | `User not found`                            | Email no registrado         | Revisar Supabase → Authentication → Users     |
 | `CORS error`                                | Backend no permite frontend | Verificar CORS config en app.js               |
@@ -360,24 +362,41 @@ git push                            # Subir a GitHub
 
 ## 📊 Tabla de Endpoints
 
-| Método | Endpoint         | Protegido | Función                |
-| ------ | ---------------- | --------- | ---------------------- |
-| POST   | `/student/auth`  | ❌        | Registro               |
-| POST   | `/student/login` | ❌        | Login                  |
-| GET    | `/student/view`  | ✅        | Obtener perfil         |
-| GET    | `/student/me`    | ✅        | Obtener usuario actual |
-| POST   | `/semester`      | ✅        | Crear semestre         |
-| GET    | `/semester`      | ✅        | Listar semestres       |
-| POST   | `/course`        | ✅        | Crear curso            |
-| GET    | `/course`        | ✅        | Listar cursos          |
-| PUT    | `/course/:id`    | ✅        | Editar curso           |
-| DELETE | `/course/:id`    | ✅        | Eliminar curso         |
-| POST   | `/grade`         | ✅        | Crear calificación     |
-| GET    | `/grade`         | ✅        | Listar calificaciones  |
-| POST   | `/assessment`    | ✅        | Crear evaluación       |
-| GET    | `/assessment`    | ✅        | Listar evaluaciones    |
-| POST   | `/day`           | ✅        | Crear día académico    |
-| GET    | `/day`           | ✅        | Listar días            |
+| Método | Endpoint                                | Protegido | Función                     |
+| ------ | --------------------------------------- | --------- | --------------------------- |
+| POST   | `/student/auth`                         | ❌        | Registro                    |
+| POST   | `/student/login`                        | ❌        | Login                       |
+| GET    | `/student/view`                         | ✅        | Obtener perfil              |
+| GET    | `/student/me`                           | ✅        | Obtener usuario actual      |
+| PUT    | `/student/update`                       | ✅        | Actualizar estudiante       |
+| PUT    | `/student/password`                     | ✅        | Cambiar contraseña          |
+| GET    | `/semester/view`                        | ✅        | Listar semestres            |
+| POST   | `/semester/create`                      | ✅        | Crear semestre              |
+| PUT    | `/semester/update/:semesterId`          | ✅        | Actualizar semestre         |
+| GET    | `/course/view`                          | ✅        | Listar cursos activos       |
+| GET    | `/course/view/:semesterName`            | ✅        | Listar cursos por semestre  |
+| POST   | `/course/create`                        | ✅        | Crear curso                 |
+| PUT    | `/course/update/:courseId`              | ✅        | Editar curso                |
+| PUT    | `/course/status/:courseId`              | ✅        | Cambiar estado del curso    |
+| DELETE | `/course/delete/:courseId`              | ✅        | Eliminar curso              |
+| GET    | `/catalog/careers`                      | ❌        | Listar carreras             |
+| GET    | `/catalog/faculties`                    | ✅        | Listar facultades           |
+| GET    | `/catalog/courses`                      | ✅        | Listar catálogo de materias |
+| GET    | `/catalog/courses/available`            | ✅        | Materias disponibles        |
+| POST   | `/assessment/create`                    | ✅        | Crear evaluación            |
+| GET    | `/assessment/view`                      | ✅        | Listar evaluaciones         |
+| GET    | `/assessment/view/course/:courseId`     | ✅        | Evaluaciones por curso      |
+| GET    | `/assessment/view/semester/:semesterId` | ✅        | Evaluaciones por semestre   |
+| GET    | `/assessment/view/day`                  | ✅        | Evaluaciones por día        |
+| GET    | `/assessment/view/month`                | ✅        | Evaluaciones por mes        |
+| POST   | `/grade/create`                         | ✅        | Crear calificación          |
+| GET    | `/grade/view/course/:courseId`          | ✅        | Calificaciones por curso    |
+| GET    | `/grade/current/:courseId`              | ✅        | Nota actual del curso       |
+| GET    | `/grade/average/:semesterId`            | ✅        | Promedio del semestre       |
+| POST   | `/day/create`                           | ✅        | Crear horario               |
+| GET    | `/day/view/:courseId`                   | ✅        | Listar horarios del curso   |
+| PUT    | `/day/update/:dayId`                    | ✅        | Actualizar horario          |
+| DELETE | `/day/delete/:dayId`                    | ✅        | Eliminar horario            |
 
 ---
 
@@ -396,5 +415,5 @@ git push                            # Subir a GitHub
 
 ---
 
-**Versión**: 2.0  
-**Última actualización**: 2 de abril de 2026
+**Versión**: 2.1  
+**Última actualización**: 24 mayo de 2026

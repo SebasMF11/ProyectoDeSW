@@ -5,38 +5,46 @@ Full academic management system developed using **Node.js/Express** (backend) y 
 # 🎯 Project description
 
 ## Research question
+
 How can a web-based academic planning application improve the organization and follow-up of the academic performance of students at the Politecnico JIC?
 
 ## Introduction
+
 Nowadays, many students at the Politecnico JIC plan their semesters using a variety of tools such as physical diaries, notes on their mobile phones or independent files. This situation makes it difficult to organize subjects, remember important dates (mid-term exams, workshops, assignments) and keep proper record of academic performance.
 
 ## Main objective
+
 Using the SMART methodology, develop a web application called PoliPlan that enables students at the Politecnico JIC to plan, organize and follow up on their activities and academic performance during the semester.
 
 ## Specific objectives
+
 - Implement solutions that align with students' real needs, taking into account how the schedule is currently managed.
 - Identify the main problems students face in their current scheduling process, such as difficulties in updating schedules and potential mistakes when entering their information.
 - Analyse how current schedules are managed, in order to understand the weaknesses in the process of adding, editing and removing courses from a student's schedule in each semester.
 
 ## Scope
+
 The PoliPlan system will enable students to:
- - Register and manage their subjects.
- -  Set academic schedules.
- -  Record dates for mid-term exams, workshops, assignments and final exams.
- -  Track their grades throughout the semester.
- -  View their academic schedule on a web interface.
-    
+
+- Register and manage their subjects.
+- Set academic schedules.
+- Record dates for mid-term exams, workshops, assignments and final exams.
+- Track their grades throughout the semester.
+- View their academic schedule on a web interface.
+
 This phase of the project does **NOT** include:
-  - Integration with official institutional systems.
-  - Management of academic enrolment.
-  - Native mobile app.
-  - Administrative features for teaching staff.
+
+- Integration with official institutional systems.
+- Management of academic enrolment.
+- Native mobile app.
+- Administrative features for teaching staff.
 
 ## Solution
 
 A full-featured app where students can register their courses, class schedules, exam dates, assignments and mid-term exams. The system allows students to track their grades, taking into account the two mandatory mid-term exams and the overall academic term.
 
 ---
+
 # 🏗️ Project Architecture
 
 ## Conceptual Diagram
@@ -44,22 +52,23 @@ A full-featured app where students can register their courses, class schedules, 
 <img width="1195" height="1315" alt="Conceptual Diagram PoliPlan" src="https://github.com/user-attachments/assets/97233703-d1a9-4ff0-bc61-f4e143de9c1a" />
 
 ## Architectural Pattern
+
 We chose the Layered Architecture because it allows a strict separation of responsibilities, which is crucial for a system that handles various flows of academic data (schedules, grades and dates).
 The main reasons for this choice are:
-- **Frontend and Backend Decoupling:** Using React for the view and Node.js for the logic, the layered architecture allows the backend to function as a independent API REST. 
--**Maintainability and scalability:** By separating the business logic (services) from data persistence (repositories), anything that changes in the way that Politecnico JIC assesses students (such as how mandatory midterms are calculated) can be implemented in one place without affecting the rest of the system.
+
+- **Frontend and Backend Decoupling:** Using React for the view and Node.js for the logic, the layered architecture allows the backend to function as a independent API REST. -**Maintainability and scalability:** By separating the business logic (services) from data persistence (repositories), anything that changes in the way that Politecnico JIC assesses students (such as how mandatory midterms are calculated) can be implemented in one place without affecting the rest of the system.
 - **Good code organization practices:**
-    - Controllers: These are only responsible for receiving student requests and validating input data.
-    - Services: This is where PoliPlan’s “logic” resides, processing planning and tracking academic performance.
-    - Repositories: These manage communication exclusively with PostgreSQL, isolating SQL queries from the rest of the application.
+  - Controllers: These are only responsible for receiving student requests and validating input data.
+  - Services: This is where PoliPlan’s “logic” resides, processing planning and tracking academic performance.
+  - Repositories: These manage communication exclusively with PostgreSQL, isolating SQL queries from the rest of the application.
 - **Facility for Testing:** This structure allows you to perform unit tests on the logic of the services without needing the database or the interface to be connected, ensuring more robust software.
 
 PoliPlan has evolved towards a cleaner layered architecture, where the ‘View’ is an independent project in React and the ‘Model’ is managed through specialised Repositories and Services.
 
-
 ## Layered Architecture
 
 ### Project structure
+
 ```
 ProyectoDeSW/
 ├── backend/
@@ -201,8 +210,6 @@ AppRouters.tsx (route configuration)
               └─ JSX rendering
 ```
 
-
-
 **Backend (Node.js + Express)**
 
 - **Framework**: Express.js
@@ -210,156 +217,189 @@ AppRouters.tsx (route configuration)
 - **Database**: Supabase (PostgreSQL)
 - **Pattern**: MVC in layers (Routes → Controllers → Services → DB)
 
-
 **Endpoints principales:**
 
 - `POST /student/auth` - Student's register
 - `POST /student/login` - Authentication
-- `POST /semester` - Create a semester
-- `POST /course` - Create a course
-- `POST /assessment` - Create an assessment 
-- `GET /grade` - List grades
+- `POST /semester/create` - Create a semester
+- `POST /course/create` - Create a course
+- `POST /assessment` - Create an assessment
+- `GET /grade/view/course/:courseId` - List grades for a course
 
 **Frontend (React + TypeScript)**
 
-- **Framework**: React 18 + Vite
-- **Routing**: React Router v6
+- **Framework**: React 19 + Vite
+- **Routing**: React Router 7
 - **Authentication**: Supabase Auth
-- **HTTP Client**: Axios with JWC interceptors
-- **Styles**: Tailwind CSS
+- **HTTP Client**: Axios with JWT interceptor
+- **Styles**: Tailwind CSS + local component styles
 
 ---
 
 # 📊 Data model - Relations
+
 ```
-STUDENT 
-├─ student_id (UUID, PK)
+STUDENT
+├─ student_id UUID PK, default auth.uid()
 ├─ name
 ├─ last_name
-├─ email (UNIQUE)
-└─ created_at
+├─ email UNIQUE
+├─ created_at
+└─ career_id FK → career.career_id
 
-SEMESTER 
-├─ semester_id (PK)
-├─ semester_name
+CAREER
+├─ career_id UUID PK
+└─ name UNIQUE
+
+FACULTY
+├─ faculty_id UUID PK
+└─ name UNIQUE
+
+COURSES (catalog)
+├─ courses_id UUID PK
+├─ name UNIQUE
+├─ faculty_id FK → faculty.faculty_id
+└─ prerequisito FK → courses.courses_id
+
+COURSES_PER_CAREER
+├─ id UUID PK
+├─ career_id FK → career.career_id
+└─ courses_id FK → courses.courses_id
+
+SEMESTER
+├─ semester_id UUID PK
+├─ name
 ├─ start_date
 ├─ end_date
+├─ student_id FK → student.student_id
+├─ midterm_week daterange
+└─ final_exam_week daterange
 
-COURSE  ──┬─ FK → SEMESTER
-├─ course_id (PK)
-├─ course_name
-├─ teacher
-├─ credits
-├─ color (hex)
-└─ semester_id
+COURSE
+├─ course_id UUID PK
+├─ credits integer
+├─ teacher nullable
+├─ color
+├─ status
+├─ semester_id FK → semester.semester_id
+└─ courses_id FK → courses.courses_id
 
-DAY  ──┬─ FK → COURSE
-├─ day_id (PK)
-├─ course_id
-├─ day_date
+DAY
+├─ day_id UUID PK
+├─ day_of_week
 ├─ start_time
 ├─ end_time
+├─ classroom nullable
+└─ course_id FK → course.course_id
 
-ASSESSMENT 
-├─ assessment_id (PK)
-├─ assessment_name
-├─ description
-├─ total_points
+ASSESSMENT
+├─ assessment_id UUID PK
+├─ type
+├─ due_date timestamptz
+├─ name
+├─ course_id FK → course.course_id
+└─ percentage real
 
-GRADE  ──┬─ FK → STUDENT, COURSE
-├─ grade_id (PK)
-├─ student_id
-├─ course_id
-├─ score
-└─ created_at
+GRADE
+├─ grade_id UUID PK
+├─ value real nullable
+└─ assessment_id FK + UNIQUE → assessment.assessment_id
 ```
 
 ---
 
 # 📋 Main Entities
 
-### Student 
+### Student
 
 ```javascript
 {
-  id: string (UUID),
+  student_id: string (UUID),
   name: string,
   lastName: string,
   email: string (único),
-  created_at: timestamp
+  created_at: timestamp,
+  career_id: string (FK)
 }
 ```
 
-### Semester 
+### Semester
 
 ```javascript
 {
-  semester_id: number,
-  semester_name: string,
+  semester_id: string (UUID),
+  name: string,
   start_date: date,
-  end_date: date
+  end_date: date,
+  midterm_week: daterange,
+  final_exam_week: daterange
 }
 ```
 
-### Course 
+### Course
 
 ```javascript
 {
-  course_id: number,
-  course_name: string,
+  course_id: string (UUID),
+  courses_id: string (FK),
   teacher: string,
   credits: number,
   color: string (hex),
-  semester_id: number (FK)
+  status: string,
+  semester_id: string (FK)
 }
 ```
 
-### Assessment 
+### Assessment
 
 ```javascript
 {
-  assessment_id: number,
-  assessment_name: string,
-  description: string,
-  total_points: number
+  assessment_id: string (UUID),
+  name: string,
+  type: string,
+  due_date: timestamptz,
+  percentage: number,
+  course_id: string (FK)
 }
 ```
 
-### Grade 
+### Grade
 
 ```javascript
 {
-  grade_id: number,
-  student_id: string (FK),
-  course_id: number (FK),
-  score: number,
-  created_at: timestamp
+  grade_id: string (UUID),
+  value: number,
+  assessment_id: string (FK, unique)
 }
 ```
 
-### Day 
+### Day
 
 ```javascript
 {
-  day_id: number,
-  course_id: number (FK),
-  day_date: date,
+  day_id: string (UUID),
+  course_id: string (FK),
+  day_of_week: string,
   start_time: time,
-  end_time: time
+  end_time: time,
+  classroom: string
 }
 ```
 
 ---
+
 # 🔧Technologies Used / Tools
 
-- **Frontend:** React with Vite.
-- **Backend:** Node.js.
+- **Frontend:** React + TypeScript with Vite.
+- **Backend:** Node.js + Express.
 - **Database:** PostgreSQL, using Supabase as the hosting platform.
 - **Design:** Figma for prototyping.
 - **Technical Documentation:** Lucidchart for UML diagrams.
+
 ---
 
 # 📄Requirements
+
 To run this project locally, make sure you have installed:
 
 - Node.js (LTS version recommended).
@@ -367,7 +407,9 @@ To run this project locally, make sure you have installed:
 - A Supabase account for the PostgreSQL database.
 
 ---
+
 # 📖 Guide
+
 ## Installation
 
 ### 1. Clone and Install
@@ -413,8 +455,8 @@ npm run dev
 - Backend: http://localhost:3000
 - Frontend: http://localhost:5173
 
-
 ---
+
 ## 🚀 Execution
 
 ### Backend
@@ -479,22 +521,23 @@ POST http://localhost:3000/student/login
 ### 3. Create Semester (with authenticated token)
 
 ```bash
-POST http://localhost:3000/semester
+POST http://localhost:3000/semester/create
 Authorization: Bearer eyJhbGc...
 {
-  "semester_name": "2025-1",
-  "start_date": "2025-01-01",
-  "end_date": "2025-05-31"
+  "semesterName": "2025-1",
+  "startDate": "2025-01-01",
+  "endDate": "2025-05-31",
+  "midtermWeek": "2025-03-17"
 }
 ```
 
-### 4.  Create Course (within a semester)
+### 4. Create Course (within a semester)
 
 ```bash
-POST http://localhost:3000/course
+POST http://localhost:3000/course/create
 Authorization: Bearer eyJhbGc...
 {
-  "courseName": "Matemáticas",
+  "courses_id": "catalog-uuid",
   "teacher": "Prof. García",
   "credits": 3,
   "color": "red",
@@ -523,7 +566,7 @@ Authorization: Bearer eyJhbGc...
 ### Frontend
 
 - `useAuth.tsx`: Read Supabase session and subscribe to authentication changes
-- `httpClient.ts`:  Interceptor that automatically adds a Bearer token
+- `httpClient.ts`: Interceptor that automatically adds a Bearer token
 
 ---
 
@@ -555,9 +598,9 @@ git push                            # Subir a GitHub
 - **Backend API Base:** `http://localhost:3000`
 - **Frontend App:** `http://localhost:5173`
 - **Supabase Dashboard:** `https://app.supabase.com`
-- **Backend Docs:** `http://localhost:3000/` 
+- **Backend Docs:** `http://localhost:3000/`
 - **API Testing:** `Postman`, `Insomnia`, o `curl`
-  
+
 ---
 
 # 📖 Documentation
@@ -589,7 +632,6 @@ git push                            # Subir a GitHub
 - **Sara Monsalve Lopera** - Software Engineering student.
 - **Sebastián Montoya Foronda** - Software Engineering student.
 - **Sebastián Tunjuelo Lujan** - Software Engineering student.
-
 
 ---
 

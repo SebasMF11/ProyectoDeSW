@@ -23,7 +23,8 @@ Documentación detallada de la arquitectura y flujos principales del proyecto.
                            ▼
 ┌─────────────────────────────────────────────────────────────┐
 │              SUPABASE (PostgreSQL + Auth)                    │
-│  - Tabla: student, semester, course, grade, etc.             │
+│  - Tablas reales: student, career, faculty, semester,       │
+│    courses, course, assessment, grade, day, courses_per...  │
 │  - Auth: Gestiona credenciales y tokens JWT                  │
 └─────────────────────────────────────────────────────────────┘
 ```
@@ -187,20 +188,20 @@ course.tsx loaded
       ▼
   handleSubmit → courseCreateRequest()
       │
-      ├─ httpClient.post("/course", { courseName, teacher, credits, color, semesterName })
+      ├─ httpClient.post("course/create", { courses_id, teacher, credits, color, semesterName })
       │
       └─ httpClient interceptor:
           ├─ Obtiene token JWT
           ├─ Agrega Authorization header
           ├─ Envía petición
           │
-          ▼ HTTP POST http://localhost:3000/course
+        ▼ HTTP POST http://localhost:3000/course/create
 ```
 
 ### Backend Side
 
 ```
-Request: POST /course
+  Request: POST /course/create
 
 ▼
 
@@ -213,7 +214,7 @@ authMiddleware
   ▼
 
 CourseController.createCourse()
-  ├─ Valida entrada: courseName, teacher, credits, color, semesterName
+  ├─ Valida entrada: courses_id, teacher, credits, color, semesterName
   ├─ Convierte credits a number
   ├─ Error 400 si datos inválidos
   │
@@ -221,14 +222,15 @@ CourseController.createCourse()
 
 CourseService.createCourse()
   ├─ Busca semester por nombre
+  ├─ Valida prerequisito y disponibilidad del catálogo
   ├─ Traduce color nombre → hex (#FF5733)
   ├─ Inserta en tabla 'course'
-  │   INSERT INTO course (course_name, teacher, credits, color, semester_id)
+  │   INSERT INTO course (courses_id, teacher, credits, color, semester_id, status)
   ├─ Error si semestre no existe
   │
   ▼
 
-Response 201 Created: { course_id: 5, message: "Course created" }
+Response 201 Created: { course_id: "uuid", message: "Course created successfully" }
 
 ▼ HTTP 201
 
@@ -240,7 +242,7 @@ Frontend recibe respuesta
 
 courseList.tsx remont
   ├─ useEffect: recarga list de cursos
-  │   └─ courseViewRequest() ← GET /course
+  │   └─ courseViewRequest() ← GET /course/view
   │
   ▼
 
@@ -252,46 +254,71 @@ Se muestra nuevo curso en la lista
 ## 📊 Modelo de Datos - Relaciones
 
 ```
-STUDENT (Estudiante)
-├─ student_id (UUID, PK)
+STUDENT
+├─ student_id UUID PK, default auth.uid()
 ├─ name
 ├─ last_name
-├─ email (UNIQUE)
-└─ created_at
+├─ email UNIQUE
+├─ created_at
+└─ career_id FK → career.career_id
 
-SEMESTER (Semestre Académico)
-├─ semester_id (PK)
-├─ semester_name
+CAREER
+├─ career_id UUID PK
+└─ name UNIQUE
+
+FACULTY
+├─ faculty_id UUID PK
+└─ name UNIQUE
+
+COURSES (catálogo)
+├─ courses_id UUID PK
+├─ name UNIQUE
+├─ faculty_id FK → faculty.faculty_id
+└─ prerequisito FK → courses.courses_id
+
+COURSES_PER_CAREER
+├─ id UUID PK
+├─ career_id FK → career.career_id
+└─ courses_id FK → courses.courses_id
+
+SEMESTER
+├─ semester_id UUID PK
+├─ name
 ├─ start_date
 ├─ end_date
+├─ student_id FK → student.student_id
+├─ midterm_week daterange
+└─ final_exam_week daterange
 
-COURSE (Curso) ──┬─ FK → SEMESTER
-├─ course_id (PK)
-├─ course_name
-├─ teacher
-├─ credits
-├─ color (hex)
-└─ semester_id
+COURSE
+├─ course_id UUID PK
+├─ credits integer
+├─ teacher nullable
+├─ color
+├─ status
+├─ semester_id FK → semester.semester_id
+└─ courses_id FK → courses.courses_id
 
-DAY (Día Académico) ──┬─ FK → COURSE
-├─ day_id (PK)
-├─ course_id
-├─ day_date
+DAY
+├─ day_id UUID PK
+├─ day_of_week
 ├─ start_time
 ├─ end_time
+├─ classroom nullable
+└─ course_id FK → course.course_id
 
-ASSESSMENT (Evaluación/Rúbrica)
-├─ assessment_id (PK)
-├─ assessment_name
-├─ description
-├─ total_points
+ASSESSMENT
+├─ assessment_id UUID PK
+├─ type
+├─ due_date timestamptz
+├─ name
+├─ course_id FK → course.course_id
+└─ percentage real
 
-GRADE (Calificación) ──┬─ FK → STUDENT, COURSE
-├─ grade_id (PK)
-├─ student_id
-├─ course_id
-├─ score
-└─ created_at
+GRADE
+├─ grade_id UUID PK
+├─ value real nullable
+└─ assessment_id FK + UNIQUE → assessment.assessment_id
 ```
 
 ---
@@ -321,38 +348,75 @@ GET /student/me
 ### Semestres
 
 ```
-POST /semester
-  Body: { semester_name, start_date, end_date }
-  Response: 201 { semester_id, ... }
+POST /semester/create
+  Body: { semesterName, startDate, endDate, midtermWeek }
+  Response: 201 { message, semester }
 
-GET /semester
-  Response: 200 [ { semester_id, semester_name, ... }, ... ]
+GET /semester/view
+  Response: 200 [ { semester_id, name, start_date, end_date, ... }, ... ]
 
-PUT /semester/:id
-  Body: { semester_name, start_date, end_date }
-  Response: 200 { message: "Updated" }
+PUT /semester/update/:semesterId
+  Body: { semesterName, startDate, endDate, midtermWeek }
+  Response: 200 { message, semester }
 ```
 
 ### Cursos
 
 ```
-POST /course
+POST /course/create
   Header: Authorization: Bearer <token>
-  Body: { courseName, teacher, credits, color, semesterName }
-  Response: 201 { course_id, ... }
+  Body: { courses_id, teacher, credits, color, semesterName }
+  Response: 201 { message, course }
 
-GET /course
+GET /course/view
   Header: Authorization: Bearer <token>
-  Response: 200 [ { course_id, course_name, ... }, ... ]
+  Response: 200 { courses: [...] }
 
-PUT /course/:id
+GET /course/view/:semesterName
   Header: Authorization: Bearer <token>
-  Body: { ... }
-  Response: 200 { message: "Updated" }
+  Response: 200 { courses: [...] }
 
-DELETE /course/:id
+PUT /course/update/:courseId
   Header: Authorization: Bearer <token>
-  Response: 200 { message: "Deleted" }
+  Body: { credits?, teacher?, color? }
+  Response: 200 { message, course }
+
+PUT /course/status/:courseId
+  Header: Authorization: Bearer <token>
+  Body: { status: "active" | "inactive" | "completed" | "failed" }
+  Response: 200 { message, course }
+
+DELETE /course/delete/:courseId
+  Header: Authorization: Bearer <token>
+  Response: 200 { message }
+```
+
+### Catálogo y notas
+
+```
+GET /catalog/careers
+GET /catalog/faculties
+GET /catalog/courses
+GET /catalog/courses/available
+GET /catalog/courses/faculty/:facultyId
+GET /catalog/courses/career/:careerId
+
+POST /assessment/create
+GET /assessment/view
+GET /assessment/view/course/:courseId
+GET /assessment/view/semester/:semesterId
+GET /assessment/view/day?date=YYYY-MM-DD
+GET /assessment/view/month?date=YYYY-MM
+
+POST /grade/create
+GET /grade/view/course/:courseId
+GET /grade/current/:courseId
+GET /grade/average/:semesterId
+
+POST /day/create
+GET /day/view/:courseId
+PUT /day/update/:dayId
+DELETE /day/delete/:dayId
 ```
 
 ---
@@ -506,4 +570,4 @@ catch (error) {
 
 ---
 
-**Última actualización**: 2 de abril de 2026
+**Última actualización**: 24 de mayo de 2026

@@ -18,7 +18,7 @@ type Course = {
   courses_id: string;
   courses: {
     name: string;
-    prerequisite_course: { name: string } | null;
+    prerequisite_course: { courses_id: string; name: string } | null;
   };
   teacher?: string;
   credits: number;
@@ -207,7 +207,7 @@ function CourseList() {
           </select>
         </div>
       </header>
-      <div className="mb-4 flex w-full flex-row items-center gap-3">
+      <div className="mb-4 flex w-full flex-row items-center gap-3 pt-7 pb-2">
         <div className="basis-4/5 bg-gray-50 border border-gray-200 rounded p-3 min-w-0">
           <div className="grid grid-cols-3 gap-3">
             <div className="text-center">

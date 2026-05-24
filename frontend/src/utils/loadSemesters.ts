@@ -2,7 +2,7 @@ import { semesterViewRequest } from "../api/semester";
 
 export type Semester = {
   semester_id: string;
-  semester_name: string;
+  name: string;
   start_date?: string;
   end_date?: string;
 };
