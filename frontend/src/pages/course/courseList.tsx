@@ -26,7 +26,6 @@ type Course = {
   status?: string;
 };
 
-// Qué acción de confirmación está pendiente para cada curso
 type PendingAction = "complete" | "fail" | "delete" | null;
 
 function CourseList() {
@@ -37,8 +36,6 @@ function CourseList() {
   const [courses, setCourses] = useState<Course[]>([]);
   const [loadingCourses, setLoadingCourses] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
-
-  // Mapa courseId → acción pendiente de confirmación
   const [pendingActions, setPendingActions] = useState<
     Record<string, PendingAction>
   >({});
@@ -49,6 +46,7 @@ function CourseList() {
       setCourses([]);
       return;
     }
+
     try {
       setLoadingCourses(true);
       setErrorMessage("");
@@ -72,12 +70,10 @@ function CourseList() {
     loadCoursesBySemester(selectedSemester);
   }, [selectedSemester]);
 
-  // Abre el panel de confirmación para un curso
   const requestAction = (courseId: string, action: PendingAction) => {
     setPendingActions((prev) => ({ ...prev, [courseId]: action }));
   };
 
-  // Cancela la confirmación
   const cancelAction = (courseId: string) => {
     setPendingActions((prev) => ({ ...prev, [courseId]: null }));
   };
@@ -147,30 +143,33 @@ function CourseList() {
     });
   };
 
-  const totalCredits = useMemo(() => {
-    return courses.reduce((sum, c) => sum + (c.credits ?? 0), 0);
-  }, [courses]);
+  const totalCredits = useMemo(
+    () => courses.reduce((sum, c) => sum + (c.credits ?? 0), 0),
+    [courses],
+  );
 
-  // Visible courses in the table - active by default, or all if toggled
   const visibleCourses = useMemo(() => {
-    if (showAll) {
-      return courses;
-    }
+    if (showAll) return courses;
     return courses.filter((c) => (c.status || "").toLowerCase() === "active");
   }, [courses, showAll]);
 
-  // Totals / counters
   const activeCoursesCount = useMemo(
     () => visibleCourses.length,
     [visibleCourses],
   );
 
-  const inactiveCoursesCount = useMemo(() => {
-    return courses.filter((c) => {
-      const s = (c.status || "").toLowerCase();
-      return s === "completed" || s === "failed" || s === "inactive";
-    }).length;
-  }, [courses]);
+  const inactiveCoursesCount = useMemo(
+    () =>
+      courses.filter((c) => {
+        const status = (c.status || "").toLowerCase();
+        return (
+          status === "completed" || status === "failed" || status === "inactive"
+        );
+      }).length,
+    [courses],
+  );
+
+  const getCourseColor = (course: Course) => course.color || "#0f93ad";
 
   return (
     <main className="p-6 max-w-7xl mx-auto">
@@ -207,6 +206,7 @@ function CourseList() {
           </select>
         </div>
       </header>
+
       <div className="mb-4 flex w-full flex-row items-center gap-3 pt-7 pb-2">
         <div className="basis-4/5 bg-gray-50 border border-gray-200 rounded p-3 min-w-0">
           <div className="grid grid-cols-3 gap-3">
@@ -285,19 +285,15 @@ function CourseList() {
                       <td
                         className="course-list-cell course-list-cell-course course-list-col-course"
                         style={{
-                          borderLeftColor: course.color,
+                          borderLeftColor: getCourseColor(course),
+                          borderLeftWidth: "4px",
+                          borderLeftStyle: "solid",
                         }}
                       >
                         <div>
                           <p className="course-list-course-name">
                             {course.courses.name}
                           </p>
-                          {course.courses.prerequisite_course && (
-                            <p className="course-list-course-prerequisite">
-                              Prerequisite:{" "}
-                              {course.courses.prerequisite_course.name}
-                            </p>
-                          )}
                         </div>
                       </td>
                       <td className="course-list-cell course-list-cell-teacher course-list-col-teacher">
@@ -326,7 +322,7 @@ function CourseList() {
                           </span>
                         </td>
                       )}
-                      <td className="course-list-cell course-list-cell-actions course-list-col-actions">
+                      <td className="course-list-cell ">
                         <div className="course-list-actions-container">
                           {course.status?.toLowerCase() === "active" && (
                             <>
@@ -370,7 +366,6 @@ function CourseList() {
                           </button>
                         </div>
 
-                        {/* Panel de confirmación inline */}
                         {pending === "complete" && (
                           <div className="course-list-modal course-list-modal-success">
                             <p className="course-list-modal-title">

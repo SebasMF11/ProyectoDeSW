@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { assessmentBySemesterRequest } from "../api/assessment.api";
 import { courseBySemesterRequest } from "../api/course";
 import { gradeByCourseRequest } from "../api/grade";
@@ -55,7 +55,7 @@ const isActiveStatus = (status?: string) =>
 type UseAssessmentListDataResult = CachedAssessmentListData & {
     loading: boolean;
     errorMessage: string;
-    reloadAssessmentData: () => void;
+    reloadAssessmentData: (semesterNameOverride?: string) => void;
 };
 
 export function useAssessmentListData(
@@ -102,7 +102,10 @@ export function useAssessmentListData(
                 return;
             }
 
-            const cachedData = assessmentListCache.get(currentSemester.semester_id);
+            const cachedData =
+                reloadToken === 0
+                    ? assessmentListCache.get(currentSemester.semester_id)
+                    : undefined;
             if (cachedData) {
                 if (cancelled) return;
                 setCourses(cachedData.courses);
@@ -213,9 +216,10 @@ export function useAssessmentListData(
         };
     }, [selectedSemester, semesters, reloadToken]);
 
-    const reloadAssessmentData = () => {
+    const reloadAssessmentData = useCallback((semesterNameOverride?: string) => {
+        const semesterNameToUse = semesterNameOverride || selectedSemester;
         const currentSemester = semesters.find(
-            (semester) => semester.name === selectedSemester,
+            (semester) => semester.name === semesterNameToUse,
         );
 
         if (currentSemester?.semester_id) {
@@ -223,7 +227,7 @@ export function useAssessmentListData(
         }
 
         setReloadToken((current) => current + 1);
-    };
+    }, [selectedSemester, semesters]);
 
     return {
         courses,

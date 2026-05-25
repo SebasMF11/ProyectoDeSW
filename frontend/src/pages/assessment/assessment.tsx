@@ -31,6 +31,7 @@ const assessment = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [errorMessage, setErrorMessage] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [semesters, setSemesters] = useState<Semester[]>([]);
   const [courses, setCourses] = useState<Course[]>([]);
   const { register, handleSubmit, watch, setValue } = useForm();
@@ -48,7 +49,7 @@ const assessment = () => {
         const { data } = await semesterViewRequest();
         const list = Array.isArray(data) ? data : [];
         setSemesters(list);
-        if (list.length > 0) {
+        if (list.length > 0 && !isEditing) {
           setValue("semesterName", list[0].name);
         }
       } catch (error) {
@@ -57,7 +58,7 @@ const assessment = () => {
       }
     };
     loadSemesters();
-  }, [setValue]);
+  }, [isEditing, setValue]);
 
   useEffect(() => {
     if (!isEditing) return;
@@ -101,24 +102,37 @@ const assessment = () => {
     const loadCoursesBySemester = async () => {
       if (!selectedSemesterName) {
         setCourses([]);
-        setValue("courseName", "");
+        if (!isEditing) {
+          setValue("courseName", "");
+        }
         return;
       }
       try {
         const { data } = await courseBySemesterRequest(selectedSemesterName);
         setCourses(Array.isArray(data?.courses) ? data.courses : []);
-        setValue("courseName", "");
+        if (!isEditing) {
+          setValue("courseName", "");
+        } else if (editAssessment?.courseName) {
+          setValue("courseName", editAssessment.courseName);
+        }
       } catch (error) {
         console.error(error);
         setCourses([]);
-        setValue("courseName", "");
+        if (!isEditing) {
+          setValue("courseName", "");
+        }
       }
     };
     loadCoursesBySemester();
-  }, [selectedSemesterName, setValue]);
+  }, [editAssessment?.courseName, isEditing, selectedSemesterName, setValue]);
 
   const onSubmit = handleSubmit(async (values) => {
+    if (isSubmitting) {
+      return;
+    }
+
     try {
+      setIsSubmitting(true);
       setErrorMessage("");
       if (isEditing && editAssessmentId) {
         const payload = {
@@ -132,8 +146,7 @@ const assessment = () => {
         return;
       }
 
-      const res = await assessmentCreateRequest(values);
-      console.log(res);
+      await assessmentCreateRequest(values);
       navigate("/assessment-list");
     } catch (error) {
       if (axios.isAxiosError(error)) {
@@ -142,6 +155,8 @@ const assessment = () => {
         return;
       }
       setErrorMessage("An unexpected error occurred");
+    } finally {
+      setIsSubmitting(false);
     }
   });
 
@@ -230,7 +245,15 @@ const assessment = () => {
             <p className="text-[25px] text-[#3d483f]">%</p>
           </div>
 
-          <button type="submit">{isEditing ? "Update" : "Create"}</button>
+          <button type="submit" disabled={isSubmitting}>
+            {isSubmitting
+              ? isEditing
+                ? "Updating..."
+                : "Creating..."
+              : isEditing
+                ? "Update"
+                : "Create"}
+          </button>
         </form>
       </div>
     </div>

@@ -117,8 +117,15 @@ const grade = () => {
     try {
       setErrorMessage("");
       const res = await gradeCreateRequest(values);
-      console.log(res);
-      navigate(prefillState?.redirectTo || "/grade-list");
+      navigate(prefillState?.redirectTo || "/grade-list", {
+        state:
+          prefillState?.redirectTo === "/assessment-list"
+            ? {
+                refreshAssessmentData: true,
+                semesterName: prefillState?.semesterName,
+              }
+            : undefined,
+      });
     } catch (error) {
       if (axios.isAxiosError(error)) {
         const apiMessage = error.response?.data?.error;

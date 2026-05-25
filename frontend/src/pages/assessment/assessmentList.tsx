@@ -1,5 +1,5 @@
 import { Fragment, useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router";
+import { useLocation, useNavigate } from "react-router";
 import { FaRegTrashCan } from "react-icons/fa6";
 import { RiEdit2Line } from "react-icons/ri";
 import FloatingActionMenu from "../../components/FloatingActionMenu";
@@ -30,9 +30,16 @@ const formatGradeValue = (grade?: number) => {
 
 function AssessmentList() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const returnState = location.state as {
+    refreshAssessmentData?: boolean;
+    semesterName?: string;
+  } | null;
   const { semesters, loadingSemesters, semesterError, latestSemesterName } =
     useSemesters();
-  const [selectedSemester, setSelectedSemester] = useState("");
+  const [selectedSemester, setSelectedSemester] = useState(
+    () => returnState?.semesterName ?? "",
+  );
   const [errorMessage, setErrorMessage] = useState("");
   const [pendingAssessmentId, setPendingAssessmentId] = useState<string | null>(
     null,
@@ -51,9 +58,19 @@ function AssessmentList() {
   } = useAssessmentListData(selectedSemester, semesters);
 
   useEffect(() => {
-    if (!latestSemesterName) return;
+    if (!returnState?.refreshAssessmentData) return;
+
+    reloadAssessmentData(returnState.semesterName);
+  }, [
+    reloadAssessmentData,
+    returnState?.refreshAssessmentData,
+    returnState?.semesterName,
+  ]);
+
+  useEffect(() => {
+    if (!latestSemesterName || returnState?.semesterName) return;
     setSelectedSemester((current) => current || latestSemesterName);
-  }, [latestSemesterName]);
+  }, [latestSemesterName, returnState?.semesterName]);
 
   const assessmentsByCourse = useMemo(() => {
     const grouped: Record<string, Assessment[]> = {};
