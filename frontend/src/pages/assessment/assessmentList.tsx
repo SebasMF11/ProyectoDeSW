@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router";
 import { FaRegTrashCan } from "react-icons/fa6";
 import { RiEdit2Line } from "react-icons/ri";
@@ -241,7 +241,7 @@ function AssessmentList() {
                             const hasGrade = typeof gradeValue === "number";
 
                             return (
-                              <>
+                              <Fragment key={assessment.assessment_id}>
                                 <tr
                                   key={assessment.assessment_id}
                                   className="course-list-body-row"
@@ -310,8 +310,9 @@ function AssessmentList() {
                                         onClick={() =>
                                           navigate("/assessment", {
                                             state: {
-                                              assessment_id:
-                                                assessment.assessment_id,
+                                              assessment,
+                                              semesterName: selectedSemester,
+                                              courseName,
                                             },
                                           })
                                         }
@@ -447,7 +448,7 @@ function AssessmentList() {
                                     </td>
                                   </tr>
                                 ) : null}
-                              </>
+                              </Fragment>
                             );
                           })}
                         </tbody>

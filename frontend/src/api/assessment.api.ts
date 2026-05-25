@@ -16,3 +16,6 @@ export const assessmentsByMonthRequest = (year: number, month: number) => {
 
 export const assessmentsByDayRequest = (date: string) =>
   httpClient.get(`assessment/view/day?date=${date}`);
+
+export const assessmentUpdateRequest = (assessmentId: string, payload: any) =>
+  httpClient.put(`assessment/update/${assessmentId}`, payload);

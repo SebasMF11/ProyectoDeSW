@@ -1,8 +1,11 @@
-import { useNavigate } from "react-router";
+import { useNavigate, useLocation } from "react-router";
 import { useForm } from "react-hook-form";
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { assessmentCreateRequest } from "../../api/assessment.api";
+import {
+  assessmentCreateRequest,
+  assessmentUpdateRequest,
+} from "../../api/assessment.api";
 import { semesterViewRequest } from "../../api/semester";
 import { courseBySemesterRequest } from "../../api/course";
 import SemesterSelect from "../../components/SemesterSelect";
@@ -26,10 +29,14 @@ const assessmentTypes = [
 
 const assessment = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [errorMessage, setErrorMessage] = useState("");
   const [semesters, setSemesters] = useState<Semester[]>([]);
   const [courses, setCourses] = useState<Course[]>([]);
   const { register, handleSubmit, watch, setValue } = useForm();
+  const editAssessment = (location.state as any)?.assessment;
+  const isEditing = !!editAssessment;
+  const editAssessmentId = editAssessment?.assessment_id;
   const selectedSemesterName = watch("semesterName");
   const selectedSemesterData = semesters.find(
     (semester) => semester.name === selectedSemesterName,
@@ -53,6 +60,44 @@ const assessment = () => {
   }, [setValue]);
 
   useEffect(() => {
+    if (!isEditing) return;
+    // Prefill form values from router state when editing
+    try {
+      const locationState = (location.state as any) || {};
+      setValue(
+        "semesterName",
+        editAssessment.semesterName || locationState.semesterName || "",
+      );
+      setValue(
+        "courseName",
+        editAssessment.courseName || locationState.courseName || "",
+      );
+      setValue(
+        "assessmentName",
+        editAssessment.name || editAssessment.assessmentName || "",
+      );
+
+      // due_date may be full ISO; convert to YYYY-MM-DD for input[type=date]
+      const rawDue = editAssessment.due_date || editAssessment.dueDate || "";
+      const toDateInput = (iso?: string) => {
+        if (!iso) return "";
+        const d = new Date(iso);
+        if (Number.isNaN(d.getTime())) return iso.split("T")[0] || "";
+        const y = d.getUTCFullYear();
+        const m = String(d.getUTCMonth() + 1).padStart(2, "0");
+        const day = String(d.getUTCDate()).padStart(2, "0");
+        return `${y}-${m}-${day}`;
+      };
+
+      setValue("dueDate", toDateInput(rawDue));
+      setValue("type", editAssessment.type || "");
+      setValue("percentage", editAssessment.percentage ?? "");
+    } catch (e) {
+      console.error("Error pre-filling assessment form:", e);
+    }
+  }, [isEditing, editAssessment, setValue]);
+
+  useEffect(() => {
     const loadCoursesBySemester = async () => {
       if (!selectedSemesterName) {
         setCourses([]);
@@ -61,9 +106,7 @@ const assessment = () => {
       }
       try {
         const { data } = await courseBySemesterRequest(selectedSemesterName);
-        setCourses(
-          Array.isArray(data?.courses) ? data.courses : [],
-        );
+        setCourses(Array.isArray(data?.courses) ? data.courses : []);
         setValue("courseName", "");
       } catch (error) {
         console.error(error);
@@ -77,6 +120,18 @@ const assessment = () => {
   const onSubmit = handleSubmit(async (values) => {
     try {
       setErrorMessage("");
+      if (isEditing && editAssessmentId) {
+        const payload = {
+          assessmentName: values.assessmentName,
+          type: values.type,
+          dueDate: values.dueDate,
+          percentage: values.percentage,
+        };
+        await assessmentUpdateRequest(editAssessmentId, payload);
+        navigate("/assessment-list");
+        return;
+      }
+
       const res = await assessmentCreateRequest(values);
       console.log(res);
       navigate("/assessment-list");
@@ -110,7 +165,9 @@ const assessment = () => {
           <CourseSelect
             courses={courses}
             placeholderOptionText={
-              selectedSemesterName ? "Select a course" : "Select a semester first"
+              selectedSemesterName
+                ? "Select a course"
+                : "Select a semester first"
             }
             emptyOptionText={
               selectedSemesterName
@@ -173,7 +230,7 @@ const assessment = () => {
             <p className="text-[25px] text-[#3d483f]">%</p>
           </div>
 
-          <button type="submit">Create</button>
+          <button type="submit">{isEditing ? "Update" : "Create"}</button>
         </form>
       </div>
     </div>
