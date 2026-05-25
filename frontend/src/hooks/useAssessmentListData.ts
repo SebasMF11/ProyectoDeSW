@@ -14,6 +14,7 @@ type Course = {
 };
 
 type Grade = {
+    gradeId: string;
     value: number;
     assessment: {
         name?: string;
@@ -26,6 +27,7 @@ type CachedAssessmentListData = {
     courses: Course[];
     assessments: Assessment[];
     gradeMap: Record<string, number>;
+    gradeDetailsMap: Record<string, { gradeId: string; value: number }>;
 };
 
 const assessmentListCache = new Map<string, CachedAssessmentListData>();
@@ -53,6 +55,7 @@ const isActiveStatus = (status?: string) =>
 type UseAssessmentListDataResult = CachedAssessmentListData & {
     loading: boolean;
     errorMessage: string;
+    reloadAssessmentData: () => void;
 };
 
 export function useAssessmentListData(
@@ -62,8 +65,12 @@ export function useAssessmentListData(
     const [courses, setCourses] = useState<Course[]>([]);
     const [assessments, setAssessments] = useState<Assessment[]>([]);
     const [gradeMap, setGradeMap] = useState<Record<string, number>>({});
+    const [gradeDetailsMap, setGradeDetailsMap] = useState<
+        Record<string, { gradeId: string; value: number }>
+    >({});
     const [loading, setLoading] = useState(false);
     const [errorMessage, setErrorMessage] = useState("");
+    const [reloadToken, setReloadToken] = useState(0);
 
     useEffect(() => {
         let cancelled = false;
@@ -74,6 +81,7 @@ export function useAssessmentListData(
                 setCourses([]);
                 setAssessments([]);
                 setGradeMap({});
+                setGradeDetailsMap({});
                 setErrorMessage("");
                 setLoading(false);
                 return;
@@ -88,6 +96,7 @@ export function useAssessmentListData(
                 setCourses([]);
                 setAssessments([]);
                 setGradeMap({});
+                setGradeDetailsMap({});
                 setErrorMessage("");
                 setLoading(false);
                 return;
@@ -99,6 +108,7 @@ export function useAssessmentListData(
                 setCourses(cachedData.courses);
                 setAssessments(cachedData.assessments);
                 setGradeMap(cachedData.gradeMap);
+                setGradeDetailsMap(cachedData.gradeDetailsMap);
                 setErrorMessage("");
                 setLoading(false);
                 return;
@@ -150,6 +160,10 @@ export function useAssessmentListData(
                 );
 
                 const nextGradeMap: Record<string, number> = {};
+                const nextGradeDetailsMap: Record<
+                    string,
+                    { gradeId: string; value: number }
+                > = {};
                 gradeResponses.forEach((gradeResponse) => {
                     gradeResponse.grades.forEach((grade: Grade) => {
                         const key = assessmentKey(
@@ -158,6 +172,10 @@ export function useAssessmentListData(
                             grade.assessment?.dueDate,
                         );
                         nextGradeMap[key] = grade.value;
+                        nextGradeDetailsMap[key] = {
+                            gradeId: grade.gradeId,
+                            value: grade.value,
+                        };
                     });
                 });
 
@@ -165,6 +183,7 @@ export function useAssessmentListData(
                     courses: activeCourses,
                     assessments: filteredAssessments,
                     gradeMap: nextGradeMap,
+                    gradeDetailsMap: nextGradeDetailsMap,
                 };
 
                 if (cancelled) return;
@@ -172,12 +191,14 @@ export function useAssessmentListData(
                 setCourses(nextData.courses);
                 setAssessments(nextData.assessments);
                 setGradeMap(nextData.gradeMap);
+                setGradeDetailsMap(nextData.gradeDetailsMap);
             } catch (error) {
                 if (cancelled) return;
                 console.error(error);
                 setCourses([]);
                 setAssessments([]);
                 setGradeMap({});
+                setGradeDetailsMap({});
                 setErrorMessage("The semester information could not be loaded");
             } finally {
                 if (cancelled) return;
@@ -190,13 +211,27 @@ export function useAssessmentListData(
         return () => {
             cancelled = true;
         };
-    }, [selectedSemester, semesters]);
+    }, [selectedSemester, semesters, reloadToken]);
+
+    const reloadAssessmentData = () => {
+        const currentSemester = semesters.find(
+            (semester) => semester.name === selectedSemester,
+        );
+
+        if (currentSemester?.semester_id) {
+            assessmentListCache.delete(currentSemester.semester_id);
+        }
+
+        setReloadToken((current) => current + 1);
+    };
 
     return {
         courses,
         assessments,
         gradeMap,
+        gradeDetailsMap,
         loading,
         errorMessage,
+        reloadAssessmentData,
     };
 }

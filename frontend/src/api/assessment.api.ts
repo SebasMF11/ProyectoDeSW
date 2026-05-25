@@ -6,6 +6,9 @@ export const assessmentBySemesterRequest = (semesterId: string) =>
 export const assessmentCreateRequest = (assessment: any) =>
   httpClient.post("assessment/create", assessment);
 
+export const assessmentDeleteRequest = (assessmentId: string) =>
+  httpClient.delete(`assessment/delete/${assessmentId}`);
+
 export const assessmentsByMonthRequest = (year: number, month: number) => {
   const date = `${year}-${String(month).padStart(2, "0")}`;
   return httpClient.get(`assessment/view/month?date=${date}`);

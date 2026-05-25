@@ -65,7 +65,7 @@
 }
 
 .course-list-col-actions {
-  width: 32%;
+  width: 280px;
 }
 
 /* ========================================
@@ -74,10 +74,6 @@
 
 .course-list-body-row {
   transition: background-color 0.2s ease;
-}
-
-.course-list-body-row:hover {
-  background-color: var(--color-row-hover);
 }
 
 /* ========================================
@@ -96,6 +92,12 @@
   border-left-width: 4px;
   border-left-style: solid;
   padding-left: calc(1rem - 1px);
+}
+
+/* When using the table layout, hide the thick left border (we use the timeline line instead) */
+.course-list-table .course-list-cell-course {
+  border-left-width: 0;
+  padding-left: 1rem;
 }
 
 .course-list-course-name {
@@ -122,6 +124,8 @@
 /* Actions Cell */
 .course-list-cell-actions {
   padding: 1rem;
+  display: flex;
+  justify-content: flex-end;
 }
 
 .course-list-actions-container {
@@ -325,4 +329,21 @@
     margin-top: 0.25rem;
     padding: 0.5rem;
   }
+}
+
+/* ========================================
+   Assessment list grid helper
+   ======================================== */
+.assessment-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 96px 96px 280px;
+  align-items: center;
+}
+
+/* Ensure the pill cells keep a consistent width */
+.assessment-pill {
+  width: 96px; /* matches the 2nd/3rd column */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }

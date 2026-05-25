@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router";
+import { useLocation } from "react-router";
 import { useForm, Controller } from "react-hook-form";
 import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
@@ -14,6 +15,7 @@ import AssessmentSelect, {
 
 const grade = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [errorMessage, setErrorMessage] = useState("");
   const { semesters, semesterError, latestSemesterName } = useSemesters();
   const [courses, setCourses] = useState<Course[]>([]);
@@ -22,6 +24,14 @@ const grade = () => {
   const semesterRegister = register("semesterName", { required: true });
   const selectedSemesterName = watch("semesterName");
   const selectedCourseName = watch("courseName");
+  const prefillState = location.state as
+    | {
+        semesterName?: string;
+        courseName?: string;
+        assessmentName?: string;
+        redirectTo?: string;
+      }
+    | undefined;
 
   const selectedSemester = useMemo(
     () => semesters.find((semester) => semester.name === selectedSemesterName),
@@ -32,16 +42,22 @@ const grade = () => {
   const filteredAssessments = useMemo(
     () =>
       assessments.filter(
-        (assessment) =>
-          assessment.course?.courses?.name === selectedCourseName,
+        (assessment) => assessment.course?.courses?.name === selectedCourseName,
       ),
     [assessments, selectedCourseName],
   );
 
   useEffect(() => {
-    if (!latestSemesterName || selectedSemesterName) return;
+    if (selectedSemesterName) return;
+
+    if (prefillState?.semesterName) {
+      setValue("semesterName", prefillState.semesterName);
+      return;
+    }
+
+    if (!latestSemesterName) return;
     setValue("semesterName", latestSemesterName);
-  }, [latestSemesterName, selectedSemesterName, setValue]);
+  }, [latestSemesterName, prefillState, selectedSemesterName, setValue]);
 
   useEffect(() => {
     const loadCourses = async () => {
@@ -54,15 +70,20 @@ const grade = () => {
       try {
         const { data } = await courseBySemesterRequest(selectedSemesterName);
         setCourses(Array.isArray(data?.courses) ? data.courses : []);
+        if (prefillState?.courseName) {
+          setValue("courseName", prefillState.courseName);
+        }
       } catch (error) {
         console.error(error);
         setCourses([]);
       }
-      setValue("courseName", "");
+      if (!prefillState?.courseName) {
+        setValue("courseName", "");
+      }
       setValue("assessmentName", "");
     };
     loadCourses();
-  }, [selectedSemesterName, setValue]);
+  }, [prefillState?.courseName, selectedSemesterName, setValue]);
 
   useEffect(() => {
     const loadAssessments = async () => {
@@ -78,21 +99,26 @@ const grade = () => {
         setAssessments(
           Array.isArray(data?.assessments) ? data.assessments : [],
         );
+        if (prefillState?.assessmentName) {
+          setValue("assessmentName", prefillState.assessmentName);
+        }
       } catch (error) {
         console.error(error);
         setAssessments([]);
       }
-      setValue("assessmentName", "");
+      if (!prefillState?.assessmentName) {
+        setValue("assessmentName", "");
+      }
     };
     loadAssessments();
-  }, [selectedSemester, setValue]);
+  }, [prefillState?.assessmentName, selectedSemester, setValue]);
 
   const onSubmit = handleSubmit(async (values) => {
     try {
       setErrorMessage("");
       const res = await gradeCreateRequest(values);
       console.log(res);
-      navigate("/grade-list");
+      navigate(prefillState?.redirectTo || "/grade-list");
     } catch (error) {
       if (axios.isAxiosError(error)) {
         const apiMessage = error.response?.data?.error;

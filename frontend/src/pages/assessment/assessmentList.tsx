@@ -5,6 +5,8 @@ import { RiEdit2Line } from "react-icons/ri";
 import FloatingActionMenu from "../../components/FloatingActionMenu";
 import useSemesters from "../../hooks/useSemesters";
 import SemesterSelect from "../../components/SemesterSelect";
+import { assessmentDeleteRequest } from "../../api/assessment.api";
+import { gradeDeleteRequest } from "../../api/grade";
 import {
   assessmentKey,
   useAssessmentListData,
@@ -32,12 +34,20 @@ function AssessmentList() {
     useSemesters();
   const [selectedSemester, setSelectedSemester] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
+  const [pendingAssessmentId, setPendingAssessmentId] = useState<string | null>(
+    null,
+  );
+  const [pendingAction, setPendingAction] = useState<
+    "complete" | "deleteGrade" | "deleteAssessment" | null
+  >(null);
   const {
     courses,
     assessments,
     gradeMap,
+    gradeDetailsMap,
     loading,
     errorMessage: loadError,
+    reloadAssessmentData,
   } = useAssessmentListData(selectedSemester, semesters);
 
   useEffect(() => {
@@ -57,6 +67,71 @@ function AssessmentList() {
   }, [assessments]);
 
   const fallbackCourseColor = "#0f93ad";
+
+  const requestCompletionToggle = (
+    courseName: string,
+    assessment: Assessment,
+  ) => {
+    const key = assessmentKey(courseName, assessment.name, assessment.due_date);
+    const gradeDetails = gradeDetailsMap[key];
+
+    setPendingAssessmentId(assessment.assessment_id);
+    setPendingAction(gradeDetails ? "deleteGrade" : "complete");
+  };
+
+  const requestAssessmentDelete = (assessment: Assessment) => {
+    setPendingAssessmentId(assessment.assessment_id);
+    setPendingAction("deleteAssessment");
+  };
+
+  const cancelAction = () => {
+    setPendingAssessmentId(null);
+    setPendingAction(null);
+  };
+
+  const handleCompleteAssessment = (
+    courseName: string,
+    assessment: Assessment,
+  ) => {
+    navigate("/grade", {
+      state: {
+        semesterName: selectedSemester,
+        courseName,
+        assessmentName: assessment.name,
+        redirectTo: "/assessment-list",
+      },
+    });
+  };
+
+  const handleDeleteGrade = async (
+    assessment: Assessment,
+    courseName: string,
+  ) => {
+    const key = assessmentKey(courseName, assessment.name, assessment.due_date);
+    const gradeDetails = gradeDetailsMap[key];
+
+    if (!gradeDetails) return;
+
+    try {
+      await gradeDeleteRequest(gradeDetails.gradeId);
+      reloadAssessmentData();
+      cancelAction();
+    } catch (error) {
+      console.error(error);
+      setErrorMessage("The grade could not be deleted");
+    }
+  };
+
+  const handleDeleteAssessment = async (assessment: Assessment) => {
+    try {
+      await assessmentDeleteRequest(assessment.assessment_id);
+      reloadAssessmentData();
+      cancelAction();
+    } catch (error) {
+      console.error(error);
+      setErrorMessage("The assessment could not be deleted");
+    }
+  };
 
   return (
     <main className="mx-auto max-w-6xl bg-white px-4 py-6 sm:px-6">
@@ -102,7 +177,7 @@ function AssessmentList() {
 
         {!loadingSemesters && !loading && courses.length > 0 ? (
           <div className="space-y-7">
-            <div className="mb-1 hidden sm:grid sm:grid-cols-[minmax(0,1fr)_96px_120px_92px] sm:items-center sm:gap-3">
+            <div className="mb-1 hidden sm:gap-3 sm:pl-10 sm:items-center assessment-grid">
               <p className="col-start-3 text-center text-sm font-semibold uppercase tracking-wide text-[#1a1a1a]">
                 Grade
               </p>
@@ -147,76 +222,237 @@ function AssessmentList() {
                       This course has no assessments.
                     </p>
                   ) : (
-                    <ul className="space-y-3">
-                      {courseAssessments.map((assessment) => {
-                        const key = assessmentKey(
-                          courseName,
-                          assessment.name,
-                          assessment.due_date,
-                        );
-                        const gradeValue = gradeMap[key];
-                        const hasGrade = typeof gradeValue === "number";
+                    <div className="course-list-table-wrapper">
+                      <table className="course-list-table">
+                        <colgroup>
+                          <col />
+                          <col style={{ width: 96 }} />
+                          <col style={{ width: 96 }} />
+                          <col style={{ width: 280 }} />
+                        </colgroup>
+                        <tbody>
+                          {courseAssessments.map((assessment) => {
+                            const key = assessmentKey(
+                              courseName,
+                              assessment.name,
+                              assessment.due_date,
+                            );
+                            const gradeValue = gradeMap[key];
+                            const hasGrade = typeof gradeValue === "number";
 
-                        return (
-                          <li
-                            key={assessment.assessment_id}
-                            className="grid grid-cols-1 items-center gap-3 rounded-xl bg-transparent p-1 sm:grid-cols-[minmax(0,1fr)_96px_120px_92px]"
-                          >
-                            <div>
-                              <p className="text-sm capitalize text-[#6b6b6b]">
-                                {formatAssessmentDate(assessment.due_date)}
-                              </p>
-                              <p className="text-base leading-6 font-medium text-[#131313] sm:text-lg">
-                                {assessment.type}: {assessment.name}
-                              </p>
-                            </div>
+                            return (
+                              <>
+                                <tr
+                                  key={assessment.assessment_id}
+                                  className="course-list-body-row"
+                                >
+                                  <td className="course-list-cell course-list-cell-course">
+                                    <p className="text-sm capitalize text-[#6b6b6b]">
+                                      {formatAssessmentDate(
+                                        assessment.due_date,
+                                      )}
+                                    </p>
+                                    <p className="text-base leading-6 font-medium text-[#131313] sm:text-lg">
+                                      {assessment.type}: {assessment.name}
+                                    </p>
+                                  </td>
+                                  <td className="course-list-cell course-list-cell-credits text-center">
+                                    <span className="assessment-pill inline-flex h-11 items-center justify-center rounded-full bg-[#d9dcda] px-4 text-lg font-semibold text-[#1f2521]">
+                                      {assessment.percentage ?? "-"}%
+                                    </span>
+                                  </td>
+                                  <td className="course-list-cell text-center">
+                                    <span
+                                      className={`assessment-pill inline-flex h-11 items-center justify-center rounded-full px-4 text-lg font-semibold ${
+                                        hasGrade
+                                          ? "bg-[#d9dcda] text-[#1f2521]"
+                                          : "bg-red-100 text-red-700"
+                                      }`}
+                                    >
+                                      {formatGradeValue(gradeValue)}
+                                    </span>
+                                  </td>
+                                  <td className="course-list-cell course-list-cell-actions">
+                                    <div className="course-list-actions-container">
+                                      <button
+                                        type="button"
+                                        onClick={() =>
+                                          requestCompletionToggle(
+                                            courseName,
+                                            assessment,
+                                          )
+                                        }
+                                        className={`course-list-btn w-full whitespace-nowrap rounded-full px-3 py-2 text-xs font-semibold sm:w-auto ${
+                                          hasGrade
+                                            ? "bg-gray-200 text-gray-700"
+                                            : "bg-emerald-100 text-emerald-700"
+                                        }`}
+                                        title={
+                                          hasGrade
+                                            ? "Unmark completed"
+                                            : "Mark as completed"
+                                        }
+                                      >
+                                        {hasGrade ? "Unmark" : "Mark completed"}
+                                      </button>
+                                      <button
+                                        type="button"
+                                        onClick={() =>
+                                          requestAssessmentDelete(assessment)
+                                        }
+                                        className="course-list-btn course-list-btn-icon bg-red-100 text-red-700 hover:bg-red-200"
+                                        title="Delete assessment"
+                                      >
+                                        <FaRegTrashCan size={16} />
+                                      </button>
+                                      <button
+                                        type="button"
+                                        onClick={() =>
+                                          navigate("/assessment", {
+                                            state: {
+                                              assessment_id:
+                                                assessment.assessment_id,
+                                            },
+                                          })
+                                        }
+                                        className="course-list-btn course-list-btn-icon"
+                                        title="Edit assessment"
+                                      >
+                                        <RiEdit2Line size={16} />
+                                      </button>
+                                    </div>
+                                  </td>
+                                </tr>
 
-                            <span className="inline-flex h-11 items-center justify-center rounded-full bg-[#d9dcda] px-4 text-lg font-semibold text-[#1f2521]">
-                              {assessment.percentage ?? "-"}%
-                            </span>
+                                {pendingAssessmentId ===
+                                  assessment.assessment_id &&
+                                pendingAction === "complete" ? (
+                                  <tr
+                                    key={`${assessment.assessment_id}-modal-complete`}
+                                  >
+                                    <td colSpan={4}>
+                                      <div className="course-list-modal course-list-modal-success">
+                                        <p className="course-list-modal-title">
+                                          Mark &quot;{assessment.name}&quot; as
+                                          completed?
+                                        </p>
+                                        <p className="course-list-modal-description">
+                                          You will be taken to the grade form to
+                                          create the note. Once the grade is
+                                          saved, the activity will be considered
+                                          completed.
+                                        </p>
+                                        <div className="course-list-modal-buttons">
+                                          <button
+                                            type="button"
+                                            onClick={() =>
+                                              handleCompleteAssessment(
+                                                courseName,
+                                                assessment,
+                                              )
+                                            }
+                                            className="course-list-modal-btn-success"
+                                          >
+                                            Yes, continue
+                                          </button>
+                                          <button
+                                            type="button"
+                                            onClick={cancelAction}
+                                            className="course-list-modal-btn-cancel"
+                                          >
+                                            Cancel action
+                                          </button>
+                                        </div>
+                                      </div>
+                                    </td>
+                                  </tr>
+                                ) : null}
 
-                            <span
-                              className={`inline-flex h-11 items-center justify-center rounded-full px-4 text-lg font-semibold ${
-                                hasGrade
-                                  ? "bg-[#d9dcda] text-[#1f2521]"
-                                  : "bg-red-100 text-red-700"
-                              }`}
-                            >
-                              {formatGradeValue(gradeValue)}
-                            </span>
+                                {pendingAssessmentId ===
+                                  assessment.assessment_id &&
+                                pendingAction === "deleteGrade" ? (
+                                  <tr
+                                    key={`${assessment.assessment_id}-modal-unmark`}
+                                  >
+                                    <td colSpan={4}>
+                                      <div className="course-list-modal course-list-modal-danger">
+                                        <p className="course-list-modal-title">
+                                          Unmark &quot;{assessment.name}&quot;?
+                                        </p>
+                                        <p className="course-list-modal-description">
+                                          The grade will be deleted and the
+                                          activity will return to pending state.
+                                        </p>
+                                        <div className="course-list-modal-buttons">
+                                          <button
+                                            type="button"
+                                            onClick={() =>
+                                              handleDeleteGrade(
+                                                assessment,
+                                                courseName,
+                                              )
+                                            }
+                                            className="course-list-modal-btn-danger"
+                                          >
+                                            Yes, delete grade
+                                          </button>
+                                          <button
+                                            type="button"
+                                            onClick={cancelAction}
+                                            className="course-list-modal-btn-cancel"
+                                          >
+                                            Cancel
+                                          </button>
+                                        </div>
+                                      </div>
+                                    </td>
+                                  </tr>
+                                ) : null}
 
-                            <div className="flex items-center justify-start gap-2 sm:justify-end">
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  setErrorMessage(
-                                    "Delete assessment is not available yet.",
-                                  )
-                                }
-                                className="course-list-btn course-list-btn-icon"
-                                title="Delete assessment"
-                              >
-                                <FaRegTrashCan size={16} />
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  navigate("/assessment", {
-                                    state: {
-                                      assessment_id: assessment.assessment_id,
-                                    },
-                                  })
-                                }
-                                className="course-list-btn course-list-btn-icon"
-                                title="Edit assessment"
-                              >
-                                <RiEdit2Line size={16} />
-                              </button>
-                            </div>
-                          </li>
-                        );
-                      })}
-                    </ul>
+                                {pendingAssessmentId ===
+                                  assessment.assessment_id &&
+                                pendingAction === "deleteAssessment" ? (
+                                  <tr
+                                    key={`${assessment.assessment_id}-modal-delete`}
+                                  >
+                                    <td colSpan={4}>
+                                      <div className="course-list-modal course-list-modal-danger">
+                                        <p className="course-list-modal-title">
+                                          Delete &quot;{assessment.name}&quot;?
+                                        </p>
+                                        <p className="course-list-modal-description">
+                                          This will delete the assessment and
+                                          its related grade data. This cannot be
+                                          undone.
+                                        </p>
+                                        <div className="course-list-modal-buttons">
+                                          <button
+                                            type="button"
+                                            onClick={() =>
+                                              handleDeleteAssessment(assessment)
+                                            }
+                                            className="course-list-modal-btn-danger"
+                                          >
+                                            Yes, delete assessment
+                                          </button>
+                                          <button
+                                            type="button"
+                                            onClick={cancelAction}
+                                            className="course-list-modal-btn-cancel"
+                                          >
+                                            Cancel
+                                          </button>
+                                        </div>
+                                      </div>
+                                    </td>
+                                  </tr>
+                                ) : null}
+                              </>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
                   )}
                 </article>
               );

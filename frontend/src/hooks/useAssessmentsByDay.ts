@@ -22,7 +22,9 @@ interface UseAssessmentsReturn {
   error: string | null;
 }
 
-export function useAssessmentsByDay(selectedDate: Date): UseAssessmentsReturn {
+export function useAssessmentsByDay(
+  selectedDate: Date,
+): UseAssessmentsReturn {
   const [assessments, setAssessments] = useState<Assessment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

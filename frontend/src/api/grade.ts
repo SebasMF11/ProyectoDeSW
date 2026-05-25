@@ -3,6 +3,9 @@ import { httpClient } from "./httpClient";
 export const gradeCreateRequest = (grade: any) =>
   httpClient.post("grade/create", grade);
 
+export const gradeDeleteRequest = (gradeId: string) =>
+  httpClient.delete(`grade/delete/${gradeId}`);
+
 export const gradeByCourseRequest = (courseId: string) =>
   httpClient.get(`grade/view/course/${courseId}`);
 
