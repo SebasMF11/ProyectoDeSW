@@ -137,7 +137,10 @@ const course = () => {
         setLoadingCourses(true);
         setErrorMessage("");
         // Pasar facultyId solo si hay facultades y una está seleccionada
-        const facultyParam = faculties.length > 0 && selectedFacultyId ? selectedFacultyId : undefined;
+        const facultyParam =
+          faculties.length > 0 && selectedFacultyId
+            ? selectedFacultyId
+            : undefined;
         const res = await availableCoursesRequest(facultyParam);
         setCatalogCourses(
           Array.isArray(res.data?.courses) ? res.data.courses : [],
@@ -168,7 +171,13 @@ const course = () => {
     try {
       setErrorMessage("");
 
-      const payload: { color: string; courses_id: string; teacher: string; credits: number; semesterName: string } = { ...values, credits: Number(values.credits) };
+      const payload: {
+        color: string;
+        courses_id: string;
+        teacher: string;
+        credits: number;
+        semesterName: string;
+      } = { ...values, credits: Number(values.credits) };
       const res = isEditMode
         ? await courseUpdateRequest(editCourse!.course_id, payload)
         : await courseCreateRequest(payload);
@@ -178,8 +187,8 @@ const course = () => {
     } catch (error) {
       if (axios.isAxiosError(error)) {
         const apiMessage = error.response?.data?.error;
-          setErrorMessage(
-            apiMessage ||
+        setErrorMessage(
+          apiMessage ||
             (isEditMode
               ? "The course could not be updated"
               : "The course could not be created"),
@@ -194,9 +203,7 @@ const course = () => {
     <div>
       <div className="formContainer">
         <form onSubmit={onSubmit} className="formLayout">
-          <p className="title">
-            {isEditMode ? "Edit course" : "Add course"}
-          </p>
+          <p className="title">{isEditMode ? "Edit course" : "Add course"}</p>
 
           {errorMessage ? (
             <p className="text-red-600 text-sm">{errorMessage}</p>
@@ -256,20 +263,26 @@ const course = () => {
             id="courses-select"
             className="formControl"
             defaultValue=""
-            disabled={isEditMode || (faculties.length > 0 && !selectedFacultyId)}
+            disabled={
+              isEditMode || (faculties.length > 0 && !selectedFacultyId)
+            }
             {...register("courses_id", { required: !isEditMode })}
           >
-            <option value="" disabled>
-              {isEditMode
-                ? editCourse?.course_name
-                : faculties.length > 0 && !selectedFacultyId
+            {isEditMode ? (
+              <option value={editCourse?.courses_id || ""} disabled>
+                {editCourse?.course_name || "Unknown course"}
+              </option>
+            ) : (
+              <option value="" disabled>
+                {faculties.length > 0 && !selectedFacultyId
                   ? "Select a faculty first"
                   : loadingCourses
                     ? "Loading courses..."
                     : catalogCourses.length > 0
                       ? "Select a course"
                       : "No courses available"}
-            </option>
+              </option>
+            )}
             {catalogCourses.map((c) => (
               <option key={c.courses_id} value={c.courses_id}>
                 {c.name}
