@@ -24,7 +24,14 @@ export default function DayAssessmentsList({
           style={{ borderColor: assessment.course.color ?? "#ccc" }}
         >
           <p className="font-semibold text-gray-800">
-            {assessment.assessment_name}
+            <span className={assessment.has_grade ? "line-through" : ""}>
+              {assessment.assessment_name}
+            </span>
+            {assessment.has_grade && assessment.grade_value != null ? (
+              <span className="ml-2 text-sm font-medium text-gray-500">
+                {assessment.grade_value.toFixed(1)}
+              </span>
+            ) : null}
           </p>
           <p className="text-sm text-gray-600">
             {assessment.course.course_name}

@@ -131,39 +131,11 @@
   flex-wrap: wrap;
 }
 
-/* ========================================
-   Action Buttons
-   ======================================== */
-
-.course-list-btn {
-  font-size: 0.75rem;
-  font-weight: 500;
-  transition: background-color 0.2s ease, transform 0.1s ease;
-  border: none;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.course-list-btn:hover {
-  transform: translateY(-1px);
-}
-
-.course-list-btn:active {
-  transform: translateY(0);
-}
-
 /* Text Button Style */
 .course-list-btn-text {
   padding: 0.375rem 0.75rem;
   border-radius: 9999px;
   color: white;
-  background-color: var(--color-green-success);
-}
-
-.course-list-btn-text:hover {
-  background-color: var(--color-green-hover);
 }
 
 /* Icon Button Style */
@@ -171,11 +143,6 @@
   padding: 0.5rem;
   border-radius: 9999px;
   color: white;
-  background-color: var(--color-green-success);
-}
-
-.course-list-btn-icon:hover {
-  background-color: var(--color-green-hover);
 }
 
 /* ========================================

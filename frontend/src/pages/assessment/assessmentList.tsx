@@ -3,44 +3,13 @@ import { useNavigate } from "react-router";
 import { FaRegTrashCan } from "react-icons/fa6";
 import { RiEdit2Line } from "react-icons/ri";
 import FloatingActionMenu from "../../components/FloatingActionMenu";
-import { assessmentBySemesterRequest } from "../../api/assessment.api";
-import { courseBySemesterRequest } from "../../api/course";
-import { gradeByCourseRequest } from "../../api/grade";
 import useSemesters from "../../hooks/useSemesters";
 import SemesterSelect from "../../components/SemesterSelect";
-
-type Course = {
-  course_id: string;
-  courses: { name: string };
-  status?: string;
-  teacher?: string;
-  credits?: number;
-};
-
-type Assessment = {
-  assessment_id: string;
-  name: string;
-  type: string;
-  due_date?: string;
-  percentage?: number;
-  course?: {
-    courses?: { name: string };
-  };
-};
-
-type Grade = {
-  value: number;
-  assessment: {
-    name?: string;
-    dueDate?: string;
-  };
-};
-
-const assessmentKey = (name?: string, dueDate?: string) =>
-  `${name || ""}::${dueDate || ""}`;
-
-const isActiveStatus = (status?: string) =>
-  typeof status === "string" && status.trim().toLowerCase() === "active";
+import {
+  assessmentKey,
+  useAssessmentListData,
+  type Assessment,
+} from "../../hooks/useAssessmentListData";
 
 const formatAssessmentDate = (dateValue?: string) => {
   if (!dateValue) return "No date";
@@ -62,107 +31,20 @@ function AssessmentList() {
   const { semesters, loadingSemesters, semesterError, latestSemesterName } =
     useSemesters();
   const [selectedSemester, setSelectedSemester] = useState("");
-  const [courses, setCourses] = useState<Course[]>([]);
-  const [assessments, setAssessments] = useState<Assessment[]>([]);
-  const [gradeMap, setGradeMap] = useState<Record<string, number>>({});
-  const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const {
+    courses,
+    assessments,
+    gradeMap,
+    loading,
+    errorMessage: loadError,
+  } = useAssessmentListData(selectedSemester, semesters);
 
   useEffect(() => {
     if (!latestSemesterName) return;
     setSelectedSemester((current) => current || latestSemesterName);
   }, [latestSemesterName]);
 
-  useEffect(() => {
-    const loadSemesterContent = async () => {
-      if (!selectedSemester) {
-        setCourses([]);
-        setAssessments([]);
-        setGradeMap({});
-        return;
-      }
-
-      try {
-        setLoading(true);
-        setErrorMessage("");
-
-        const { data: coursesData } =
-          await courseBySemesterRequest(selectedSemester);
-        const semesterCourses: Course[] = Array.isArray(coursesData?.courses)
-          ? coursesData.courses
-          : [];
-        const activeCourses = semesterCourses.filter((course) =>
-          isActiveStatus(course.status),
-        );
-        setCourses(activeCourses);
-
-        const currentSemester = semesters.find(
-          (semester) => semester.name === selectedSemester,
-        );
-
-        if (!currentSemester?.semester_id) {
-          setAssessments([]);
-          setGradeMap({});
-          return;
-        }
-
-        const { data: assessmentsData } = await assessmentBySemesterRequest(
-          currentSemester.semester_id,
-        );
-        const semesterAssessments: Assessment[] = Array.isArray(
-          assessmentsData?.assessments,
-        )
-          ? assessmentsData.assessments
-          : [];
-        const activeCourseNames = new Set(
-          activeCourses.map((course) => course.courses.name),
-        );
-        setAssessments(
-          semesterAssessments.filter((assessment) =>
-            activeCourseNames.has(assessment.course?.courses?.name || ""),
-          ),
-        );
-
-        const gradeResponses = await Promise.all(
-          activeCourses.map((course) =>
-            gradeByCourseRequest(course.course_id)
-              .then((response) => ({
-                courseId: course.course_id,
-                grades: Array.isArray(response.data?.grades)
-                  ? response.data.grades
-                  : [],
-              }))
-              .catch(() => ({ courseId: course.course_id, grades: [] })),
-          ),
-        );
-
-        const nextGradeMap: Record<string, number> = {};
-        gradeResponses.forEach((gradeResponse) => {
-          gradeResponse.grades.forEach((grade: Grade) => {
-            const key = assessmentKey(
-              grade.assessment?.name,
-              grade.assessment?.dueDate,
-            );
-            nextGradeMap[key] = grade.value;
-          });
-        });
-
-        setGradeMap(nextGradeMap);
-      } catch (error) {
-        console.error(error);
-        setCourses([]);
-        setAssessments([]);
-        setGradeMap({});
-        setErrorMessage("The semester information could not be loaded");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadSemesterContent();
-  }, [selectedSemester, semesters]);
-
-  // Agrupar assessments por nombre del curso
   const assessmentsByCourse = useMemo(() => {
     const grouped: Record<string, Assessment[]> = {};
     assessments.forEach((assessment) => {
@@ -174,7 +56,6 @@ function AssessmentList() {
     return grouped;
   }, [assessments]);
 
-  // Use course-provided color when available; fallback to a neutral color
   const fallbackCourseColor = "#0f93ad";
 
   return (
@@ -187,16 +68,21 @@ function AssessmentList() {
             onValueChange={setSelectedSemester}
           />
         </section>
-        <div className="flex items-center gap-4">
+        <div className="flex flex-1 items-center justify-center gap-4">
           <h1 className="text-xl font-semibold text-center">
             Assessments by semester
           </h1>
         </div>
+        <div>
+          <button type="button" onClick={() => navigate("/grade")}>
+            Add Grade
+          </button>
+        </div>
       </header>
 
-      {errorMessage || semesterError ? (
+      {errorMessage || loadError || semesterError ? (
         <p className="mb-4 rounded-md border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-700">
-          {errorMessage || semesterError}
+          {errorMessage || loadError || semesterError}
         </p>
       ) : null}
 
@@ -217,7 +103,7 @@ function AssessmentList() {
         {!loadingSemesters && !loading && courses.length > 0 ? (
           <div className="space-y-7">
             <div className="mb-1 hidden sm:grid sm:grid-cols-[minmax(0,1fr)_96px_120px_92px] sm:items-center sm:gap-3">
-              <p className="col-start-3 text-center text-base font-bold uppercase tracking-wide text-[#1a1a1a]">
+              <p className="col-start-3 text-center text-sm font-semibold uppercase tracking-wide text-[#1a1a1a]">
                 Grade
               </p>
             </div>
@@ -237,8 +123,7 @@ function AssessmentList() {
                   <span
                     className="absolute left-2 top-1 h-5 w-5 rounded-full"
                     style={{
-                      backgroundColor:
-                        (course as any).color || fallbackCourseColor,
+                      backgroundColor: course.color || fallbackCourseColor,
                     }}
                     aria-hidden="true"
                   />
@@ -248,7 +133,7 @@ function AssessmentList() {
                   />
 
                   <header className="mb-2 flex items-baseline justify-between gap-3">
-                    <h2 className="text-xl leading-7 font-bold text-[#0f1412] sm:text-2xl">
+                    <h2 className="text-lg leading-6 font-bold text-[#0f1412] sm:text-xl">
                       {courseName}
                     </h2>
                     <p className="text-xs text-[#55635a]">
@@ -265,10 +150,12 @@ function AssessmentList() {
                     <ul className="space-y-3">
                       {courseAssessments.map((assessment) => {
                         const key = assessmentKey(
+                          courseName,
                           assessment.name,
                           assessment.due_date,
                         );
                         const gradeValue = gradeMap[key];
+                        const hasGrade = typeof gradeValue === "number";
 
                         return (
                           <li
@@ -279,16 +166,22 @@ function AssessmentList() {
                               <p className="text-sm capitalize text-[#6b6b6b]">
                                 {formatAssessmentDate(assessment.due_date)}
                               </p>
-                              <p className="text-lg leading-6 font-semibold text-[#131313] sm:text-xl">
+                              <p className="text-base leading-6 font-medium text-[#131313] sm:text-lg">
                                 {assessment.type}: {assessment.name}
                               </p>
                             </div>
 
-                            <span className="inline-flex h-11 items-center justify-center rounded-full bg-[#c9cdca] px-4 text-lg font-semibold text-[#1f2521]">
+                            <span className="inline-flex h-11 items-center justify-center rounded-full bg-[#d9dcda] px-4 text-lg font-semibold text-[#1f2521]">
                               {assessment.percentage ?? "-"}%
                             </span>
 
-                            <span className="inline-flex h-11 items-center justify-center rounded-full bg-[#c9cdca] px-4 text-lg font-semibold text-[#1f2521]">
+                            <span
+                              className={`inline-flex h-11 items-center justify-center rounded-full px-4 text-lg font-semibold ${
+                                hasGrade
+                                  ? "bg-[#d9dcda] text-[#1f2521]"
+                                  : "bg-red-100 text-red-700"
+                              }`}
+                            >
                               {formatGradeValue(gradeValue)}
                             </span>
 
