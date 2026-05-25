@@ -142,12 +142,22 @@ const assessment = () => {
           percentage: values.percentage,
         };
         await assessmentUpdateRequest(editAssessmentId, payload);
-        navigate("/assessment-list");
+        navigate("/assessment-list", {
+          state: {
+            refreshAssessmentData: true,
+            semesterName: values.semesterName,
+          },
+        });
         return;
       }
 
       await assessmentCreateRequest(values);
-      navigate("/assessment-list");
+      navigate("/assessment-list", {
+        state: {
+          refreshAssessmentData: true,
+          semesterName: values.semesterName,
+        },
+      });
     } catch (error) {
       if (axios.isAxiosError(error)) {
         const apiMessage = error.response?.data?.error;
