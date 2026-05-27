@@ -116,8 +116,7 @@ const grade = () => {
   const onSubmit = handleSubmit(async (values) => {
     try {
       setErrorMessage("");
-      const res = await gradeCreateRequest(values);
-      console.log(res);
+      await gradeCreateRequest(values);
       navigate(prefillState?.redirectTo || "/grade-list", {
         state:
           prefillState?.redirectTo === "/assessment-list"

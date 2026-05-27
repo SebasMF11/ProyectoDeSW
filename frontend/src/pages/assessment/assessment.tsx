@@ -10,6 +10,7 @@ import { semesterViewRequest } from "../../api/semester";
 import { courseBySemesterRequest } from "../../api/course";
 import SemesterSelect from "../../components/SemesterSelect";
 import CourseSelect, { type Course } from "../../components/CourseSelect";
+import { formatDateForInput } from "../../utils/date";
 
 type Semester = {
   semester_id: string;
@@ -80,17 +81,7 @@ const assessment = () => {
 
       // due_date may be full ISO; convert to YYYY-MM-DD for input[type=date]
       const rawDue = editAssessment.due_date || editAssessment.dueDate || "";
-      const toDateInput = (iso?: string) => {
-        if (!iso) return "";
-        const d = new Date(iso);
-        if (Number.isNaN(d.getTime())) return iso.split("T")[0] || "";
-        const y = d.getUTCFullYear();
-        const m = String(d.getUTCMonth() + 1).padStart(2, "0");
-        const day = String(d.getUTCDate()).padStart(2, "0");
-        return `${y}-${m}-${day}`;
-      };
-
-      setValue("dueDate", toDateInput(rawDue));
+      setValue("dueDate", formatDateForInput(rawDue));
       setValue("type", editAssessment.type || "");
       setValue("percentage", editAssessment.percentage ?? "");
     } catch (e) {

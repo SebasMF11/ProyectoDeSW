@@ -3,6 +3,7 @@ import { useForm } from "react-hook-form";
 import { semesterCreateRequest, semesterViewRequest } from "../api/semester";
 import axios from "axios";
 import { useEffect, useState } from "react";
+import { parseDateToLocal } from "../utils/date";
 
 type SemesterItem = {
   semester_id: string;
@@ -16,10 +17,12 @@ const overlaps = (
   endDate: string,
   existing: SemesterItem,
 ) => {
-  const start = new Date(`${startDate}T00:00:00Z`);
-  const end = new Date(`${endDate}T00:00:00Z`);
-  const existingStart = new Date(`${existing.start_date}T00:00:00Z`);
-  const existingEnd = new Date(`${existing.end_date}T00:00:00Z`);
+  const start = parseDateToLocal(startDate) ?? new Date(startDate);
+  const end = parseDateToLocal(endDate) ?? new Date(endDate);
+  const existingStart =
+    parseDateToLocal(existing.start_date) ?? new Date(existing.start_date);
+  const existingEnd =
+    parseDateToLocal(existing.end_date) ?? new Date(existing.end_date);
   return start < existingEnd && end > existingStart;
 };
 
@@ -51,9 +54,7 @@ const Semester = () => {
       const { startDate, endDate, midtermWeek } = values;
 
       if (startDate > endDate) {
-        setErrorMessage(
-          "The start date cannot be later than the end date",
-        );
+        setErrorMessage("The start date cannot be later than the end date");
         return;
       }
 
@@ -75,8 +76,7 @@ const Semester = () => {
         return;
       }
 
-      const res = await semesterCreateRequest(values);
-      console.log(res);
+      await semesterCreateRequest(values);
       navigate("/home");
     } catch (error) {
       if (axios.isAxiosError(error)) {

@@ -178,10 +178,11 @@ const course = () => {
         credits: number;
         semesterName: string;
       } = { ...values, credits: Number(values.credits) };
-      const res = isEditMode
-        ? await courseUpdateRequest(editCourse!.course_id, payload)
-        : await courseCreateRequest(payload);
-      console.log(res);
+      if (isEditMode) {
+        await courseUpdateRequest(editCourse!.course_id, payload);
+      } else {
+        await courseCreateRequest(payload);
+      }
 
       navigate(isEditMode ? "/course-list" : "/day");
     } catch (error) {

@@ -46,13 +46,12 @@ const Register = () => {
         setErrorMessage("Passwords do not match");
         return;
       }
-      const res = await authRequest(values);
-      console.log(res);
+      await authRequest(values);
       navigate("/auth");
     } catch (error: any) {
-        setErrorMessage(
-          error?.response?.data?.error || "User registration failed",
-        );
+      setErrorMessage(
+        error?.response?.data?.error || "User registration failed",
+      );
     }
   });
 
@@ -100,7 +99,9 @@ const Register = () => {
               defaultValue=""
             >
               <option value="" disabled>
-                {careers.length > 0 ? "Select your career" : "Loading careers..."}
+                {careers.length > 0
+                  ? "Select your career"
+                  : "Loading careers..."}
               </option>
               {careers.map((career) => (
                 <option key={career.career_id} value={career.career_id}>

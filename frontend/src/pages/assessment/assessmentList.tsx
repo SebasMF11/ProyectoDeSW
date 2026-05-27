@@ -12,6 +12,11 @@ import {
   useAssessmentListData,
   type Assessment,
 } from "../../hooks/useAssessmentListData";
+import {
+  parseDateToLocal,
+  formatDateLocal,
+  getLocalDateKey,
+} from "../../utils/date";
 
 type AssessmentStatusFilter = "all" | "completed" | "delayed" | "pending";
 
@@ -25,33 +30,16 @@ const assessmentStatusOptions: Array<{
   { value: "pending", label: "Pendiente" },
 ];
 
-const formatAssessmentDate = (dateValue?: string) => {
-  if (!dateValue) return "No date";
-  const parsed = new Date(dateValue);
-  if (Number.isNaN(parsed.getTime())) return dateValue;
-  return new Intl.DateTimeFormat("en-US", {
-    month: "long",
-    day: "numeric",
-  }).format(parsed);
-};
+const formatAssessmentDate = (dateValue?: string) => formatDateLocal(dateValue);
 
 const formatGradeValue = (grade?: number) => {
   if (!Number.isFinite(grade)) return "Pending";
   return Number(grade).toFixed(1);
 };
 
-const getLocalDateKey = (dateValue: Date) =>
-  `${dateValue.getFullYear()}-${String(dateValue.getMonth() + 1).padStart(
-    2,
-    "0",
-  )}-${String(dateValue.getDate()).padStart(2, "0")}`;
-
 const getAssessmentDueDateKey = (dateValue?: string) => {
-  if (!dateValue) return "";
-
-  const parsed = new Date(dateValue);
-  if (Number.isNaN(parsed.getTime())) return "";
-
+  const parsed = parseDateToLocal(dateValue);
+  if (!parsed) return "";
   return getLocalDateKey(parsed);
 };
 
@@ -154,8 +142,10 @@ function AssessmentList() {
         const sortedAssessments = [
           ...(assessmentsByCourse[courseName] || []),
         ].sort((a, b) => {
-          const first = a.due_date ? new Date(a.due_date).getTime() : 0;
-          const second = b.due_date ? new Date(b.due_date).getTime() : 0;
+          const firstDate = parseDateToLocal(a.due_date);
+          const secondDate = parseDateToLocal(b.due_date);
+          const first = firstDate ? firstDate.getTime() : 0;
+          const second = secondDate ? secondDate.getTime() : 0;
           return first - second;
         });
 

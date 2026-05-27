@@ -65,8 +65,7 @@ const Day = () => {
   const onSubmit = handleSubmit(async (values) => {
     try {
       setErrorMessage("");
-      const res = await dayCreateRequest(values);
-      console.log(res);
+      await dayCreateRequest(values);
       navigate("/course-list");
     } catch (error) {
       if (axios.isAxiosError(error)) {
