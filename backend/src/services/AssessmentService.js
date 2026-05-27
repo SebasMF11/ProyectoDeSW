@@ -138,7 +138,9 @@ exports.getBySemester = async (semester_id, student_id) => {
   }
 
   const getGradeRecord = (assessment) =>
-    Array.isArray(assessment.grade) ? assessment.grade[0] ?? null : assessment.grade ?? null;
+    Array.isArray(assessment.grade)
+      ? (assessment.grade[0] ?? null)
+      : (assessment.grade ?? null);
 
   return data.map((assessment) => ({
     ...assessment,

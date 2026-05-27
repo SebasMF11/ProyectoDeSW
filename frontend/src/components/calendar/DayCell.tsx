@@ -57,7 +57,13 @@ export default function DayCell({
               style.opacity = 0.45;
             }
 
-            return <div key={i} className="w-[7px] h-[7px] rounded-full" style={style} />;
+            return (
+              <div
+                key={i}
+                className="w-[7px] h-[7px] rounded-full"
+                style={style}
+              />
+            );
           })}
         </div>
       )}
