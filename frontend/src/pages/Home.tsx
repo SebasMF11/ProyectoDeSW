@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Calendar from "../components/calendar/Calendar";
 import DayAssessmentsList from "../components/DayAssessmentsList";
+import DailyClassesList from "../components/DailyClassesList.tsx";
 import { format } from "date-fns";
 import FloatingActionMenu from "../components/FloatingActionMenu";
 import useSemesters from "../hooks/useSemesters";
@@ -39,6 +40,13 @@ function Home() {
       semesters.find((semester) => semester.name === latestSemesterName)
         ?.semester_id ?? "",
     [latestSemesterName, semesters],
+  );
+
+  const selectedSemesterName = useMemo(
+    () =>
+      semesters.find((semester) => semester.semester_id === selectedSemesterId)
+        ?.name ?? "",
+    [selectedSemesterId, semesters],
   );
 
   useEffect(() => {
@@ -165,14 +173,16 @@ function Home() {
           <p className="text-[25px] font-bold text-black pt-10">
             Your classes today
           </p>
-          <div className="pl-10 pt-2 text-gray-600">
-            <p>You don't have classes</p>
+          <div className="max-w-md pl-6 pt-2 text-gray-600">
+            <DailyClassesList
+              selectedDate={selectedDate}
+              selectedSemester={selectedSemesterName}
+            />
           </div>
           <p className="text-[25px] font-bold text-black pt-8">Assessments</p>
 
           <div className="pl-10 pt-2">
             <DayAssessmentsList
-              selectedDate={selectedDate}
               assessments={selectedDayAssessments}
               isLoading={loadingSemesters || loadingAssessments}
             />

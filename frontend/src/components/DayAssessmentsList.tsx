@@ -12,11 +12,9 @@ export type DayAssessment = {
 };
 
 export default function DayAssessmentsList({
-  selectedDate,
   assessments = [],
   isLoading = false,
 }: {
-  selectedDate: Date;
   assessments?: DayAssessment[];
   isLoading?: boolean;
 }) {
