@@ -181,7 +181,7 @@ function Home() {
           </div>
           <p className="text-[25px] font-bold text-black pt-8">Assessments</p>
 
-          <div className="pl-10 pt-2">
+          <div className="pl-6 pt-2">
             <DayAssessmentsList
               assessments={selectedDayAssessments}
               isLoading={loadingSemesters || loadingAssessments}

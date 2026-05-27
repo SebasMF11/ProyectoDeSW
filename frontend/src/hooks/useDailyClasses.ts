@@ -84,21 +84,14 @@ export function useDailyClasses(
                 setLoading(true);
                 setErrorMessage("");
 
-                console.log("[useDailyClasses] selectedSemester:", selectedSemester);
-                console.log("[useDailyClasses] selectedDayOfWeek:", selectedDayOfWeek);
-
                 const { data: courseData } = await courseBySemesterRequest(selectedSemester);
                 const semesterCourses: CourseRecord[] = Array.isArray(courseData?.courses)
                     ? courseData.courses
                     : [];
 
-                console.log("[useDailyClasses] semesterCourses:", semesterCourses);
-
                 const activeCourses = semesterCourses.filter(
                     (course) => normalizeStatus(course.status) === "active",
                 );
-
-                console.log("[useDailyClasses] activeCourses:", activeCourses);
 
                 const courseSchedules = await Promise.all(
                     activeCourses.map(async (course) => {
@@ -107,12 +100,6 @@ export function useDailyClasses(
                             const days: DayRecord[] = Array.isArray(data?.days)
                                 ? data.days
                                 : [];
-
-                            console.log("[useDailyClasses] course days:", {
-                                courseId: course.course_id,
-                                courseName: course.courses?.name ?? "Sin nombre",
-                                days,
-                            });
 
                             return days.map<DailyClassItem>((day) => ({
                                 dayId: day.day_id,
@@ -134,8 +121,6 @@ export function useDailyClasses(
                 const nextClasses = courseSchedules.flat().filter((classItem) => {
                     return classItem.dayOfWeek === selectedDayOfWeek;
                 });
-
-                console.log("[useDailyClasses] nextClasses:", nextClasses);
 
                 nextClasses.sort((first, second) => {
                     const timeComparison = first.startTime.localeCompare(second.startTime);
