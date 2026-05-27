@@ -5,6 +5,8 @@ export interface ExamWeek {
 
 export interface CalendarProps {
   onSelectDate?: (date: Date) => void;
+  assessments?: Record<string, Array<{ color: string; hasGrade: boolean }>>;
+  isLoading?: boolean;
 }
 
 export interface DayCellProps {

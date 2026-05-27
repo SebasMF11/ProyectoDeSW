@@ -48,13 +48,17 @@ export default function DayCell({
 
       {dots.length > 0 && !isLoading && (
         <div className="flex gap-[3px] mt-[2px] z-10">
-          {dots.map((dot, i) => (
-            <div
-              key={i}
-              className="w-[7px] h-[7px] rounded-full"
-              style={{ backgroundColor: dot.hasGrade ? "#c9cdca" : dot.color }}
-            />
-          ))}
+          {dots.map((dot, i) => {
+            const baseColor = dot.color ?? "#ccc";
+            const style: React.CSSProperties = {
+              backgroundColor: baseColor,
+            };
+            if (dot.hasGrade) {
+              style.opacity = 0.45;
+            }
+
+            return <div key={i} className="w-[7px] h-[7px] rounded-full" style={style} />;
+          })}
         </div>
       )}
     </div>

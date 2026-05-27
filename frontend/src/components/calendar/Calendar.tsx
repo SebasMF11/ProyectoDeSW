@@ -12,20 +12,17 @@ import {
 import { FiChevronLeft, FiChevronRight } from "react-icons/fi";
 import type { CalendarProps } from "./calendarTypes";
 import DayCell from "./DayCell";
-import { useAssessments } from "../../hooks/useAssessments";
 
 const DAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
-export default function Calendar({ onSelectDate }: CalendarProps) {
+export default function Calendar({
+  onSelectDate,
+  assessments = {},
+  isLoading = false,
+}: CalendarProps) {
   // Estado para el mes actual mostrado y el día seleccionado
   const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
   const [selected, setSelected] = useState<Date>(new Date());
-
-  // Hook para obtener las actividades del mes actual
-  const { assessments, isLoading } = useAssessments(
-    currentMonth.getFullYear(),
-    currentMonth.getMonth() + 1,
-  );
 
   // Calcular el rango de días a mostrar en el calendario, incluyendo días del mes anterior y siguiente para completar las semanas
   const monthStart = startOfMonth(currentMonth);
