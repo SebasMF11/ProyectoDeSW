@@ -150,6 +150,9 @@ function noteList() {
           {courses.map((course) => {
             const progress = courseGradeMap[course.course_id];
             const courseName = course.courses?.name || "Unnamed";
+            const isFailingGrade =
+              typeof progress?.currentGrade === "number" &&
+              progress.currentGrade < 3;
 
             return (
               <li
@@ -157,19 +160,23 @@ function noteList() {
                 className="bg-gray-100 rounded-md p-4 mb-4 w-80 flex flex-col items-center gap-2"
               >
                 <p className="font-semibold">{courseName}</p>
-                  <p>
-                    Current grade ({progress?.evaluatedPercentage ?? 0}%/100%)
-                  </p>
-                  <p className="font-semibold">
-                    {" "}
-                    {progress?.currentGrade ?? "-"}
-                  </p>
+                <p>
+                  Current grade ({progress?.evaluatedPercentage ?? 0}%/100%)
+                </p>
+                <p
+                  className={`font-semibold ${
+                    isFailingGrade ? "text-red-600" : ""
+                  }`}
+                >
+                  {" "}
+                  {progress?.currentGrade ?? "-"}
+                </p>
               </li>
             );
           })}
         </ul>
       ) : null}
-    <FloatingActionMenu ariaLabel="Grades actions" />
+      <FloatingActionMenu ariaLabel="Grades actions" />
     </div>
   );
 }

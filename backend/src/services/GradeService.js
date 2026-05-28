@@ -1,5 +1,12 @@
 const supabase = require("../config/supabase");
 
+const roundToTwoDecimals = (value) => Math.round(value * 100) / 100;
+
+const getGradeRecord = (assessment) =>
+  Array.isArray(assessment.grade)
+    ? (assessment.grade[0] ?? null)
+    : (assessment.grade ?? null);
+
 exports.checkGradeExists = async (assessmentId, student_id) => {
   const { data, error } = await supabase
     .from("grade")
@@ -154,18 +161,39 @@ exports.getCurrentGradeByCourse = async (courseId, student_id) => {
   );
 
   return {
-    currentGrade: Math.round(currentGrade * 100) / 100,
+    currentGrade: roundToTwoDecimals(currentGrade),
     evaluatedPercentage,
     remainingPercentage: 100 - evaluatedPercentage,
   };
 };
 
-// Promedio semestral ponderado
+// Promedio semestral ponderado por créditos.
+// Las materias sin nota quedan en 0 y siguen contando en el promedio.
 exports.getSemesterAverage = async (semesterId, student_id) => {
-  const { data, error } = await supabase
+  const { data: courses, error: coursesError } = await supabase
+    .from("course")
+    .select("course_id, credits, semester!inner(student_id)")
+    .eq("semester_id", semesterId)
+    .eq("semester.student_id", student_id)
+    .eq("status", "active");
+
+  if (coursesError) {
+    console.error(coursesError);
+    throw coursesError;
+  }
+
+  if (!courses || courses.length === 0) {
+    return {
+      semesterAverage: 0,
+      evaluatedPercentage: 0,
+      remainingPercentage: 100,
+    };
+  }
+
+  const { data: grades, error } = await supabase
     .from("grade")
     .select(
-      "value, assessment!inner(percentage, course!inner(status, semester_id, semester!inner(student_id)))",
+      "value, assessment!inner(percentage, course_id, course!inner(status, semester_id, semester!inner(student_id)))",
     )
     .eq("assessment.course.semester_id", semesterId)
     .eq("assessment.course.semester.student_id", student_id)
@@ -176,7 +204,23 @@ exports.getSemesterAverage = async (semesterId, student_id) => {
     throw error;
   }
 
-  if (!data || data.length === 0) {
+  const courseGrades = new Map();
+
+  for (const grade of grades ?? []) {
+    const courseId = grade.assessment.course_id;
+    const currentGrade = courseGrades.get(courseId) ?? 0;
+    const value = grade.value ?? 0;
+    const percentage = grade.assessment.percentage ?? 0;
+
+    courseGrades.set(courseId, currentGrade + (value * percentage) / 100);
+  }
+
+  const totalCredits = courses.reduce(
+    (acc, course) => acc + (Number(course.credits) || 0),
+    0,
+  );
+
+  if (totalCredits === 0) {
     return {
       semesterAverage: 0,
       evaluatedPercentage: 0,
@@ -184,17 +228,18 @@ exports.getSemesterAverage = async (semesterId, student_id) => {
     };
   }
 
-  const evaluatedPercentage = data.reduce(
-    (acc, g) => acc + g.assessment.percentage,
-    0,
-  );
-  const semesterAverage = data.reduce(
-    (acc, g) => acc + (g.value * g.assessment.percentage) / 100,
-    0,
-  );
+  const semesterAverage =
+    courses.reduce((acc, course) => {
+      const courseAverage = courseGrades.get(course.course_id) ?? 0;
+      const credits = Number(course.credits) || 0;
+
+      return acc + courseAverage * credits;
+    }, 0) / totalCredits;
+
+  const evaluatedPercentage = 100;
 
   return {
-    semesterAverage: Math.round(semesterAverage * 100) / 100,
+    semesterAverage: roundToTwoDecimals(semesterAverage),
     evaluatedPercentage,
     remainingPercentage: 100 - evaluatedPercentage,
   };

@@ -24,6 +24,7 @@ const grade = () => {
   const semesterRegister = register("semesterName", { required: true });
   const selectedSemesterName = watch("semesterName");
   const selectedCourseName = watch("courseName");
+  const selectedAssessmentName = watch("assessmentName");
   const prefillState = location.state as
     | {
         semesterName?: string;
@@ -116,7 +117,8 @@ const grade = () => {
   const onSubmit = handleSubmit(async (values) => {
     try {
       setErrorMessage("");
-      await gradeCreateRequest(values);
+      const res = await gradeCreateRequest(values);
+      console.log(res);
       navigate(prefillState?.redirectTo || "/grade-list", {
         state:
           prefillState?.redirectTo === "/assessment-list"
@@ -148,8 +150,8 @@ const grade = () => {
             semesters={semesters}
             placeholderOptionText="Select a semester"
             emptyOptionText="No semesters registered"
+                value={selectedSemesterName || ""}
             selectProps={{
-              defaultValue: "",
               ...semesterRegister,
             }}
           />
@@ -166,8 +168,8 @@ const grade = () => {
                 ? "No courses in this semester"
                 : "Select a semester first"
             }
+            value={selectedCourseName || ""}
             selectProps={{
-              defaultValue: "",
               ...register("courseName", { required: true }),
             }}
           />
@@ -184,8 +186,8 @@ const grade = () => {
                 ? "No assessments for this course"
                 : "Select a course first"
             }
+            value={selectedAssessmentName || ""}
             selectProps={{
-              defaultValue: "",
               ...register("assessmentName", { required: true }),
             }}
           />

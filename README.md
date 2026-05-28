@@ -396,6 +396,21 @@ GRADE
 - **Design:** Figma for prototyping.
 - **Technical Documentation:** Lucidchart for UML diagrams.
 
+## Date handling (frontend)
+
+- The frontend uses a small centralized date utility located at `frontend/src/utils/date.ts`.
+- Purpose: normalize parsing and formatting of date-only strings (e.g. `YYYY-MM-DD`) and ISO datetimes at midnight to avoid timezone-related off-by-one issues when constructing `Date` objects in JavaScript.
+- Exposed helpers:
+  - `parseDateToLocal(dateString?: string): Date | null` — safely parse date-only and ISO midnight strings as local dates.
+  - `formatDateLocal(dateString?: string, options?): string` — format a date for display. The current default locale is `en-US` (English). You can pass `Intl.DateTimeFormat` options to customize the output.
+  - `formatDateForInput(dateString?: string): string` — returns an `YYYY-MM-DD` value suitable for `<input type="date">`.
+  - `getLocalDateKey(date: Date): string` — returns a `YYYY-MM-DD` key for comparisons and grouping.
+- Recommended usage:
+  - Use `parseDateToLocal` whenever converting date strings that come from the backend into `Date` objects for comparisons or sorting.
+  - Use `formatDateLocal` for UI display so all components present dates consistently.
+  - Avoid `new Date('YYYY-MM-DD')` directly — it is parsed as UTC and can shift to the previous day in some time zones.
+- Next steps (suggested): make the default locale configurable and add unit tests for `parseDateToLocal` to ensure consistent behavior across environments.
+
 ---
 
 # 📄Requirements

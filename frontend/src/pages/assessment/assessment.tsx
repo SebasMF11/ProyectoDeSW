@@ -40,6 +40,7 @@ const assessment = () => {
   const isEditing = !!editAssessment;
   const editAssessmentId = editAssessment?.assessment_id;
   const selectedSemesterName = watch("semesterName");
+  const selectedCourseName = watch("courseName");
   const selectedSemesterData = semesters.find(
     (semester) => semester.name === selectedSemesterName,
   );
@@ -66,14 +67,16 @@ const assessment = () => {
     // Prefill form values from router state when editing
     try {
       const locationState = (location.state as any) || {};
-      setValue(
-        "semesterName",
-        editAssessment.semesterName || locationState.semesterName || "",
-      );
-      setValue(
-        "courseName",
-        editAssessment.courseName || locationState.courseName || "",
-      );
+      const prefilledSemesterName =
+        editAssessment?.semesterName || locationState.semesterName || "";
+      const prefilledCourseName =
+        editAssessment?.courseName ||
+        editAssessment?.course?.courses?.name ||
+        locationState.courseName ||
+        "";
+
+      setValue("semesterName", prefilledSemesterName);
+      setValue("courseName", prefilledCourseName);
       setValue(
         "assessmentName",
         editAssessment.name || editAssessment.assessmentName || "",
@@ -172,8 +175,8 @@ const assessment = () => {
             semesters={semesters}
             placeholderOptionText="Select a semester"
             emptyOptionText="No semesters available"
+            value={selectedSemesterName || ""}
             selectProps={{
-              defaultValue: "",
               ...register("semesterName", { required: true }),
             }}
           />
@@ -190,8 +193,8 @@ const assessment = () => {
                 ? "No courses in this semester"
                 : "Select a semester first"
             }
+            value={selectedCourseName || ""}
             selectProps={{
-              defaultValue: "",
               ...register("courseName", { required: true }),
             }}
           />
