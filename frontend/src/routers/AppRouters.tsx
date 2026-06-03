@@ -12,6 +12,7 @@ import ProtectedRouters from "./ProtectedRouters";
 import Settings from "../pages/student/settings";
 import GradeList from "../pages/grade/gradeList";
 import Grade from "../pages/grade/grade";
+import GradeSimulation from "../pages/grade/gradeSimulation";
 import CourseList from "../pages/course/courseList";
 import Course from "../pages/course/course";
 import Assessment from "../pages/assessment/assessment";
@@ -122,6 +123,14 @@ const AppRouters = () => {
         element={
           <ProtectedRouters>
             <GradeList />
+          </ProtectedRouters>
+        }
+      />
+      <Route
+        path="/grade-simulation"
+        element={
+          <ProtectedRouters>
+            <GradeSimulation />
           </ProtectedRouters>
         }
       />

@@ -16,7 +16,10 @@ type FloatingActionMenuProps = {
   ariaLabel?: string;
 };
 
-function FloatingActionMenu({ items, ariaLabel = "Quick actions menu" }: FloatingActionMenuProps) {
+function FloatingActionMenu({
+  items,
+  ariaLabel = "Quick actions menu",
+}: FloatingActionMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
 
@@ -48,12 +51,17 @@ function FloatingActionMenu({ items, ariaLabel = "Quick actions menu" }: Floatin
       { label: "Assign grade", onClick: () => navigate("/grade") },
       { label: "Add course", onClick: () => navigate("/course") },
       { label: "Create assessment", onClick: () => navigate("/assessment") },
+      {
+        label: "Grade simulator",
+        onClick: () => navigate("/grade-simulation"),
+      },
     ],
     [navigate],
   );
 
   const actionItems = useMemo(
-    () => (items ?? defaultItems).filter((item) => item.label.trim().length > 0),
+    () =>
+      (items ?? defaultItems).filter((item) => item.label.trim().length > 0),
     [items, defaultItems],
   );
 
@@ -61,7 +69,11 @@ function FloatingActionMenu({ items, ariaLabel = "Quick actions menu" }: Floatin
     <div className="floating-action-menu" data-open={isOpen}>
       <div className="floating-action-menu__content" ref={contentRef}>
         {isOpen && (
-          <div className="floating-action-menu__panel" role="menu" aria-label={ariaLabel}>
+          <div
+            className="floating-action-menu__panel"
+            role="menu"
+            aria-label={ariaLabel}
+          >
             {actionItems.map((item) => (
               <button
                 key={item.label}
@@ -74,8 +86,14 @@ function FloatingActionMenu({ items, ariaLabel = "Quick actions menu" }: Floatin
                 aria-label={item.ariaLabel ?? item.label}
                 role="menuitem"
               >
-                {item.icon ? <span className="floating-action-menu__item-icon">{item.icon}</span> : null}
-                <span className="floating-action-menu__item-label">{item.label}</span>
+                {item.icon ? (
+                  <span className="floating-action-menu__item-icon">
+                    {item.icon}
+                  </span>
+                ) : null}
+                <span className="floating-action-menu__item-label">
+                  {item.label}
+                </span>
               </button>
             ))}
           </div>

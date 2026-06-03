@@ -17,6 +17,7 @@ function Menu() {
     { label: "Assessments", path: "/assessment-list" },
     { label: "Courses", path: "/course-list" },
     { label: "Qualifications", path: "/grade-list" },
+    { label: "Grade simulator", path: "/grade-simulation" },
   ];
 
   const handleMenuItemClick = (path: string) => {
