@@ -22,10 +22,13 @@
 import axios from "axios";
 import { supabase } from "../integrations/supabase";
 
-// Crear instancia de axios con configuración base
-const baseURL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000/";
+// Crear instancia de axios con configuración base asegurando prefijo https:// en despliegues
+let rawBaseURL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000/";
+if (rawBaseURL && !rawBaseURL.startsWith("http://") && !rawBaseURL.startsWith("https://")) {
+  rawBaseURL = `https://${rawBaseURL}`;
+}
 export const httpClient = axios.create({
-  baseURL,
+  baseURL: rawBaseURL,
 });
 
 // INTERCEPTOR: Maneja autenticación automática en todas las peticiones

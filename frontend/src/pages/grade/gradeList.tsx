@@ -55,7 +55,7 @@ function noteList() {
       setCourses(semesterCourses);
 
       const currentSemester = semesters.find(
-        (semester) => semester.semester_name === semesterName,
+        (semester) => semester.name === semesterName,
       );
 
       if (currentSemester?.semester_id) {

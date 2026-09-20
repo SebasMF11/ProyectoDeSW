@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const catalogController = require("../controllers/CatalogController");
 const authMiddleware = require("../middlewares/authMiddleware");
+const adminMiddleware = require("../middlewares/adminMiddleware");
 
 // Catálogo de carreras (público — se usa en el registro sin token)
 router.get("/careers", catalogController.getCareers);
@@ -25,6 +26,26 @@ router.get(
   "/courses/career/:careerId",
   authMiddleware,
   catalogController.getCoursesCatalogByCareer,
+);
+
+// Mutaciones administrativas del catálogo (protegidas con adminMiddleware)
+router.post(
+  "/courses",
+  authMiddleware,
+  adminMiddleware,
+  catalogController.createCourseCatalog,
+);
+router.put(
+  "/courses/:id",
+  authMiddleware,
+  adminMiddleware,
+  catalogController.updateCourseCatalog,
+);
+router.delete(
+  "/courses/:id",
+  authMiddleware,
+  adminMiddleware,
+  catalogController.deleteCourseCatalog,
 );
 
 module.exports = router;
