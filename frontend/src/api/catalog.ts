@@ -21,3 +21,25 @@ export const availableCoursesRequest = (facultyId?: string) => {
   const params = facultyId ? `?facultyId=${encodeURIComponent(facultyId)}` : "";
   return httpClient.get(`catalog/courses/available${params}`);
 };
+
+/**
+ * Mutaciones administrativas de materias en el catálogo universitario.
+ * Requieren permisos de administrador (adminMiddleware en backend).
+ */
+export const createCatalogCourseRequest = (data: {
+  name: string;
+  faculty_id: string;
+  prerequisito?: string | null;
+}) => httpClient.post("catalog/courses", data);
+
+export const updateCatalogCourseRequest = (
+  id: string,
+  data: {
+    name?: string;
+    faculty_id?: string;
+    prerequisito?: string | null;
+  },
+) => httpClient.put(`catalog/courses/${id}`, data);
+
+export const deleteCatalogCourseRequest = (id: string) =>
+  httpClient.delete(`catalog/courses/${id}`);

@@ -6,11 +6,11 @@ export const gradeCreateRequest = (grade: any) =>
 export const gradeDeleteRequest = (gradeId: string) =>
   httpClient.delete(`grade/delete/${gradeId}`);
 
-export const gradeByCourseRequest = (courseId: string) =>
+export const gradeByCourseRequest = (courseId: number | string) =>
   httpClient.get(`grade/view/course/${courseId}`);
 
-export const currentGradeByCourseRequest = (courseId: string) =>
+export const currentGradeByCourseRequest = (courseId: number | string) =>
   httpClient.get(`grade/current/${courseId}`);
 
-export const getSemesterAverageRequest = (semesterId: string) =>
+export const getSemesterAverageRequest = (semesterId: number | string) =>
   httpClient.get(`grade/average/${semesterId}`);

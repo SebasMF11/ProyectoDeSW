@@ -1,0 +1,47 @@
+services:
+  # ==========================================
+  # BACKEND: Web Service (Node.js + Express)
+  # ==========================================
+  - type: web
+    name: poliplan-backend
+    runtime: node
+    plan: free
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: PORT
+        value: 3000
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_KEY
+        sync: false
+      - key: CLIENT_URL
+        fromService:
+          type: web
+          name: poliplan-frontend
+          property: host
+
+  # ==========================================
+  # FRONTEND: Static Site (React + Vite)
+  # ==========================================
+  - type: web
+    name: poliplan-frontend
+    runtime: static
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: VITE_APP_SUPABASE_URL
+        sync: false
+      - key: VITE_APP_SUPABASE_ANON_KEY
+        sync: false
+      - key: VITE_API_BASE_URL
+        fromService:
+          type: web
+          name: poliplan-backend
+          property: host

@@ -20,6 +20,11 @@ import AssessmentList from "../pages/assessment/assessmentList";
 import Semester from "../pages/semester";
 import Day from "../pages/course/day";
 import Profile from "../pages/student/profile";
+import UniversityCatalog from "../pages/catalog/UniversityCatalog";
+import Enrollment from "../pages/enrollment/Enrollment";
+import GradeReport from "../pages/reports/GradeReport";
+import ScheduleReport from "../pages/reports/ScheduleReport";
+
 const AppRouters = () => {
   return (
     <Routes>
@@ -97,6 +102,28 @@ const AppRouters = () => {
         }
       />
 
+      {/* ============ RUTAS PROTEGIDAS - CATÁLOGO UNIVERSITARIO ============ */}
+      {/* 5ª Pantalla Maestra: Catálogo general de materias institucionales */}
+      <Route
+        path="/university-catalog"
+        element={
+          <ProtectedRouters>
+            <UniversityCatalog />
+          </ProtectedRouters>
+        }
+      />
+
+      {/* ============ RUTAS PROTEGIDAS - MATRÍCULA TRANSACCIONAL ============ */}
+      {/* Pantalla Transaccional Principal: Matrícula semestral en bloque */}
+      <Route
+        path="/enrollment"
+        element={
+          <ProtectedRouters>
+            <Enrollment />
+          </ProtectedRouters>
+        }
+      />
+
       {/* ============ RUTAS PROTEGIDAS - EVALUACIONES ============ */}
       {/* Gestión de evaluaciones/rúbricas para calificar */}
       <Route
@@ -139,6 +166,26 @@ const AppRouters = () => {
         element={
           <ProtectedRouters>
             <Grade />
+          </ProtectedRouters>
+        }
+      />
+
+      {/* ============ RUTAS PROTEGIDAS - REPORTES ============ */}
+      {/* Reporte 1: Boletín de calificaciones y GPA */}
+      <Route
+        path="/reports/grades"
+        element={
+          <ProtectedRouters>
+            <GradeReport />
+          </ProtectedRouters>
+        }
+      />
+      {/* Reporte 2: Horario semanal y agenda de evaluaciones */}
+      <Route
+        path="/reports/schedule"
+        element={
+          <ProtectedRouters>
+            <ScheduleReport />
           </ProtectedRouters>
         }
       />

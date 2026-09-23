@@ -26,7 +26,24 @@ const cors = require("cors");
 const app = express();
 
 // Configurar middleware global
-app.use(cors({ origin: "http://localhost:5173" }));
+const allowedOrigins = [
+  "http://localhost:5173",
+  process.env.CLIENT_URL,
+].filter(Boolean);
+
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      // Permite peticiones sin origin (como cURL, mobile o server-to-server) o si está en la lista permitida
+      if (!origin || allowedOrigins.includes(origin) || allowedOrigins.includes("*")) {
+        callback(null, true);
+      } else {
+        callback(null, true); // En desarrollo/previews permite la conexión
+      }
+    },
+    credentials: true,
+  }),
+);
 app.use(express.json());
 
 // Importar todas las rutas del módulo
@@ -37,6 +54,8 @@ const assessmentRoutes = require("./routes/AssessmentRoutes");
 const dayRoutes = require("./routes/DayRoutes");
 const gradeRoutes = require("./routes/GradeRoutes");
 const catalogRoutes = require("./routes/CatalogRoutes");
+const enrollmentRoutes = require("./routes/EnrollmentRoutes");
+const reportRoutes = require("./routes/ReportRoutes");
 
 // Registrar rutas en la aplicación
 app.use("/grade", gradeRoutes);
@@ -46,6 +65,8 @@ app.use("/course", courseRoutes);
 app.use("/semester", semesterRoutes);
 app.use("/catalog", catalogRoutes);
 app.use("/student", studentRoutes);
+app.use("/enrollment", enrollmentRoutes);
+app.use("/reports", reportRoutes);
 
 // Endpoint de verificación
 app.get("/", (req, res) => {

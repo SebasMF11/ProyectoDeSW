@@ -249,3 +249,85 @@ exports.getCoursesByCareer = async (career_id) => {
 
   return data.map((row) => row.courses);
 };
+
+// ── Admin Catalog Mutations ──────────────────────────────────────────────────
+
+exports.createCourseCatalog = async ({ name, faculty_id, prerequisito }) => {
+  const insertPayload = {
+    name,
+    faculty_id,
+    prerequisito: prerequisito || null,
+  };
+
+  const { data, error } = await supabase
+    .from("courses")
+    .insert([insertPayload])
+    .select("courses_id, name, faculty(faculty_id, name), prerequisito")
+    .single();
+
+  if (error) {
+    console.error("Error creating catalog course:", error);
+    throw error;
+  }
+
+  return data;
+};
+
+exports.updateCourseCatalog = async (courses_id, updates) => {
+  const allowedFields = ["name", "faculty_id", "prerequisito"];
+  const safeUpdates = {};
+
+  for (const field of allowedFields) {
+    if (updates[field] !== undefined) {
+      safeUpdates[field] = updates[field] || null;
+      if (field === "name" && updates[field]) {
+        safeUpdates[field] = updates[field];
+      }
+    }
+  }
+
+  const { data, error } = await supabase
+    .from("courses")
+    .update(safeUpdates)
+    .eq("courses_id", courses_id)
+    .select("courses_id, name, faculty(faculty_id, name), prerequisito")
+    .single();
+
+  if (error) {
+    console.error("Error updating catalog course:", error);
+    throw error;
+  }
+
+  return data;
+};
+
+exports.deleteCourseCatalog = async (courses_id) => {
+  // Verificar si hay cursos matriculados que dependan de esta materia
+  const { data: enrolled, error: checkError } = await supabase
+    .from("course")
+    .select("course_id")
+    .eq("courses_id", courses_id)
+    .limit(1);
+
+  if (checkError) {
+    console.error(checkError);
+  }
+
+  if (enrolled && enrolled.length > 0) {
+    throw new Error(
+      "No se puede eliminar la materia porque ya está registrada en el historial académico de estudiantes."
+    );
+  }
+
+  const { error } = await supabase
+    .from("courses")
+    .delete()
+    .eq("courses_id", courses_id);
+
+  if (error) {
+    console.error("Error deleting catalog course:", error);
+    throw error;
+  }
+
+  return { message: "Materia eliminada del catálogo exitosamente" };
+};

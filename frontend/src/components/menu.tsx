@@ -14,10 +14,14 @@ function Menu() {
 
   const menuItems: MenuItem[] = [
     { label: "Start a new semester", path: "/semester" },
+    { label: "Semester Enrollment", path: "/enrollment" },
     { label: "Assessments", path: "/assessment-list" },
     { label: "Courses", path: "/course-list" },
     { label: "Qualifications", path: "/grade-list" },
     { label: "Grade simulator", path: "/grade-simulation" },
+    { label: "University Catalog", path: "/university-catalog" },
+    { label: "Grade Report (GPA)", path: "/reports/grades" },
+    { label: "Weekly Schedule", path: "/reports/schedule" },
   ];
 
   const handleMenuItemClick = (path: string) => {

@@ -74,3 +74,70 @@ exports.getCoursesCatalogByCareer = async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 };
+
+exports.createCourseCatalog = async (req, res) => {
+  try {
+    const { name, faculty_id, prerequisito } = req.body;
+
+    if (!name || !faculty_id) {
+      return res.status(400).json({
+        error: "Los campos 'name' y 'faculty_id' son obligatorios",
+      });
+    }
+
+    const newCourse = await catalogService.createCourseCatalog({
+      name,
+      faculty_id,
+      prerequisito: prerequisito || null,
+    });
+
+    res.status(201).json({
+      message: "Materia agregada exitosamente al catálogo universitario",
+      course: newCourse,
+    });
+  } catch (error) {
+    console.error("Error en createCourseCatalog:", error);
+    res.status(500).json({ error: error.message || "Error interno al crear materia" });
+  }
+};
+
+exports.updateCourseCatalog = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, faculty_id, prerequisito } = req.body;
+
+    if (!id) {
+      return res.status(400).json({ error: "El ID de la materia es requerido" });
+    }
+
+    const updated = await catalogService.updateCourseCatalog(id, {
+      name,
+      faculty_id,
+      prerequisito,
+    });
+
+    res.status(200).json({
+      message: "Materia actualizada exitosamente en el catálogo",
+      course: updated,
+    });
+  } catch (error) {
+    console.error("Error en updateCourseCatalog:", error);
+    res.status(500).json({ error: error.message || "Error interno al actualizar materia" });
+  }
+};
+
+exports.deleteCourseCatalog = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!id) {
+      return res.status(400).json({ error: "El ID de la materia es requerido" });
+    }
+
+    const result = await catalogService.deleteCourseCatalog(id);
+    res.status(200).json(result);
+  } catch (error) {
+    console.error("Error en deleteCourseCatalog:", error);
+    res.status(400).json({ error: error.message || "Error al eliminar la materia del catálogo" });
+  }
+};
