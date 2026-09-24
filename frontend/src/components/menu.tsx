@@ -13,15 +13,15 @@ function Menu() {
   const navigate = useNavigate();
 
   const menuItems: MenuItem[] = [
-    { label: "Start a new semester", path: "/semester" },
-    { label: "Semester Enrollment", path: "/enrollment" },
-    { label: "Assessments", path: "/assessment-list" },
-    { label: "Courses", path: "/course-list" },
-    { label: "Qualifications", path: "/grade-list" },
-    { label: "Grade simulator", path: "/grade-simulation" },
-    { label: "University Catalog", path: "/university-catalog" },
-    { label: "Grade Report (GPA)", path: "/reports/grades" },
-    { label: "Weekly Schedule", path: "/reports/schedule" },
+    { label: "Iniciar nuevo semestre", path: "/semester" },
+    { label: "Matrícula del semestre", path: "/enrollment" },
+    { label: "Evaluaciones", path: "/assessment-list" },
+    { label: "Cursos", path: "/course-list" },
+    { label: "Calificaciones", path: "/grade-list" },
+    { label: "Simulador de notas", path: "/grade-simulation" },
+    { label: "Catálogo universitario", path: "/university-catalog" },
+    { label: "Reporte de calificaciones (promedio)", path: "/reports/grades" },
+    { label: "Horario semanal", path: "/reports/schedule" },
   ];
 
   const handleMenuItemClick = (path: string) => {
@@ -38,7 +38,7 @@ function Menu() {
       <button
         className="menu-toggle-btn"
         onClick={toggleMenu}
-        aria-label="Open menu"
+        aria-label="Abrir menú"
       >
         <span className={`hamburger ${isOpen ? "open" : ""}`}>
           <span></span>
@@ -50,11 +50,11 @@ function Menu() {
       {isOpen && (
         <nav className="menu-dropdown">
           <div className="menu-header">
-            <h2>Menu</h2>
+            <h2>Menú</h2>
             <button
               className="menu-close-btn"
               onClick={toggleMenu}
-              aria-label="Close menu"
+              aria-label="Cerrar menú"
             >
               ✕
             </button>

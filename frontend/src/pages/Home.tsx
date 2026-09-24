@@ -3,6 +3,7 @@ import Calendar from "../components/calendar/Calendar";
 import DayAssessmentsList from "../components/DayAssessmentsList";
 import DailyClassesList from "../components/DailyClassesList.tsx";
 import { format } from "date-fns";
+import { es } from "date-fns/locale";
 import FloatingActionMenu from "../components/FloatingActionMenu";
 import useSemesters from "../hooks/useSemesters";
 import { assessmentBySemesterRequest } from "../api/assessment.api";
@@ -73,7 +74,7 @@ function Home() {
       } catch (error) {
         console.error(error);
         setSemesterAssessments([]);
-        setAssessmentError("No se pudieron cargar los assessments");
+        setAssessmentError("No se pudieron cargar las evaluaciones");
       } finally {
         setLoadingAssessments(false);
       }
@@ -130,7 +131,7 @@ function Home() {
       <div className="flex flex-col items-center pt-5 gap-4">
         <div className="w-full max-w-[590px] px-6">
           <label htmlFor="home-semester-select" className="formText">
-            Semester
+            Semestre
           </label>
           <select
             id="home-semester-select"
@@ -139,10 +140,10 @@ function Home() {
             onChange={(event) => setSelectedSemesterId(event.target.value)}
           >
             <option value="" disabled>
-              Select a semester
+              Selecciona un semestre
             </option>
             {semesters.length === 0 ? (
-              <option value="">No semesters available</option>
+              <option value="">No hay semestres disponibles</option>
             ) : null}
             {semesters.map((semester) => (
               <option key={semester.semester_id} value={semester.semester_id}>
@@ -165,13 +166,13 @@ function Home() {
       <div className="flex flex-col justify-items-start pt-10">
         <div>
           <p className="inline-block bg-gray-200 text-gray-600 px-5 py-2 rounded-full text-[20px] font-semibold">
-            {format(selectedDate, "MMMM d', ' yyyy")}
+            {format(selectedDate, "d 'de' MMMM 'de' yyyy", { locale: es })}
           </p>
         </div>
 
         <div className="pl-8">
           <p className="text-[25px] font-bold text-black pt-10">
-            Your classes today
+            Tus clases hoy
           </p>
           <div className="max-w-md pl-6 pt-2 text-gray-600">
             <DailyClassesList
@@ -179,7 +180,7 @@ function Home() {
               selectedSemester={selectedSemesterName}
             />
           </div>
-          <p className="text-[25px] font-bold text-black pt-8">Assessments</p>
+          <p className="text-[25px] font-bold text-black pt-8">Evaluaciones</p>
 
           <div className="pl-6 pt-2">
             <DayAssessmentsList

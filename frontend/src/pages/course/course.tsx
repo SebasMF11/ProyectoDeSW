@@ -191,12 +191,12 @@ const course = () => {
         setErrorMessage(
           apiMessage ||
             (isEditMode
-              ? "The course could not be updated"
-              : "The course could not be created"),
+              ? "No se pudo actualizar el curso"
+              : "No se pudo crear el curso"),
         );
         return;
       }
-      setErrorMessage("An unexpected error occurred");
+      setErrorMessage("Ocurrió un error inesperado");
     }
   });
 
@@ -204,7 +204,7 @@ const course = () => {
     <div>
       <div className="formContainer">
         <form onSubmit={onSubmit} className="formLayout">
-          <p className="title">{isEditMode ? "Edit course" : "Add course"}</p>
+          <p className="title">{isEditMode ? "Editar curso" : "Agregar curso"}</p>
 
           {errorMessage ? (
             <p className="text-red-600 text-sm">{errorMessage}</p>
@@ -221,7 +221,7 @@ const course = () => {
             {...register("color", { required: true })}
           >
             <option value="" disabled>
-              Select a color
+              Selecciona un color
             </option>
             {colorOptions.map((color) => (
               <option key={color} value={color}>
@@ -234,7 +234,7 @@ const course = () => {
           {!isEditMode && (
             <>
               <label className="formText" htmlFor="faculty-select">
-                Faculty
+                Facultad
               </label>
               <select
                 id="faculty-select"
@@ -244,8 +244,8 @@ const course = () => {
               >
                 <option value="" disabled>
                   {faculties.length > 0
-                    ? "Select a faculty"
-                    : "No faculties available"}
+                    ? "Selecciona una facultad"
+                    : "No hay facultades disponibles"}
                 </option>
                 {faculties.map((f) => (
                   <option key={f.faculty_id} value={f.faculty_id}>
@@ -258,7 +258,7 @@ const course = () => {
 
           {/* Materia del catálogo */}
           <label className="formText" htmlFor="courses-select">
-            Course
+            Curso
           </label>
           <select
             id="courses-select"
@@ -271,17 +271,17 @@ const course = () => {
           >
             {isEditMode ? (
               <option value={editCourse?.courses_id || ""} disabled>
-                {editCourse?.course_name || "Unknown course"}
+                {editCourse?.course_name || "Curso desconocido"}
               </option>
             ) : (
               <option value="" disabled>
                 {faculties.length > 0 && !selectedFacultyId
-                  ? "Select a faculty first"
+                  ? "Primero selecciona una facultad"
                   : loadingCourses
-                    ? "Loading courses..."
+                    ? "Cargando cursos..."
                     : catalogCourses.length > 0
-                      ? "Select a course"
-                      : "No courses available"}
+                      ? "Selecciona un curso"
+                      : "No hay cursos disponibles"}
               </option>
             )}
             {catalogCourses.map((c) => (
@@ -294,33 +294,33 @@ const course = () => {
           {/* Prerequisito — informativo */}
           {!isEditMode && selectedCatalogCourse && (
             <div className="formControl bg-gray-50 text-sm flex items-center gap-2">
-              <span className="font-medium">Prerequisite:</span>
+              <span className="font-medium">Prerequisito:</span>
               {selectedCatalogCourse.prerequisite_course ? (
                 <span className="text-gray-700">
                   {selectedCatalogCourse.prerequisite_course.name}
                 </span>
               ) : (
-                <span className="italic text-gray-400">None</span>
+                <span className="italic text-gray-400">Ninguno</span>
               )}
             </div>
           )}
 
           <input
             className="formControl"
-            placeholder="Professor"
+            placeholder="Profesor"
             type="text"
             {...register("teacher")}
           />
           <input
             className="formControl"
-            placeholder="Credits"
+            placeholder="Créditos"
             type="number"
             {...register("credits", { required: true, valueAsNumber: true })}
           />
 
           {/* Semestre */}
           <label className="formText" htmlFor="semester-select">
-            Semester
+            Semestre
           </label>
           <select
             id="semester-select"
@@ -331,8 +331,8 @@ const course = () => {
           >
             <option value="" disabled>
               {semesters.length > 0
-                ? "Select a semester"
-                : "No semesters available"}
+                ? "Selecciona un semestre"
+                : "No hay semestres disponibles"}
             </option>
             {semesters.map((semester) => (
               <option key={semester.semester_id} value={semester.name}>

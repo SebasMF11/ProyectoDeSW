@@ -23,8 +23,8 @@ type CourseSelectProps = {
 function CourseSelect({
   courses,
   id = "course-select",
-  label = "Course",
-  emptyOptionText = "There are no courses available",
+  label = "Curso",
+  emptyOptionText = "No hay cursos disponibles",
   placeholderOptionText,
   value,
   onValueChange,

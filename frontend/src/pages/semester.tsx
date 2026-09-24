@@ -54,13 +54,13 @@ const Semester = () => {
       const { startDate, endDate, midtermWeek } = values;
 
       if (startDate > endDate) {
-        setErrorMessage("The start date cannot be later than the end date");
+        setErrorMessage("La fecha de inicio no puede ser posterior a la fecha de fin");
         return;
       }
 
       if (midtermWeek < startDate || midtermWeek > endDate) {
         setErrorMessage(
-          "The midterm start date must be between the semester start and end dates",
+          "La fecha de inicio del parcial debe estar entre la fecha de inicio y fin del semestre",
         );
         return;
       }
@@ -71,7 +71,7 @@ const Semester = () => {
 
       if (overlappingSemester) {
         setErrorMessage(
-          `The semester dates overlap with "${overlappingSemester.name}"`,
+          `Las fechas del semestre solapan con "${overlappingSemester.name}"`,
         );
         return;
       }
@@ -81,10 +81,10 @@ const Semester = () => {
     } catch (error) {
       if (axios.isAxiosError(error)) {
         const apiMessage = error.response?.data?.error;
-        setErrorMessage(apiMessage || "The semester could not be created");
+        setErrorMessage(apiMessage || "No se pudo crear el semestre");
         return;
       }
-      setErrorMessage("An unexpected error occurred");
+      setErrorMessage("Ocurrió un error inesperado");
     }
   });
 
@@ -93,27 +93,27 @@ const Semester = () => {
       <div className="formContainer">
         {errorMessage ? <p>{errorMessage}</p> : null}
         <form className="formLayout" onSubmit={onSubmit}>
-          <p className="title">Semester</p>
+          <p className="title">Semestre</p>
           <input
-            placeholder="Semester Name. Example: 2023-1"
+            placeholder="Nombre del semestre. Ejemplo: 2023-1"
             type="text"
             className="formControl"
             {...register("semesterName", { required: true })}
           />
-          <p className="formText">Start date</p>
+          <p className="formText">Fecha de inicio</p>
           <input
             type="date"
             className="formControl"
             {...register("startDate", { required: true })}
           />
-          <p className="formText">End date</p>
+          <p className="formText">Fecha de fin</p>
           <input
             type="date"
             className="formControl"
             min={startDate || undefined}
             {...register("endDate", { required: true })}
           />
-          <p className="formText">Midterm week start date</p>
+          <p className="formText">Fecha de inicio de la semana de parciales</p>
           <input
             type="date"
             className="formControl"
@@ -121,12 +121,12 @@ const Semester = () => {
             max={endDate || undefined}
             {...register("midtermWeek", { required: true })}
           />
-          <button type="submit">Create</button>
+          <button type="submit">Crear</button>
         </form>
 
         {semesters.length > 0 && (
           <div className="mt-6">
-            <p className="formText font-semibold mb-2">Existing semesters</p>
+            <p className="formText font-semibold mb-2">Semestres existentes</p>
             <ul className="flex flex-col gap-2">
               {semesters.map((s) => (
                 <li key={s.semester_id} className="border rounded p-2 text-sm">

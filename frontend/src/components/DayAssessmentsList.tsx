@@ -19,11 +19,11 @@ export default function DayAssessmentsList({
   isLoading?: boolean;
 }) {
   if (isLoading) {
-    return <div className="text-gray-500">Loading...</div>;
+    return <div className="text-gray-500">Cargando...</div>;
   }
 
   if (assessments.length === 0) {
-    return <div className="text-gray-500">You don't have events</div>;
+    return <div className="text-gray-500">No tienes eventos</div>;
   }
 
   return (
@@ -50,7 +50,7 @@ export default function DayAssessmentsList({
             {assessment.course.course_name}
           </p>
           <div className="flex gap-4 text-xs text-gray-500 mt-1">
-            <span>Type: {assessment.type}</span>
+            <span>Tipo: {assessment.type}</span>
             <span>{assessment.percentage}%</span>
           </div>
         </div>

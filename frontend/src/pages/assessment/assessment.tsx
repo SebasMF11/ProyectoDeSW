@@ -20,12 +20,12 @@ type Semester = {
 };
 
 const assessmentTypes = [
-  "midterm",
-  "quiz",
-  "workshop",
-  "project",
-  "presentation",
-  "lab",
+  { value: "midterm", label: "Parcial" },
+  { value: "quiz", label: "Quiz" },
+  { value: "workshop", label: "Taller" },
+  { value: "project", label: "Proyecto" },
+  { value: "presentation", label: "Presentación" },
+  { value: "lab", label: "Laboratorio" },
 ];
 
 const assessment = () => {
@@ -155,10 +155,10 @@ const assessment = () => {
     } catch (error) {
       if (axios.isAxiosError(error)) {
         const apiMessage = error.response?.data?.error;
-        setErrorMessage(apiMessage || "Could not create the assessment");
+        setErrorMessage(apiMessage || "No se pudo crear la evaluación");
         return;
       }
-      setErrorMessage("An unexpected error occurred");
+      setErrorMessage("Ocurrió un error inesperado");
     } finally {
       setIsSubmitting(false);
     }
@@ -168,13 +168,13 @@ const assessment = () => {
     <div>
       <div className="formContainer">
         <form onSubmit={onSubmit} className="formLayout">
-          <p className="title">Assessment</p>
+          <p className="title">Evaluación</p>
           {errorMessage ? <p>{errorMessage}</p> : null}
 
           <SemesterSelect
             semesters={semesters}
-            placeholderOptionText="Select a semester"
-            emptyOptionText="No semesters available"
+            placeholderOptionText="Selecciona un semestre"
+            emptyOptionText="No hay semestres disponibles"
             value={selectedSemesterName || ""}
             selectProps={{
               ...register("semesterName", { required: true }),
@@ -185,13 +185,13 @@ const assessment = () => {
             courses={courses}
             placeholderOptionText={
               selectedSemesterName
-                ? "Select a course"
-                : "Select a semester first"
+                ? "Selecciona un curso"
+                : "Primero selecciona un semestre"
             }
             emptyOptionText={
               selectedSemesterName
-                ? "No courses in this semester"
-                : "Select a semester first"
+                ? "No hay cursos en este semestre"
+                : "Primero selecciona un semestre"
             }
             value={selectedCourseName || ""}
             selectProps={{
@@ -201,14 +201,14 @@ const assessment = () => {
 
           <input
             className="formControl"
-            placeholder="Assessment name"
+            placeholder="Nombre de la evaluación"
             type="text"
             {...register("assessmentName", { required: true })}
           />
 
           <input
             className="formControl"
-            placeholder="Assessment date"
+            placeholder="Fecha de la evaluación"
             type="date"
             min={selectedSemesterData?.start_date}
             max={selectedSemesterData?.end_date}
@@ -216,7 +216,7 @@ const assessment = () => {
           />
 
           <label className="formText" htmlFor="assessment-type">
-            Type
+            Tipo
           </label>
           <select
             id="assessment-type"
@@ -225,11 +225,11 @@ const assessment = () => {
             {...register("type", { required: true })}
           >
             <option value="" disabled>
-              Select the assessment type
+              Selecciona el tipo de evaluación
             </option>
             {assessmentTypes.map((type) => (
-              <option key={type} value={type}>
-                {type}
+              <option key={type.value} value={type.value}>
+                {type.label}
               </option>
             ))}
           </select>
@@ -237,7 +237,7 @@ const assessment = () => {
           <div className="flex flex-row items-center gap-2">
             <input
               className="formControl w-[50%]"
-              placeholder="Percentage"
+              placeholder="Porcentaje"
               type="number"
               min={1}
               max={100}
@@ -252,11 +252,11 @@ const assessment = () => {
           <button type="submit" disabled={isSubmitting}>
             {isSubmitting
               ? isEditing
-                ? "Updating..."
-                : "Creating..."
+                ? "Actualizando..."
+                : "Creando..."
               : isEditing
-                ? "Update"
-                : "Create"}
+                ? "Actualizar"
+                : "Crear"}
           </button>
         </form>
       </div>

@@ -1,222 +1,221 @@
-# 📋 Quick Reference - Estructura y Flujos
+# 📋 Quick Reference - PoliPlan
 
-Resumen ejecutivo de cómo funciona el proyecto.
+Resumen ejecutivo de la estructura real del proyecto y sus módulos principales.
 
 ---
 
-## 🏗️ Estructura de Carpetas
+## 🏗️ Estructura de carpetas actual
 
-```
+```text
 ProyectoDeSW/
 ├── backend/
 │   ├── package.json
-│   └── src/
-│       ├── app.js                    ← Configuración Express
-│       ├── index.js                  ← Servidor local:3000
-│       ├── config/
-│       │   └── supabase.js          ← Cliente Supabase
-│       ├── routes/                   ← Endpoints API
-│       │   ├── StudentRoutes.js
-│       │   ├── CourseRoutes.js
-│       │   ├── SemesterRoutes.js
-│       │   ├── GradeRoutes.js
-│       │   ├── AssessmentRoutes.js
-│       │   ├── DayRoutes.js
-│       │   └── CatalogRoutes.js
-│       ├── controllers/              ← Maneja HTTP requests
-│       │   ├── StudentController.js
-│       │   ├── CourseController.js
-│       │   └── ...
-│       ├── services/                 ← Lógica de negocio
-│       │   ├── StudentService.js
-│       │   ├── CourseService.js
-│       │   └── ...
-│       ├── middlewares/              ← Validaciones
-│       │   └── authMiddleware.js    ← Valida JWT
-│       └── utils/
+│   ├── src/
+│   │   ├── app.js
+│   │   ├── index.js
+│   │   ├── config/
+│   │   ├── controllers/
+│   │   ├── middlewares/
+│   │   ├── routes/
+│   │   ├── services/
+│   │   └── tests/
+│   └── tests/
 │
 ├── frontend/
 │   ├── package.json
-│   ├── vite.config.ts              ← Build config
-│   ├── index.html
 │   └── src/
-│       ├── main.tsx                 ← Entry point
-│       ├── App.tsx                  ← Root component
-│       ├── index.css                ← Estilos globales
+│       ├── api/
+│       ├── components/
+│       ├── hooks/
+│       ├── integrations/
+│       ├── pages/
 │       ├── routers/
-│       │   ├── AppRouters.tsx       ← Definición de rutas
-│       │   └── ProtectedRouters.tsx ← Wrapper de seguridad
-│       ├── pages/                   ← Páginas principales
-│       │   ├── Home.tsx
-│       │   ├── student/
-│       │   │   ├── Auth.tsx
-│       │   │   ├── Register.tsx
-│       │   │   ├── profile.tsx
-│       │   │   └── settings.tsx
-│       │   ├── course/
-│       │   │   ├── course.tsx       ← Crear/editar
-│       │   │   ├── courseList.tsx   ← Listar
-│       │   │   └── day.tsx
-│       │   ├── grade/
-│       │   │   ├── grade.tsx
-│       │   │   └── gradeList.tsx
-│       │   ├── assessment/
-│       │   │   ├── assessment.tsx
-│       │   │   └── assessmentList.tsx
-│       │   └── semester.tsx
-│       ├── components/              ← Componentes reutilizables
-│       │   ├── navbar.tsx
-│       │   ├── menu.tsx
-│       │   └── calendar/
-│       │       └── Calendar.tsx
-│       ├── hooks/                   ← Custom hooks
-│       │   └── useAuth.ts          ← Gestiona sesión
-│       ├── api/                     ← Clientes HTTP
-│       │   ├── httpClient.ts       ← Axios core (+ JWT interceptor)
-│       │   ├── course.ts
-│       │   ├── students.api.ts
-│       │   ├── grade.ts
-│       │   ├── semester.ts
-│       │   ├── assessment.api.ts
-│       │   └── day.api.ts
-│       ├── integrations/             ← Librerías externas
-│       │   └── supabase.tsx         ← Cliente Supabase
-│       └── styles/                  ← Estilos componentes
+│       ├── styles/
+│       ├── utils/
+│       ├── App.tsx
+│       └── main.tsx
 │
-├── README.md                         ← Documentación principal
-├── ARCHITECTURE.md                   ← Flujos técnicos detallados
-├── GUIDE.md                          ← Guía de desarrollo
-└── .env.example                      ← Variables de entorno (template)
+├── docs/
+├── specs/
+├── README.md
+├── GUIDE.md
+├── ARCHITECTURE.md
+├── QUICK_REFERENCE.md
+├── render.yaml
+└── .gitignore
 ```
 
 ---
 
-## 🔐 Flow: Registro e Inicio de Sesión
+## 🧩 Módulos principales del backend
 
+```text
+backend/src/routes/
+├── StudentRoutes.js
+├── SemesterRoutes.js
+├── CourseRoutes.js
+├── DayRoutes.js
+├── AssessmentRoutes.js
+├── GradeRoutes.js
+├── CatalogRoutes.js
+├── EnrollmentRoutes.js
+├── ReportRoutes.js
+└── ...
 ```
-┌─────────────────────────────────────────────────────────────┐
-│ REGISTRO                                                    │
-│                                                             │
-│ 1. Usuario en /register                                    │
-│    → Form: { name, lastName, email, password }            │
-│                                                             │
-│ 2. POST /student/auth                                     │
-│    ↓ Backend                                               │
-│    → authMiddleware: SKIP (público)                       │
-│    → StudentController.authStudent()                      │
-│    → StudentService.authStudent()                         │
-│    → supabase.auth.signUp()                              │
-│    ← Email de confirmación enviado                        │
-│                                                             │
-│ 3. Usuario confirma email                                 │
-│    → Supabase marca email como verificado                │
-│    → Ahora puede hacer LOGIN                              │
-└─────────────────────────────────────────────────────────────┘
 
-┌─────────────────────────────────────────────────────────────┐
-│ LOGIN                                                       │
-│                                                             │
-│ 1. Usuario en /auth                                        │
-│    → Form: { email, password }                            │
-│                                                             │
-│ 2. POST /student/login                                    │
-│    ↓ Backend                                               │
-│    → StudentController.loginStudent()                     │
-│    → StudentService.loginStudent()                        │
-│    → supabase.auth.signInWithPassword()                  │
-│    ← Token JWT retornado                                  │
-│    → Crear/actualizar registro en tabla 'student'        │
-│    ← Response: { token, user, message }                   │
-│                                                             │
-│ 3. Frontend recibe token                                   │
-│    → Se almacena en sesión de Supabase automáticamente   │
-│    → useAuth hook lo captura                              │
-│    → Redirige a /home                                     │
-└─────────────────────────────────────────────────────────────┘
+### Rutas reales registradas
 
-┌─────────────────────────────────────────────────────────────┐
-│ PETICIÓN PROTEGIDA                                          │
-│                                                             │
-│ Usuario visita /course-list                                │
-│                                                             │
-│ 1. ProtectedRouters verifica sesión                        │
-│    → useAuth() lee sesión de Supabase                     │
-│    → Si sin sesión → Redirige a /auth                    │
-│    → Si con sesión → Renderiza Navbar + Página           │
-│                                                             │
-│ 2. Page hace petición: GET /course-list                   │
-│    ↓ httpClient (Frontend)                                │
-│    → Interceptor: obtiene token de Supabase              │
-│    → Agrega header: "Authorization: Bearer <token>"      │
-│                                                             │
-│ 3. Backend recibe petición                                │
-│    ↓ authMiddleware                                        │
-│    → Lee header Authorization                            │
-│    → Extrae token                                         │
-│    → Valida con Supabase: supabase.auth.getUser(token)  │
-│    → Si falla Supabase, fallback: validar JWT localmente │
-│    → Agrega req.student = { id, email, ... }            │
-│    ↓ CourseController.getCourses()                        │
-│    → Accede a req.student.id para filtrar                │
-│    ← Response: List de cursos del estudiante             │
-│                                                             │
-│ 4. Frontend recibe datos                                   │
-│    → Renderiza lista                                      │
-└─────────────────────────────────────────────────────────────┘
+```text
+/student     -> auth, login, perfil, actualización
+/semester    -> gestión de semestres
+/course       -> cursos y estados académicos
+/day         -> horarios y días por curso
+/assessment  -> evaluaciones
+/grade       -> calificaciones
+/catalog     -> carreras, facultades y catálogo general
+/enrollment  -> validación y proceso de matrícula
+/reports     -> transcript y horario semanal
 ```
 
 ---
 
-## 🎯 Estados de una Página
+## 🌐 Módulos principales del frontend
 
-```typescript
-// Estado inicial (cargando)
-session = undefined
-→ ProtectedRouters retorna null
-→ Pantalla en blanco mientras se carga sesión
+```text
+frontend/src/pages/
+├── Home.tsx
+├── student/
+├── semester.tsx
+├── course/
+├── catalog/
+├── enrollment/
+├── assessment/
+├── grade/
+├── reports/
+└── ...
+```
 
-// Sin autenticación
-session = null
-→ ProtectedRouters: <Navigate to="/auth" />
-→ Redirige a login
+Rutas definidas en `AppRouters.tsx`:
 
-// Autenticado
-session = Session { user: {...}, access_token: "..." }
-→ ProtectedRouters renderiza <Navbar /> + <Page />
-→ Page puede hacer peticiones protegidas
+- `/auth`
+- `/register`
+- `/home`
+- `/profile`
+- `/settings`
+- `/semester`
+- `/course-list`
+- `/course`
+- `/day`
+- `/university-catalog`
+- `/enrollment`
+- `/assessment-list`
+- `/assessment`
+- `/grade-list`
+- `/grade-simulation`
+- `/grade`
+- `/reports/grades`
+- `/reports/schedule`
+
+---
+
+## 🔐 Flujo de autenticación actual
+
+```text
+1. Usuario entra a /auth
+2. Envía email + password a /student/login
+3. Backend valida con Supabase Auth
+4. Recibe token JWT
+5. Frontend guarda sesión y protege rutas
+6. authMiddleware valida el token en cada petición privada
 ```
 
 ---
 
-## 🔄 Validaciones en Capas
+## 📊 Flujo de negocio principal: matrícula transaccional
 
+```text
+Frontend (/enrollment)
+  │
+  ├─ usuario selecciona materias del catálogo
+  ├─ backend valida créditos máximos
+  ├─ valida prerrequisitos
+  ├─ valida cruces de horario
+  ▼
+POST /enrollment/validate
+  │
+  ▼
+POST /enrollment/process
+  │
+  └─ matrícula aprobada y guardada
 ```
-CAPA 1: Frontend (React Hook Form)
-├─ Validación local del formulario
-├─ Email format, campos requeridos, longitudes
-└─ Muestra errores antes de enviar
 
-CAPA 2: Backend Controller
-├─ Valida que datos no sean vacíos
-├─ Valida tipos (número, string, etc.)
-└─ Retorna 400 Bad Request si inválido
+Reglas actuales:
 
-CAPA 3: Backend Service
-├─ Valida lógica de negocio
-├─ Email único, usuario existe, etc.
-└─ Retorna error específico si falla
+- Límite de 26 créditos por período.
+- Verificación de prerrequisitos.
+- Prevención de materias duplicadas.
+- Revisión de solapamiento horario.
 
-CAPA 4: Database (Supabase)
-├─ Constraints SQL: UNIQUE, NOT NULL, etc.
-├─ Tipos de datos
-└─ Triggers / Validaciones SQL
+---
 
-Usuario ve error → Corrije → Reintenta
+## 📈 Flujo de reportes académicos
+
+```text
+Frontend (/reports/grades y /reports/schedule)
+  │
+  ▼
+GET /reports/transcript
+  │
+  └─ devuelve notas, GPA, créditos y resumen académico
+
+Frontend (/reports/schedule)
+  │
+  ▼
+GET /reports/schedule
+  │
+  └─ devuelve horario semanal y agenda de evaluaciones
 ```
 
 ---
 
-## 📡 Ejemplo Real: Crear Curso
+## 🧪 Comandos rápidos
+
+### Backend
+
+```bash
+cd backend
+npm install
+npm run dev
+npm test
+```
+
+### Frontend
+
+```bash
+cd frontend
+npm install
+npm run dev
+npm run build
+```
+
+---
+
+## 📌 Diferencia clave con la documentación inicial
+
+La versión inicial del proyecto describía una base conceptual. El repositorio actual incluye módulos más completos y concretos:
+
+- catálogo universitario,
+- matrícula transaccional,
+- reportes académicos,
+- gestión de evaluaciones y horarios,
+- rutas y pantallas reales en el frontend.
+
+Esta referencia refleja el estado actual del código, no solo la propuesta inicial.
+
+---
+
+Última actualización: 2026-09-24
+
 
 ```
 PASO 1: Frontend

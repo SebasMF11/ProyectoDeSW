@@ -17,15 +17,15 @@ const settings = () => {
   return (
     <div>
       <div>
-        <p>SETTINGS</p>
+        <p>CONFIGURACIÓN</p>
         <span className="cursor-pointer" onClick={() => navigate("/profile")}>
-          Profile information
+          Información del perfil
         </span>
         <span className="cursor-pointer" onClick={cancelSemester}>
-          Cancel semester
+          Cancelar semestre
         </span>
         <span className="underline cursor-pointer" onClick={handleLogout}>
-          Log out
+          Cerrar sesión
         </span>
       </div>
     </div>

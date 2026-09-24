@@ -43,14 +43,14 @@ const Register = () => {
     try {
       setErrorMessage("");
       if (values.password !== values.password2) {
-        setErrorMessage("Passwords do not match");
+        setErrorMessage("Las contraseñas no coinciden");
         return;
       }
       await authRequest(values);
       navigate("/auth");
     } catch (error: any) {
       setErrorMessage(
-        error?.response?.data?.error || "User registration failed",
+        error?.response?.data?.error || "No se pudo registrar el usuario",
       );
     }
   });
@@ -66,7 +66,7 @@ const Register = () => {
       <div className="relative z-10 w-[90%] max-w-md bg-white/40 sm:bg-white/30 backdrop-blur-md sm:backdrop-blur-lg rounded-3xl p-6 sm:p-8 shadow-lg text-center">
         <div className="flex flex-col items-center gap-4">
           <img src={logoUrl} alt="logo" className="w-44" />
-          <h2 className="text-sm sm:text-base text-black">Sign up</h2>
+          <h2 className="text-sm sm:text-base text-black">Registrarse</h2>
 
           {errorMessage ? (
             <p className="text-red-600 text-sm">{errorMessage}</p>
@@ -74,19 +74,19 @@ const Register = () => {
 
           <form onSubmit={onSubmit} className="w-full flex flex-col gap-3">
             <input
-              placeholder="Name"
+              placeholder="Nombre"
               type="text"
               {...register("name", { required: true })}
               className="w-full px-4 py-3 rounded-full text-gray-700 bg-white/70 outline-none"
             />
             <input
-              placeholder="Last Name"
+              placeholder="Apellidos"
               type="text"
               {...register("lastName", { required: true })}
               className="w-full px-4 py-3 rounded-full text-gray-700 bg-white/70 outline-none"
             />
             <input
-              placeholder="Email"
+              placeholder="Correo electrónico"
               type="email"
               {...register("email", { required: true })}
               className="w-full px-4 py-3 rounded-full text-gray-700 bg-white/70 outline-none"
@@ -100,8 +100,8 @@ const Register = () => {
             >
               <option value="" disabled>
                 {careers.length > 0
-                  ? "Select your career"
-                  : "Loading careers..."}
+                  ? "Selecciona tu carrera"
+                  : "Cargando carreras..."}
               </option>
               {careers.map((career) => (
                 <option key={career.career_id} value={career.career_id}>
@@ -111,18 +111,18 @@ const Register = () => {
             </select>
 
             <input
-              placeholder="Password"
+              placeholder="Contraseña"
               type="password"
               {...register("password", { required: true, minLength: 6 })}
               className="w-full px-4 py-3 rounded-full text-gray-700 bg-white/70 outline-none"
             />
             <input
-              placeholder="Confirm Password"
+              placeholder="Confirmar contraseña"
               type="password"
               {...register("password2", {
                 required: true,
                 validate: (value) =>
-                  value === password || "Passwords do not match",
+                  value === password || "Las contraseñas no coinciden",
               })}
               className="w-full px-4 py-3 rounded-full text-gray-700 bg-white/70 outline-none"
             />
@@ -131,16 +131,16 @@ const Register = () => {
               type="submit"
               className="bg-green-500 hover:bg-green-600 text-white rounded-full px-6 py-4 font-semibold transition mx-auto block"
             >
-              Sign up
+              Registrarse
             </button>
 
             <p className="text-sm text-gray-900">
-              Do you already have an account?{" "}
+              ¿Ya tienes una cuenta?{" "}
               <span
                 className="underline cursor-pointer"
                 onClick={() => navigate("/auth")}
               >
-                Sign in here
+                Inicia sesión aquí
               </span>
             </p>
           </form>

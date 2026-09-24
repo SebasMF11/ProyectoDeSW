@@ -131,25 +131,25 @@ const grade = () => {
     } catch (error) {
       if (axios.isAxiosError(error)) {
         const apiMessage = error.response?.data?.error;
-        setErrorMessage(apiMessage || "The grade could not be created");
+        setErrorMessage(apiMessage || "No se pudo crear la nota");
         return;
       }
-      setErrorMessage("An unexpected error occurred");
+      setErrorMessage("Ocurrió un error inesperado");
     }
   });
 
   return (
     <div>
       <div className="formContainer">
-        <p className="title">Register grade</p>
+        <p className="title">Registrar nota</p>
         {errorMessage || semesterError ? (
           <p>{errorMessage || semesterError}</p>
         ) : null}
         <form onSubmit={onSubmit} className="formLayout">
           <SemesterSelect
             semesters={semesters}
-            placeholderOptionText="Select a semester"
-            emptyOptionText="No semesters registered"
+            placeholderOptionText="Selecciona un semestre"
+            emptyOptionText="No hay semestres registrados"
                 value={selectedSemesterName || ""}
             selectProps={{
               ...semesterRegister,
@@ -160,13 +160,13 @@ const grade = () => {
             courses={courses}
             placeholderOptionText={
               selectedSemesterName
-                ? "Select a course"
-                : "Select a semester first"
+                ? "Selecciona un curso"
+                : "Primero selecciona un semestre"
             }
             emptyOptionText={
               selectedSemesterName
-                ? "No courses in this semester"
-                : "Select a semester first"
+                ? "No hay cursos en este semestre"
+                : "Primero selecciona un semestre"
             }
             value={selectedCourseName || ""}
             selectProps={{
@@ -178,13 +178,13 @@ const grade = () => {
             assessments={filteredAssessments}
             placeholderOptionText={
               selectedCourseName
-                ? "Select an assessment"
-                : "Select a course first"
+                ? "Selecciona una evaluación"
+                : "Primero selecciona un curso"
             }
             emptyOptionText={
               selectedCourseName
-                ? "No assessments for this course"
-                : "Select a course first"
+                ? "No hay evaluaciones para este curso"
+                : "Primero selecciona un curso"
             }
             value={selectedAssessmentName || ""}
             selectProps={{
@@ -199,7 +199,7 @@ const grade = () => {
             render={({ field: { onChange, onBlur, ref, value } }) => (
               <input
                 className="formControl"
-                placeholder="Grade (0.0 - 5.0)"
+                placeholder="Nota (0.0 - 5.0)"
                 type="number"
                 step="0.1"
                 min={0}
@@ -215,7 +215,7 @@ const grade = () => {
             )}
           />
 
-          <button type="submit">Register</button>
+          <button type="submit">Registrar</button>
         </form>
       </div>
     </div>

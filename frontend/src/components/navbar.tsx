@@ -37,7 +37,7 @@ function navbar() {
             className="cursor-pointer"
             onClick={() => navigate("/profile")}
           />
-          <p className="text-white">User</p>
+          <p className="text-white">Usuario</p>
         </div>
         <IoMdSettings
           size={30}

@@ -55,7 +55,7 @@ function CourseList() {
     } catch (error) {
       console.error(error);
       setCourses([]);
-      setErrorMessage("The semester courses could not be loaded");
+      setErrorMessage("No se pudieron cargar los cursos del semestre");
     } finally {
       setLoadingCourses(false);
     }
@@ -87,11 +87,11 @@ function CourseList() {
     } catch (error) {
       if (axios.isAxiosError(error)) {
         setErrorMessage(
-          error.response?.data?.error || "The course could not be completed",
+          error.response?.data?.error || "No se pudo completar el curso",
         );
         return;
       }
-      setErrorMessage("The course could not be completed");
+      setErrorMessage("No se pudo completar el curso");
     }
   };
 
@@ -104,11 +104,11 @@ function CourseList() {
     } catch (error) {
       if (axios.isAxiosError(error)) {
         setErrorMessage(
-          error.response?.data?.error || "The course could not be canceled",
+          error.response?.data?.error || "No se pudo cancelar el curso",
         );
         return;
       }
-      setErrorMessage("The course could not be canceled");
+      setErrorMessage("No se pudo cancelar el curso");
     }
   };
 
@@ -121,11 +121,11 @@ function CourseList() {
     } catch (error) {
       if (axios.isAxiosError(error)) {
         setErrorMessage(
-          error.response?.data?.error || "The course could not be deleted",
+          error.response?.data?.error || "No se pudo eliminar el curso",
         );
         return;
       }
-      setErrorMessage("The course could not be deleted");
+      setErrorMessage("No se pudo eliminar el curso");
     }
   };
 
@@ -188,12 +188,12 @@ function CourseList() {
         </section>
 
         <div className="flex items-center gap-4">
-          <h1 className="text-xl font-semibold">Courses by semester</h1>
+          <h1 className="text-xl font-semibold">Cursos por semestre</h1>
         </div>
 
         <div className="w-40">
           <label htmlFor="course-view-select" className="formText">
-            View
+            Vista
           </label>
           <select
             id="course-view-select"
@@ -201,8 +201,8 @@ function CourseList() {
             value={showAll ? "all" : "active"}
             onChange={(e) => setShowAll(e.target.value === "all")}
           >
-            <option value="active">Active Courses</option>
-            <option value="all">All Courses</option>
+            <option value="active">Cursos activos</option>
+            <option value="all">Todos los cursos</option>
           </select>
         </div>
       </header>
@@ -212,19 +212,19 @@ function CourseList() {
           <div className="grid grid-cols-3 gap-3">
             <div className="text-center">
               <p className="text-lg font-bold text-gray-700">{totalCredits}</p>
-              <p className="text-xs text-gray-500">Total Credits</p>
+              <p className="text-xs text-gray-500">Créditos totales</p>
             </div>
             <div className="text-center">
               <p className="text-lg font-bold text-gray-700">
                 {activeCoursesCount}
               </p>
-              <p className="text-xs text-gray-500">Active</p>
+              <p className="text-xs text-gray-500">Activos</p>
             </div>
             <div className="text-center">
               <p className="text-lg font-bold text-gray-700">
                 {inactiveCoursesCount}
               </p>
-              <p className="text-xs text-gray-500">Inactive</p>
+              <p className="text-xs text-gray-500">Inactivos</p>
             </div>
           </div>
         </div>
@@ -235,13 +235,13 @@ function CourseList() {
             type="button"
             onClick={() => navigate("/day")}
           >
-            Add class times
+            Agregar horarios de clase
           </button>
         </div>
       </div>
 
       <section className="mt-6" aria-live="polite">
-        {loadingSemesters || loadingCourses ? <p>Loading courses...</p> : null}
+        {loadingSemesters || loadingCourses ? <p>Cargando cursos...</p> : null}
 
         {!loadingSemesters &&
         !loadingCourses &&
@@ -249,8 +249,8 @@ function CourseList() {
         visibleCourses.length === 0 ? (
           <p>
             {showAll
-              ? "No courses available for the selected semester."
-              : "There are no active courses available for the selected semester."}
+              ? "No hay cursos disponibles para el semestre seleccionado."
+              : "No hay cursos activos disponibles para el semestre seleccionado."}
           </p>
         ) : null}
 
@@ -260,19 +260,19 @@ function CourseList() {
               <thead>
                 <tr className="course-list-header-row">
                   <th className="course-list-header-cell course-list-col-course">
-                    COURSE
+                    CURSO
                   </th>
                   <th className="course-list-header-cell course-list-col-teacher">
-                    TEACHER
+                    PROFESOR
                   </th>
                   <th className="course-list-header-cell course-list-col-credits">
-                    CREDITS
+                    CRÉDITOS
                   </th>
                   {showAll && (
-                    <th className="course-list-header-cell">STATUS</th>
+                    <th className="course-list-header-cell">ESTADO</th>
                   )}
                   <th className="course-list-header-cell course-list-col-actions">
-                    ACTIONS
+                    ACCIONES
                   </th>
                 </tr>
               </thead>
@@ -297,7 +297,7 @@ function CourseList() {
                         </div>
                       </td>
                       <td className="course-list-cell course-list-cell-teacher course-list-col-teacher">
-                        {course.teacher || "Not assigned"}
+                        {course.teacher || "No asignado"}
                       </td>
                       <td className="course-list-cell course-list-cell-credits course-list-col-credits">
                         {course.credits}
@@ -333,7 +333,7 @@ function CourseList() {
                                 }
                                 className="course-list-btn course-list-btn-text"
                               >
-                                Mark as completed
+                                Marcar como completado
                               </button>
                               <button
                                 type="button"
@@ -342,7 +342,7 @@ function CourseList() {
                                 }
                                 className="course-list-btn course-list-btn-text"
                               >
-                                Cancel course
+                                Cancelar curso
                               </button>
                             </>
                           )}
@@ -352,7 +352,7 @@ function CourseList() {
                               requestAction(course.course_id, "delete")
                             }
                             className="course-list-btn course-list-btn-icon"
-                            title="Delete course"
+                            title="Eliminar curso"
                           >
                             <FaRegTrashCan size={16} />
                           </button>
@@ -360,7 +360,7 @@ function CourseList() {
                             type="button"
                             onClick={() => onEditCourse(course)}
                             className="course-list-btn course-list-btn-icon"
-                            title="Edit course"
+                            title="Editar curso"
                           >
                             <RiEdit2Line size={16} />
                           </button>
@@ -369,11 +369,11 @@ function CourseList() {
                         {pending === "complete" && (
                           <div className="course-list-modal course-list-modal-success">
                             <p className="course-list-modal-title">
-                              Mark "{course.courses.name}" as completed?
+                              ¿Marcar "{course.courses.name}" como completado?
                             </p>
                             <p className="course-list-modal-description">
-                              The course will be marked as completed and will no
-                              longer appear in your active list.
+                              El curso quedará marcado como completado y dejará de
+                              aparecer en tu lista de activos.
                             </p>
                             <div className="course-list-modal-buttons">
                               <button
@@ -383,14 +383,14 @@ function CourseList() {
                                 }
                                 className="course-list-modal-btn-success"
                               >
-                                Yes, mark as completed
+                                Sí, marcar como completado
                               </button>
                               <button
                                 type="button"
                                 onClick={() => cancelAction(course.course_id)}
                                 className="course-list-modal-btn-cancel"
                               >
-                                Cancel action
+                                Cancelar acción
                               </button>
                             </div>
                           </div>
@@ -399,11 +399,11 @@ function CourseList() {
                         {pending === "fail" && (
                           <div className="course-list-modal course-list-modal-warning">
                             <p className="course-list-modal-title">
-                              Cancel "{course.courses.name}"?
+                              ¿Cancelar "{course.courses.name}"?
                             </p>
                             <p className="course-list-modal-description">
-                              The course will be marked as canceled. You can
-                              re-register it in a future semester.
+                              El curso quedará marcado como cancelado. Puedes
+                              volver a registrarlo en un semestre futuro.
                             </p>
                             <div className="course-list-modal-buttons">
                               <button
@@ -411,14 +411,14 @@ function CourseList() {
                                 onClick={() => onFailCourse(course.course_id)}
                                 className="course-list-modal-btn-warning"
                               >
-                                Yes, cancel course
+                                Sí, cancelar curso
                               </button>
                               <button
                                 type="button"
                                 onClick={() => cancelAction(course.course_id)}
                                 className="course-list-modal-btn-cancel"
                               >
-                                Cancel action
+                                Cancelar acción
                               </button>
                             </div>
                           </div>
@@ -427,12 +427,12 @@ function CourseList() {
                         {pending === "delete" && (
                           <div className="course-list-modal course-list-modal-danger">
                             <p className="course-list-modal-title">
-                              Delete "{course.courses.name}"?
+                              ¿Eliminar "{course.courses.name}"?
                             </p>
                             <p className="course-list-modal-description">
-                              This action will delete the course and all its
-                              related data (evaluations, grades, schedules).
-                              This cannot be undone.
+                              Esta acción eliminará el curso y todos sus datos
+                              relacionados (evaluaciones, notas, horarios). Esta
+                              acción no se puede deshacer.
                             </p>
                             <div className="course-list-modal-buttons">
                               <button
@@ -440,14 +440,14 @@ function CourseList() {
                                 onClick={() => onDeleteCourse(course.course_id)}
                                 className="course-list-modal-btn-danger"
                               >
-                                Yes, delete
+                                Sí, eliminar
                               </button>
                               <button
                                 type="button"
                                 onClick={() => cancelAction(course.course_id)}
                                 className="course-list-modal-btn-cancel"
                               >
-                                Cancel
+                                Cancelar
                               </button>
                             </div>
                           </div>

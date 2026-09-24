@@ -49,17 +49,17 @@ const Auth = () => {
         <div className="flex flex-col items-center gap-4">
           <img src={logoUrl} alt="logo" className="w-44" />
 
-          <h2 className="text-sm sm:text-base text-black">Login</h2>
+          <h2 className="text-sm sm:text-base text-black">Iniciar sesión</h2>
 
           <form onSubmit={onSubmit} className="w-full flex flex-col gap-3">
             <input
-              placeholder="Email"
+              placeholder="Correo electrónico"
               type="email"
               {...register("email", { required: true })}
               className="w-full px-4 text-gray-700 py-3 rounded-full bg-white/70 outline-none"
             />
             <input
-              placeholder="Password"
+              placeholder="Contraseña"
               minLength={6}
               required
               type="password"
@@ -71,17 +71,17 @@ const Auth = () => {
             />
 
             <p className="text-sm text-gray-900">
-              Dont have an account?{" "}
+              ¿No tienes una cuenta?{" "}
               <span
                 className="underline cursor-pointer"
                 onClick={() => navigate("/register")}>
-                Sign up here.
+                Regístrate aquí.
               </span>
             </p>
             <button
               type="submit"
               className="w-full text-white py-3 rounded-full font-semibold transition">
-              Login
+              Iniciar sesión
             </button>
           </form>
         </div>

@@ -1,503 +1,266 @@
-# 🏛️ Arquitectura del Sistema
+# 🏛️ Arquitectura del Sistema PoliPlan
 
-Documentación detallada de la arquitectura y flujos principales del proyecto.
+Este documento refleja la arquitectura actual del proyecto tal como está implementado en el repositorio. Se revisó conforme a los módulos reales presentes en backend/frontend y se ajustó a la estructura vigente del código.
 
 ---
 
-## 📐 Arquitectura General
+## 📐 Visión general
 
-```
+La aplicación está diseñada en capas y usa una separación clara entre la capa de presentación, la capa de negocio y la capa de acceso a datos.
+
+```text
 ┌─────────────────────────────────────────────────────────────┐
-│                      NAVEGADOR DEL USUARIO                   │
-│                     (React + TypeScript)                      │
-└──────────────────────────┬──────────────────────────────────┘
-                           │
-                           │ HTTP + JWT Token
-                           ▼
+│                     FRONTEND (React + TS)                   │
+│  Páginas, formularios, rutas protegidas y consultas API   │
+└───────────────────────────────┬─────────────────────────────┘
+                                │ HTTP + JWT
+                                ▼
 ┌─────────────────────────────────────────────────────────────┐
-│              BACKEND EXPRESS.JS (Node.js)                    │
-│  (Routes → Controllers → Services → Supabase)                │
-└──────────────────────────┬──────────────────────────────────┘
-                           │
-                           │ SQL Queries
-                           ▼
+│            BACKEND (Node.js + Express)                       │
+│  Routes → Controllers → Services → Supabase                │
+└───────────────────────────────┬─────────────────────────────┘
+                                │ SQL / Auth / Storage
+                                ▼
 ┌─────────────────────────────────────────────────────────────┐
-│              SUPABASE (PostgreSQL + Auth)                    │
-│  - Tablas reales: student, career, faculty, semester,       │
-│    courses, course, assessment, grade, day, courses_per...  │
-│  - Auth: Gestiona credenciales y tokens JWT                  │
+│                 SUPABASE (PostgreSQL + Auth)               │
+│  student, career, faculty, semester, course, day,          │
+│  assessment, grade, enrollment, report data                │
 └─────────────────────────────────────────────────────────────┘
 ```
 
----
+## 🔐 Seguridad y autenticación
 
-## 🔐 Autenticación y Seguridad
+La autenticación del sistema se realiza con Supabase Auth y JWT.
 
-### Flujo Completo de Autenticación
+### Flujo actual
 
-```
-REGISTRO
-────────────────────────────────────────────────────────────────
-1. Usuario fill: register form → POST /student/auth
-   - Backend llama: supabase.auth.signUp()
-   - Supabase crea usuario en auth.users
-   - Email de confirmación enviado al usuario ✉️
+1. El usuario se registra en `/student/auth`.
+2. Se crea un usuario en Supabase Auth.
+3. El usuario accede mediante `/student/login`.
+4. El backend valida las credenciales con `supabase.auth.signInWithPassword()`.
+5. El frontend guarda la sesión y el token.
+6. Las rutas protegidas usan `authMiddleware` para validar el token en el header `Authorization`.
+7. El `req.student` queda disponible para que el controller y el service trabajen con el estudiante autenticado.
 
-2. Usuario confirma email → Email link a aplicación
-   - Supabase marca email como confirmado
+### Middleware relevante
 
-3. Ahora puede hacer LOGIN
+- `backend/src/middlewares/authMiddleware.js`: valida sesión y token JWT
+- `backend/src/middlewares/adminMiddleware.js`: limita acceso administrativo cuando aplica
 
+## 🧱 Arquitectura en capas
 
-LOGIN
-────────────────────────────────────────────────────────────────
-1. Usuario ingresa email/password → POST /student/login
+### Backend
 
-2. Backend:
-   - supabase.auth.signInWithPassword(email, password)
-   - Si credenciales correctas → Supabase retorna JWT token
-   - Backend busca/crea registro en tabla 'student'
-   - Retorna token + datos del usuario
-
-3. Frontend almacena token en sesión de Supabase
-   - Automáticamente se agrega en Authorization header
-
-4. httpClient interceptor:
-   - Obtiene sesión actual de Supabase
-   - Si token va a expirar (< 60 seg), lo refresca
-   - Agrega "Authorization: Bearer <token>" en petición
-
-
-PETICIÓN PROTEGIDA
-────────────────────────────────────────────────────────────────
-1. Frontend hace petición: GET /course-list
-   - httpClient interceptor agrega JWT token
-
-2. Backend recibe petición:
-   - authMiddleware extrae token del header
-   - Intenta validar con Supabase: supabase.auth.getUser(token)
-   - Si falla Supabase (red), valida JWT manualmente
-   - Si válido, agrega user a req.student
-   - Si inválido, responde 401 Unauthorized
-
-3. Controller accede a req.student.id para identificar usuario
-
-4. Service consulta base de datos usando student_id
-```
-
-### Token JWT Structure
-
-```
-Token JWT = Header.Payload.Signature
-
-Payload contiene:
-{
-  "sub": "user-id-uuid",        // subject (usuario_id)
-  "email": "user@example.com",
-  "aud": "authenticated",
-  "exp": 1712345678,            // timestamp de expiración
-  "iat": 1712341980             // issued at
-}
-```
-
----
-
-## 📦 Arquitectura en Capas
-
-### Backend: MVC Structure
-
-```
+```text
 REQUEST
   │
   ▼
-ROUTES (studentRoutes.js)
-  └─ Definir endpoints: POST /student/login, GET /student/view
+ROUTES
+  └─ Definen endpoints HTTP
   │
   ▼
-MIDDLEWARES (authMiddleware.js)
-  └─ Validar JWT token
+MIDDLEWARES
+  └─ authMiddleware / adminMiddleware
   │
   ▼
-CONTROLLERS (StudentController.js)
-  └─ Recibir req.body
-  └─ Validar datos (400 si inválido)
-  └─ Llamar Service
-  └─ Manejo errores
-  └─ Response JSON
+CONTROLLERS
+  └─ Validan input y coordinan la respuesta
   │
   ▼
-SERVICES (StudentService.js)
-  └─ Lógica de negocio
-  └─ Interactuar con Supabase
-  └─ Retornar datos
+SERVICES
+  └─ Lógica de negocio y reglas académicas
   │
   ▼
 SUPABASE
-  └─ Base de datos
-  └─ Auth service
+  └─ Persistencia y autenticación
+```
+
+### Frontend
+
+```text
+App.tsx
   │
   ▼
-RESPONSE JSON back to client
-```
-
-### Frontend: Component Structure
-
-```
-App.tsx (root)
+AppRouters.tsx
   │
-  ▼
-AppRouters.tsx (route configuration)
+  ├─ públicas: /auth, /register
   │
-  ├─ PUBLIC: /auth, /register
-  │   └─ Auth.tsx (login page)
-  │   └─ Register.tsx (signup page)
-  │
-  └─ PROTECTED: /home, /course-list, /grade, etc.
-      └─ ProtectedRouters wrapper
-          ├─ Checks useAuth() hook
-          ├─ Shows Navbar if authenticated
-          └─ Page Component
-              ├─ useForm hook (React Hook Form)
-              ├─ useEffect (fetch data)
-              ├─ httpClient calls (API requests)
-              └─ JSX rendering
-```
-
----
-
-## 🔄 Flujo de Datos: Crear Curso
-
-### Frontend Side
-
-```
-courseList.tsx
-  │
-  ├─ Botón "Nuevo curso" clicked
-  │
-  ▼
-course.tsx loaded
-  │
-  ├─ useEffect: cargar semestres
-  │   └─ semesterViewRequest() → GET /semester
-  │       ✓ Lista semestres disponibles
-  │
-  ├─ User llena formulario (nombre, profesor, créditos, color, semestre)
-  │
-  └─ onClick="Submit"
+  └─ protegidas: /home, /semester, /course-list, /enrollment, /reports/grades, etc.
       │
       ▼
-  handleSubmit → courseCreateRequest()
+  ProtectedRouters
       │
-      ├─ httpClient.post("course/create", { courses_id, teacher, credits, color, semesterName })
-      │
-      └─ httpClient interceptor:
-          ├─ Obtiene token JWT
-          ├─ Agrega Authorization header
-          ├─ Envía petición
-          │
-        ▼ HTTP POST http://localhost:3000/course/create
+      └─ valida sesión activa y renderiza la vista correspondiente
 ```
 
-### Backend Side
+## 📦 Módulos implementados en el proyecto actual
 
+### 1. Estudiantes y autenticación
+
+- `StudentRoutes.js`
+- `StudentController.js`
+- `StudentService.js`
+- Rutas: `/student/auth`, `/student/login`, `/student/view`, `/student/me`, `/student/update`, `/student/password`
+
+### 2. Semestres
+
+- `SemesterRoutes.js`
+- `SemesterController.js`
+- `SemesterService.js`
+- Rutas: `/semester/create`, `/semester/view`, `/semester/update/:semesterId`
+
+### 3. Cursos y días
+
+- `CourseRoutes.js`
+- `CourseController.js`
+- `CourseService.js`
+- `DayRoutes.js`, `DayController.js`, `DayService.js`
+- Rutas: `/course/create`, `/course/view`, `/course/view/:semesterName`, `/course/update/:courseId`, `/course/status/:courseId`, `/day/...`
+
+### 4. Catálogo académico
+
+- `CatalogRoutes.js`
+- `CatalogController.js`
+- `CatalogService.js`
+- Rutas: `/catalog/careers`, `/catalog/faculties`, `/catalog/courses`, `/catalog/courses/available`, `/catalog/courses/faculty/:facultyId`, `/catalog/courses/career/:careerId`
+
+### 5. Matrícula transaccional
+
+- `EnrollmentRoutes.js`
+- `EnrollmentController.js`
+- `EnrollmentService.js`
+- Rutas: `/enrollment/validate` y `/enrollment/process`
+- Reglas activas: máximo 26 créditos, validación de prerrequisitos y solape horario.
+
+### 6. Evaluaciones y calificaciones
+
+- `AssessmentRoutes.js`
+- `AssessmentController.js`
+- `AssessmentService.js`
+- `GradeRoutes.js`
+- `GradeController.js`
+- `GradeService.js`
+
+### 7. Reportes académicos
+
+- `ReportRoutes.js`
+- `ReportController.js`
+- `ReportService.js`
+- Rutas: `/reports/transcript` y `/reports/schedule`
+
+## 🧭 Mapa real de rutas del frontend
+
+El archivo `frontend/src/routers/AppRouters.tsx` define estas rutas:
+
+- `/auth`
+- `/register`
+- `/home`
+- `/profile`
+- `/settings`
+- `/semester`
+- `/course-list`
+- `/course`
+- `/day`
+- `/university-catalog`
+- `/enrollment`
+- `/assessment-list`
+- `/assessment`
+- `/grade-list`
+- `/grade-simulation`
+- `/grade`
+- `/reports/grades`
+- `/reports/schedule`
+
+## 🗂️ Estructura actual de carpetas
+
+```text
+backend/
+├── src/
+│   ├── app.js
+│   ├── index.js
+│   ├── config/
+│   ├── controllers/
+│   ├── middlewares/
+│   ├── routes/
+│   └── services/
+└── tests/
+
+frontend/
+├── src/
+│   ├── api/
+│   ├── components/
+│   ├── hooks/
+│   ├── integrations/
+│   ├── pages/
+│   ├── routers/
+│   ├── styles/
+│   ├── utils/
+│   ├── App.tsx
+│   └── main.tsx
 ```
-  Request: POST /course/create
 
-▼
+## 🔄 Flujo de datos principal
 
-authMiddleware
-  ├─ Lee Authorization header
-  ├─ Extrae token JWT
-  ├─ Valida con Supabase (o fallback manual)
-  ├─ Agrega req.student.id ← user_id desde JWT
+### Caso: matrícula transaccional
+
+```text
+Frontend (/enrollment)
   │
+  ├─ formulario con materias del catálogo
+  ├─ validación cliente
   ▼
-
-CourseController.createCourse()
-  ├─ Valida entrada: courses_id, teacher, credits, color, semesterName
-  ├─ Convierte credits a number
-  ├─ Error 400 si datos inválidos
+POST /enrollment/validate
   │
+  ├─ backend valida límite de créditos
+  ├─ valida prerrequisitos
+  ├─ valida horarios
   ▼
-
-CourseService.createCourse()
-  ├─ Busca semester por nombre
-  ├─ Valida prerequisito y disponibilidad del catálogo
-  ├─ Traduce color nombre → hex (#FF5733)
-  ├─ Inserta en tabla 'course'
-  │   INSERT INTO course (courses_id, teacher, credits, color, semester_id, status)
-  ├─ Error si semestre no existe
+POST /enrollment/process
   │
+  ├─ creación transaccional de la matrícula
+  ├─ actualiza el estado del estudiante/semestre
   ▼
-
-Response 201 Created: { course_id: "uuid", message: "Course created successfully" }
-
-▼ HTTP 201
-
-Frontend recibe respuesta
-  ├─ console.log(res)
-  ├─ navigate("/course-list")  ← Redirige
-  │
-  ▼
-
-courseList.tsx remont
-  ├─ useEffect: recarga list de cursos
-  │   └─ courseViewRequest() ← GET /course/view
-  │
-  ▼
-
-Se muestra nuevo curso en la lista
+Frontend recibe respuesta y actualiza la vista
 ```
+
+### Caso: reportes académicos
+
+```text
+Frontend (/reports/grades o /reports/schedule)
+  │
+  ▼
+GET /reports/transcript o /reports/schedule
+  │
+  ▼
+ReportService
+  ├─ consolida notas, GPA y créditos
+  ├─ calcula horarios y agenda de evaluaciones
+  ▼
+Frontend renderiza KPIs, tabla y cronograma
+```
+
+## 🧪 Tecnologías y patrones
+
+- Express para API REST
+- React y Vite para interfaz web
+- Supabase como backend de autenticación y persistencia
+- JWT para rutas protegidas
+- Separación por responsabilidades: rutas, controllers, services, middlewares
+- Tests unitarios en la capa de lógica de negocio
+
+## ✅ Ajustes realizados en la documentación
+
+Se actualizó la documentación para reflejar:
+
+- la presencia real de catálogo, matrícula y reportes,
+- la estructura de rutas del frontend y backend,
+- la infraestructura actual de Supabase/Auth,
+- el estado real del proyecto y la separación de capas vigente en el repositorio.
 
 ---
 
-## 📊 Modelo de Datos - Relaciones
+Última actualización: 2026-09-24
 
-```
-STUDENT
-├─ student_id UUID PK, default auth.uid()
-├─ name
-├─ last_name
-├─ email UNIQUE
-├─ created_at
-└─ career_id FK → career.career_id
-
-CAREER
-├─ career_id UUID PK
-└─ name UNIQUE
-
-FACULTY
-├─ faculty_id UUID PK
-└─ name UNIQUE
-
-COURSES (catálogo)
-├─ courses_id UUID PK
-├─ name UNIQUE
-├─ faculty_id FK → faculty.faculty_id
-└─ prerequisito FK → courses.courses_id
-
-COURSES_PER_CAREER
-├─ id UUID PK
-├─ career_id FK → career.career_id
-└─ courses_id FK → courses.courses_id
-
-SEMESTER
-├─ semester_id UUID PK
-├─ name
-├─ start_date
-├─ end_date
-├─ student_id FK → student.student_id
-├─ midterm_week daterange
-└─ final_exam_week daterange
-
-COURSE
-├─ course_id UUID PK
-├─ credits integer
-├─ teacher nullable
-├─ color
-├─ status
-├─ semester_id FK → semester.semester_id
-└─ courses_id FK → courses.courses_id
-
-DAY
-├─ day_id UUID PK
-├─ day_of_week
-├─ start_time
-├─ end_time
-├─ classroom nullable
-└─ course_id FK → course.course_id
-
-ASSESSMENT
-├─ assessment_id UUID PK
-├─ type
-├─ due_date timestamptz
-├─ name
-├─ course_id FK → course.course_id
-└─ percentage real
-
-GRADE
-├─ grade_id UUID PK
-├─ value real nullable
-└─ assessment_id FK + UNIQUE → assessment.assessment_id
-```
-
----
-
-## 🌐 Endpoints API
-
-### Estudiantes
-
-```
-POST /student/auth
-  Body: { name, lastName, email, password, password2 }
-  Response: 201 { message: "Confirmation email sent" }
-
-POST /student/login
-  Body: { email, password }
-  Response: 200 { token, user, message }
-
-GET /student/view
-  Header: Authorization: Bearer <token>
-  Response: 200 { student }
-
-GET /student/me
-  Header: Authorization: Bearer <token>
-  Response: 200 { student }
-```
-
-### Semestres
-
-```
-POST /semester/create
-  Body: { semesterName, startDate, endDate, midtermWeek }
-  Response: 201 { message, semester }
-
-GET /semester/view
-  Response: 200 [ { semester_id, name, start_date, end_date, ... }, ... ]
-
-PUT /semester/update/:semesterId
-  Body: { semesterName, startDate, endDate, midtermWeek }
-  Response: 200 { message, semester }
-```
-
-### Cursos
-
-```
-POST /course/create
-  Header: Authorization: Bearer <token>
-  Body: { courses_id, teacher, credits, color, semesterName }
-  Response: 201 { message, course }
-
-GET /course/view
-  Header: Authorization: Bearer <token>
-  Response: 200 { courses: [...] }
-
-GET /course/view/:semesterName
-  Header: Authorization: Bearer <token>
-  Response: 200 { courses: [...] }
-
-PUT /course/update/:courseId
-  Header: Authorization: Bearer <token>
-  Body: { credits?, teacher?, color? }
-  Response: 200 { message, course }
-
-PUT /course/status/:courseId
-  Header: Authorization: Bearer <token>
-  Body: { status: "active" | "inactive" | "completed" | "failed" }
-  Response: 200 { message, course }
-
-DELETE /course/delete/:courseId
-  Header: Authorization: Bearer <token>
-  Response: 200 { message }
-```
-
-### Catálogo y notas
-
-```
-GET /catalog/careers
-GET /catalog/faculties
-GET /catalog/courses
-GET /catalog/courses/available
-GET /catalog/courses/faculty/:facultyId
-GET /catalog/courses/career/:careerId
-
-POST /assessment/create
-GET /assessment/view
-GET /assessment/view/course/:courseId
-GET /assessment/view/semester/:semesterId
-GET /assessment/view/day?date=YYYY-MM-DD
-GET /assessment/view/month?date=YYYY-MM
-
-POST /grade/create
-GET /grade/view/course/:courseId
-GET /grade/current/:courseId
-GET /grade/average/:semesterId
-
-POST /day/create
-GET /day/view/:courseId
-PUT /day/update/:dayId
-DELETE /day/delete/:dayId
-```
-
----
-
-## 🔄 State Management
-
-### Frontend State
-
-**Global (Supabase Session)**
-
-- Usuario actual
-- JWT Token
-- Expiración de token
-- ✓ Manejado automáticamente por useAuth hook
-
-**Component Local**
-
-- Form data (React Hook Form)
-- Loading states
-- Error messages
-- Lists (semesters, courses, grades)
-
-### No se usa Redux/Context
-
-- Supabase auth session es "global"
-- useAuth hook lo expone a cualquier componente
-- Cada página maneja su propio estado local
-
----
-
-## 🛡️ Manejo de Errores
-
-### Backend Errors
-
-**Validación (400)**
-
-```javascript
-if (!email || !password) {
-  res.status(400).json({ error: "Email and password required" });
-}
-```
-
-**Autenticación (401)**
-
-```javascript
-if (!token || token is invalid) {
-  res.status(401).json({ error: "Token no proporcionado" });
-}
-```
-
-**Rate Limiting (429)**
-
-```javascript
-if (error?.code === "over_email_send_rate_limit") {
-  res.status(429).json({ error: "Too many attempts" });
-}
-```
-
-**Servidor (500)**
-
-```javascript
-catch (error) {
-  res.status(500).json({ error: "Internal server error" });
-}
-```
-
-### Frontend Errors
-
-**Validación (form validation)**
-
-- React Hook Form valida registrado onSubmit
-
-**Axios Errors**
-
-```javascript
-catch (error) {
-  if (axios.isAxiosError(error)) {
-    const message = error.response?.data?.error;
-    setErrorMessage(message || "Error occurred");
-  }
-}
 ```
 
 **Usuario visto**

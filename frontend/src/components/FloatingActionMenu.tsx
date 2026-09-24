@@ -18,7 +18,7 @@ type FloatingActionMenuProps = {
 
 function FloatingActionMenu({
   items,
-  ariaLabel = "Quick actions menu",
+  ariaLabel = "Menú de acciones rápidas",
 }: FloatingActionMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
@@ -48,11 +48,11 @@ function FloatingActionMenu({
 
   const defaultItems = useMemo<FloatingActionMenuItem[]>(
     () => [
-      { label: "Assign grade", onClick: () => navigate("/grade") },
-      { label: "Add course", onClick: () => navigate("/course") },
-      { label: "Create assessment", onClick: () => navigate("/assessment") },
+      { label: "Asignar calificación", onClick: () => navigate("/grade") },
+      { label: "Agregar curso", onClick: () => navigate("/course") },
+      { label: "Crear evaluación", onClick: () => navigate("/assessment") },
       {
-        label: "Grade simulator",
+        label: "Simulador de notas",
         onClick: () => navigate("/grade-simulation"),
       },
     ],
@@ -102,7 +102,7 @@ function FloatingActionMenu({
         <button
           type="button"
           className="floating-action-menu__toggle"
-          aria-label={isOpen ? "Close quick actions" : "Open quick actions"}
+          aria-label={isOpen ? "Cerrar acciones rápidas" : "Abrir acciones rápidas"}
           aria-expanded={isOpen}
           onClick={() => setIsOpen((current) => !current)}
         >

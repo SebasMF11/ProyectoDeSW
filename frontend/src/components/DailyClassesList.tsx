@@ -15,11 +15,11 @@ export default function DailyClassesList({
   );
 
   if (!selectedSemester) {
-    return <p className="text-gray-500">Select a semester to see classes.</p>;
+    return <p className="text-gray-500">Selecciona un semestre para ver las clases.</p>;
   }
 
   if (loading) {
-    return <p className="text-gray-500">Loading classes...</p>;
+    return <p className="text-gray-500">Cargando clases...</p>;
   }
 
   if (errorMessage) {
@@ -28,7 +28,7 @@ export default function DailyClassesList({
 
   if (classes.length === 0) {
     return (
-      <p className="text-gray-500">You don't have classes for this day.</p>
+      <p className="text-gray-500">No tienes clases para este día.</p>
     );
   }
 
@@ -57,7 +57,7 @@ export default function DailyClassesList({
 
           {classItem.classroom ? (
             <p className="mt-1.5 text-xs text-gray-500">
-              Classroom: {classItem.classroom}
+              Aula: {classItem.classroom}
             </p>
           ) : null}
         </div>

@@ -1,265 +1,239 @@
-# 📖 Guía de Desarrollo
+# 📖 Guía de Desarrollo de PoliPlan
 
-Referencia rápida para desarrolladores que trabajan en este proyecto.
+Esta guía está alineada con el estado actual del repositorio y resume los pasos para levantar, desarrollar y verificar el proyecto en su versión real.
 
 ---
 
-## 🚀 Primeros Pasos
+## 🚀 Primeros pasos
 
-### 1. Clonar y Instalar
+### 1. Clonar el repositorio
 
 ```bash
-# Clonar repositorio
 cd ProyectoDeSW
+```
 
-# Backend
+### 2. Instalar dependencias
+
+#### Backend
+
+```bash
 cd backend
 npm install
+```
 
-# Frontend (en otra terminal)
+#### Frontend
+
+```bash
 cd ../frontend
 npm install
 ```
 
-### 2. Configurar Variables de Entorno
+> El proyecto se trabaja como dos aplicaciones separadas: un backend Express y un frontend React. No hay un script raíz único que gestione ambas al mismo tiempo.
 
-Crear `backend/.env`:
+### 3. Configurar variables de entorno
+
+Crea el archivo `backend/.env` con el siguiente formato:
 
 ```env
 PORT=3000
-SUPABASE_URL=https://tuproyecto.supabase.co
-SUPABASE_ANON_KEY=eyJhbGc...
-SUPABASE_SERVICE_ROLE_KEY=eyJhbGc...
+SUPABASE_URL=https://tu-proyecto.supabase.co
+SUPABASE_ANON_KEY=tu-anon-key
+SUPABASE_SERVICE_ROLE_KEY=tu-service-role-key
+CLIENT_URL=http://localhost:5173
 ```
 
-Obtener keys de: https://app.supabase.com → Settings → API
+### 4. Ejecutar el proyecto
 
-### 3. Iniciar Servers
+#### Backend
 
 ```bash
-# Terminal 1: Backend
 cd backend
 npm run dev
+```
 
-# Terminal 2: Frontend
+#### Frontend
+
+```bash
 cd frontend
 npm run dev
 ```
+
+URLs locales esperadas:
 
 - Backend: http://localhost:3000
 - Frontend: http://localhost:5173
 
 ---
 
-## 💡 Flujos Comunes de Desarrollo
+## 💡 Estructura funcional actual
 
-### Agregar Nueva Ruta de API
+### Backend
 
-**1. Backend Route** (+ 5 min)
+El backend usa Express y separa responsabilidades por capas:
 
-Crear en `backend/src/routes/CourseRoutes.js`:
+- `routes/`: endpoints de la API
+- `controllers/`: recibe y responde HTTP
+- `services/`: regla de negocio
+- `middlewares/`: validación de autenticación y roles
+- `config/`: configuración compartida
+
+Rutas principales reales:
+
+- `/student`
+- `/semester`
+- `/course`
+- `/assessment`
+- `/day`
+- `/grade`
+- `/catalog`
+- `/enrollment`
+- `/reports`
+
+### Frontend
+
+El frontend usa React + TypeScript y Vite.
+
+- `src/pages/`: pantallas del sistema
+- `src/api/`: clientes HTTP
+- `src/routers/AppRouters.tsx`: rutas principales
+- `src/hooks/`: lógica reutilizable
+- `src/components/`: componentes visuales
+- `src/utils/`: utilidades generales
+
+---
+
+## 🧩 Flujo de trabajo recomendando al desarrollar
+
+### Agregar una ruta nueva
+
+1. Crear la ruta en el archivo correspondiente dentro de `backend/src/routes/`.
+2. Registrar el controller y el middleware si aplica.
+3. Implementar la lógica de negocio en `backend/src/services/`.
+4. Añadir la petición en `frontend/src/api/`.
+5. Lanzar y consumir la funcionalidad desde una página de `frontend/src/pages/`.
+6. Registrar la ruta en `frontend/src/routers/AppRouters.tsx`.
+
+### Ejemplo de patrón actual
 
 ```javascript
-/**
- * POST /course/special
- * Descripción: Crear curso especial
- * Requiere: Authorization Bearer token
- */
-router.post("/special", authMiddleware, courseController.createSpecial);
+router.get("/view", authMiddleware, controller.getData);
 ```
 
-**2. Backend Controller** (+ 5 min)
-
-Agregar en `backend/src/controllers/CourseController.js`:
+Y en el controller:
 
 ```javascript
-/**
- * FUNCIÓN: createSpecial
- * Crear curso con validaciones especiales
- */
-exports.createSpecial = async (req, res) => {
+exports.getData = async (req, res) => {
   try {
-    const student_id = req.student.id; // ← Del JWT
-    const payload = req.body;
-
-    const result = await courseService.createSpecial(student_id, payload);
-    res.status(201).json(result);
+    const result = await service.getData(req.student.id);
+    res.status(200).json(result);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 };
 ```
 
-**3. Backend Service** (+ 5 min)
+---
 
-Agregar en `backend/src/services/CourseService.js`:
+## 🔐 Autenticación y seguridad
 
-```javascript
-/**
- * FUNCIÓN: createSpecial
- * Lógica de negocio para crear curso especial
- */
-exports.createSpecial = async (student_id, payload) => {
-  // Validar datos
-  if (!payload.courses_id) throw new Error("courses_id required");
+El flujo activo del proyecto usa Supabase Auth para:
 
-  // Consultar BD
-  const { data, error } = await supabase
-    .from("course")
-    .insert({ ...payload })
-    .select();
+- registro de estudiantes,
+- inicio de sesión,
+- verificación de JWT,
+- protección de rutas privadas,
+- identificación del usuario autenticado por `req.student`.
 
-  if (error) throw error;
-  return data;
-};
-```
-
-**4. Frontend API Client** (+ 5 min)
-
-Crear `frontend/src/api/courseSpecial.ts`:
-
-```typescript
-import { httpClient } from "./httpClient";
-
-export const createSpecialRequest = async (payload: any) => {
-  return httpClient.post("/course/special", payload);
-};
-```
-
-**5. Frontend Component** (+ 10 min)
-
-Usar en componente:
-
-```typescript
-import { createSpecialRequest } from "../../api/courseSpecial";
-
-const handleCreate = async () => {
-  try {
-    const res = await createSpecialRequest(formData);
-    console.log("Created:", res.data);
-  } catch (error) {
-    console.error("Error:", error);
-  }
-};
-```
-
-**Total: ~30 minutos para nueva feature end-to-end**
+Las rutas protegidas deben incluir `authMiddleware` en el backend.
 
 ---
 
-### Crear Nueva Página
+## 🧪 Comandos útiles
 
-**1. Crear componente** en `frontend/src/pages/myFeature/MyFeature.tsx`:
-
-```typescript
-const MyFeature = () => {
-  return (
-    <div>
-      <h1>Mi Nueva Página</h1>
-      {/* Contenido */}
-    </div>
-  );
-};
-
-export default MyFeature;
-```
-
-**2. Agregar ruta** en `frontend/src/routers/AppRouters.tsx`:
-
-```typescript
-import MyFeature from "../pages/myFeature/MyFeature";
-
-// Dentro de <Routes>
-<Route
-  path="/my-feature"
-  element={
-    <ProtectedRouters>
-      <MyFeature />
-    </ProtectedRouters>
-  }
-/>
-```
-
-**3. Agregar link a navbar** en `frontend/src/components/navbar.tsx`:
-
-```typescript
-<Link to="/my-feature">Mi Feature</Link>
-```
-
----
-
-### Agregar Validación de Formulario
-
-Usar React Hook Form:
-
-```typescript
-import { useForm } from "react-hook-form";
-
-const MyForm = () => {
-  const { register, handleSubmit, formState: { errors } } = useForm();
-
-  const onSubmit = handleSubmit(async (values) => {
-    // values ya está validado
-    console.log(values);
-  });
-
-  return (
-    <form onSubmit={onSubmit}>
-      <input
-        {...register("email", {
-          required: "Email requerido",
-          pattern: {
-            value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-            message: "Email inválido"
-          }
-        })}
-      />
-      {errors.email && <p>{errors.email.message}</p>}
-
-      <button type="submit">Enviar</button>
-    </form>
-  );
-};
-```
-
----
-
-## 🔍 Debugging
-
-### Backend Logs
+### Backend
 
 ```bash
-# Ver todo en consola
+cd backend
+npm test
+npm run test:coverage
 npm run dev
-
-# Ver solo errores
-npm run dev 2>&1 | grep "Error"
+npm start
 ```
 
-### Frontend Debugging
+### Frontend
 
-**en VS Code:**
-
-- F5 para abrir DevTools
-- Console tab para logs (console.log)
-- Network tab para ver peticiones HTTP
-
-**en Código:**
-
-```typescript
-export const httpClient = axios.create({...});
-
-// Agregar logging de peticiones
-httpClient.interceptors.request.use((config) => {
-  console.log("📤 Request:", config.method.toUpperCase(), config.url);
-  return config;
-});
-
-httpClient.interceptors.response.use((res) => {
-  console.log("📥 Response:", res.status, res.data);
-  return res;
-});
+```bash
+cd frontend
+npm run build
+npm run lint
+npm run dev
 ```
+
+---
+
+## 🧭 Rutas principales del sistema
+
+### Públicas
+
+- `/auth`
+- `/register`
+
+### Protegidas
+
+- `/home`
+- `/profile`
+- `/settings`
+- `/semester`
+- `/course-list`
+- `/course`
+- `/day`
+- `/university-catalog`
+- `/enrollment`
+- `/assessment-list`
+- `/assessment`
+- `/grade-list`
+- `/grade-simulation`
+- `/grade`
+- `/reports/grades`
+- `/reports/schedule`
+
+---
+
+## 🔍 Depuración de errores comunes
+
+### Backend no responde
+
+Verifica que el servicio de Supabase esté configurado y que las variables `SUPABASE_URL` y `SUPABASE_ANON_KEY` existan en `.env`.
+
+### 401 Unauthorized
+
+Revisa si la solicitud incluye:
+
+```http
+Authorization: Bearer <token>
+```
+
+### Error de CORS
+
+Asegúrate de que `CLIENT_URL` y el origen del frontend estén permitidos en `backend/src/app.js`.
+
+### Falla al cargar pantallas protegidas
+
+Confirma que la sesión del usuario sigue activa y que el frontend está redirigiendo correctamente a `/auth` cuando no hay sesión.
+
+---
+
+## 📚 Documentación de referencia
+
+- README principal: `README.md`
+- Arquitectura: `ARCHITECTURE.md`
+- Resumen rápido: `QUICK_REFERENCE.md`
+- Especificaciones: `specs/`
+- QA y documentación ejecutiva: `docs/`
+
+---
+
+Última actualización: 2026-09-24
 
 ### Supabase Logs
 

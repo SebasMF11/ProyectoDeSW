@@ -13,13 +13,13 @@ type Semester = {
 };
 
 const dayOptions = [
-  { value: "monday", label: "Monday" },
-  { value: "tuesday", label: "Tuesday" },
-  { value: "wednesday", label: "Wednesday" },
-  { value: "thursday", label: "Thursday" },
-  { value: "friday", label: "Friday" },
-  { value: "saturday", label: "Saturday" },
-  { value: "sunday", label: "Sunday" },
+  { value: "monday", label: "Lunes" },
+  { value: "tuesday", label: "Martes" },
+  { value: "wednesday", label: "Miércoles" },
+  { value: "thursday", label: "Jueves" },
+  { value: "friday", label: "Viernes" },
+  { value: "saturday", label: "Sábado" },
+  { value: "sunday", label: "Domingo" },
 ];
 
 const Day = () => {
@@ -70,10 +70,10 @@ const Day = () => {
     } catch (error) {
       if (axios.isAxiosError(error)) {
         const apiMessage = error.response?.data?.error;
-        setErrorMessage(apiMessage || "Could not create the schedule day");
+        setErrorMessage(apiMessage || "No se pudo crear el día del horario");
         return;
       }
-      setErrorMessage("An unexpected error occurred");
+      setErrorMessage("Ocurrió un error inesperado");
     }
   });
 
@@ -81,12 +81,12 @@ const Day = () => {
     <div>
       <div className="formContainer">
         <form onSubmit={onSubmit} className="formLayout">
-          <p className="title">Day</p>
+          <p className="title">Día</p>
           {errorMessage ? <p>{errorMessage}</p> : null}
 
           {/* Semestre */}
           <label className="formText" htmlFor="day-semester">
-            Semester
+            Semestre
           </label>
           <select
             id="day-semester"
@@ -96,8 +96,8 @@ const Day = () => {
           >
             <option value="" disabled>
               {semesters.length > 0
-                ? "Select a semester"
-                : "No semesters available"}
+                ? "Selecciona un semestre"
+                : "No hay semestres disponibles"}
             </option>
             {semesters.map((semester) => (
               <option key={semester.semester_id} value={semester.name}>
@@ -112,13 +112,13 @@ const Day = () => {
             courses={courses}
             placeholderOptionText={
               selectedSemesterName
-                ? "Select a course"
-                : "Select a semester first"
+                ? "Selecciona un curso"
+                : "Primero selecciona un semestre"
             }
             emptyOptionText={
               selectedSemesterName
-                ? "No courses in this semester"
-                : "Select a semester first"
+                ? "No hay cursos en este semestre"
+                : "Primero selecciona un semestre"
             }
             selectProps={{
               defaultValue: "",
@@ -128,7 +128,7 @@ const Day = () => {
 
           {/* Día de la semana */}
           <label className="formText" htmlFor="day-of-week">
-            Day of the week
+            Día de la semana
           </label>
           <select
             id="day-of-week"
@@ -137,7 +137,7 @@ const Day = () => {
             {...register("dayOfWeek", { required: true })}
           >
             <option value="" disabled>
-              Select a day of the week
+              Selecciona un día de la semana
             </option>
             {dayOptions.map((day) => (
               <option key={day.value} value={day.value}>
@@ -148,14 +148,14 @@ const Day = () => {
 
           <input
             className="formControl"
-            placeholder="Classroom"
+            placeholder="Aula"
             type="text"
             {...register("classroom")}
           />
 
           {/* Start Time — usando Controller para que RHF detecte el valor correctamente */}
           <label className="formText" htmlFor="day-start-time">
-            Start Time
+            Hora de inicio
           </label>
           <Controller
             name="startTime"
@@ -178,7 +178,7 @@ const Day = () => {
 
           {/* End Time */}
           <label className="formText" htmlFor="day-end-time">
-            End Time
+            Hora de fin
           </label>
           <Controller
             name="endTime"
@@ -198,7 +198,7 @@ const Day = () => {
               />
             )}
           />
-          <button type="submit">Create</button>
+          <button type="submit">Crear</button>
         </form>
       </div>
     </div>

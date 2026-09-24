@@ -15,8 +15,8 @@ type SemesterSelectProps = {
 function SemesterSelect({
   semesters,
   id = "semester-select",
-  label = "Semester",
-  emptyOptionText = "There are no semesters available",
+  label = "Semestre",
+  emptyOptionText = "No hay semestres disponibles",
   placeholderOptionText,
   value,
   onValueChange,

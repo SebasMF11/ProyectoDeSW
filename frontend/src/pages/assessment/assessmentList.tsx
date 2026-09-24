@@ -24,7 +24,7 @@ const assessmentStatusOptions: Array<{
   value: AssessmentStatusFilter;
   label: string;
 }> = [
-  { value: "all", label: "All statuses" },
+  { value: "all", label: "Todos los estados" },
   { value: "completed", label: "Completada" },
   { value: "delayed", label: "Retrasada" },
   { value: "pending", label: "Pendiente" },
@@ -33,7 +33,7 @@ const assessmentStatusOptions: Array<{
 const formatAssessmentDate = (dateValue?: string) => formatDateLocal(dateValue);
 
 const formatGradeValue = (grade?: number) => {
-  if (!Number.isFinite(grade)) return "Pending";
+  if (!Number.isFinite(grade)) return "Pendiente";
   return Number(grade).toFixed(1);
 };
 
@@ -221,7 +221,7 @@ function AssessmentList() {
       cancelAction();
     } catch (error) {
       console.error(error);
-      setErrorMessage("The grade could not be deleted");
+      setErrorMessage("No se pudo eliminar la nota");
     }
   };
 
@@ -232,7 +232,7 @@ function AssessmentList() {
       cancelAction();
     } catch (error) {
       console.error(error);
-      setErrorMessage("The assessment could not be deleted");
+      setErrorMessage("No se pudo eliminar la evaluación");
     }
   };
 
@@ -248,13 +248,13 @@ function AssessmentList() {
         </section>
         <div className="flex flex-1 items-center justify-center gap-4">
           <h1 className="text-xl font-semibold text-center">
-            Assessments by semester
+            Evaluaciones por semestre
           </h1>
         </div>
         <section aria-label="Assessment filters" className="space-y-3 w-44">
           <div>
             <label htmlFor="assessment-status-filter" className="formText">
-              Filter by status
+              Filtrar por estado
             </label>
             <select
               id="assessment-status-filter"
@@ -282,7 +282,7 @@ function AssessmentList() {
 
       <section className="mt-2" aria-live="polite">
         {loadingSemesters || loading ? (
-          <p className="text-sm text-[#425047]">Loading information...</p>
+          <p className="text-sm text-[#425047]">Cargando información...</p>
         ) : null}
 
         {!loadingSemesters &&
@@ -290,7 +290,7 @@ function AssessmentList() {
         selectedSemester &&
         courses.length === 0 ? (
           <p className="text-sm text-[#425047]">
-            No courses are assigned to this semester.
+            No hay cursos asignados a este semestre.
           </p>
         ) : null}
 
@@ -298,7 +298,7 @@ function AssessmentList() {
           <div className="space-y-7">
             <div className="mb-1 hidden sm:gap-3 sm:pl-10 sm:items-center assessment-grid">
               <p className="col-start-3 text-center text-sm font-semibold uppercase tracking-wide text-[#1a1a1a]">
-                Grade
+                Nota
               </p>
             </div>
 
@@ -326,8 +326,8 @@ function AssessmentList() {
                           {courseName}
                         </h2>
                         <p className="text-xs text-[#55635a]">
-                          {course.teacher || "Unassigned"} •{" "}
-                          {course.credits ?? "-"} credits
+                          {course.teacher || "Sin asignar"} •{" "}
+                          {course.credits ?? "-"} créditos
                         </p>
                       </header>
 
@@ -414,13 +414,13 @@ function AssessmentList() {
                                           }`}
                                           title={
                                             hasGrade
-                                              ? "Unmark completed"
-                                              : "Mark as completed"
+                                              ? "Marcar como no completada"
+                                              : "Marcar como completada"
                                           }
                                         >
                                           {hasGrade
-                                            ? "Unmark"
-                                            : "Mark completed"}
+                                            ? "Desmarcar"
+                                            : "Marcar completada"}
                                         </button>
                                         <button
                                           type="button"
@@ -428,7 +428,7 @@ function AssessmentList() {
                                             requestAssessmentDelete(assessment)
                                           }
                                           className="course-list-btn course-list-btn-icon bg-red-100 text-red-700 hover:bg-red-200"
-                                          title="Delete assessment"
+                                          title="Eliminar evaluación"
                                         >
                                           <FaRegTrashCan size={16} />
                                         </button>
@@ -444,7 +444,7 @@ function AssessmentList() {
                                             })
                                           }
                                           className="course-list-btn course-list-btn-icon"
-                                          title="Edit assessment"
+                                          title="Editar evaluación"
                                         >
                                           <RiEdit2Line size={16} />
                                         </button>
@@ -461,14 +461,14 @@ function AssessmentList() {
                                       <td colSpan={4}>
                                         <div className="course-list-modal course-list-modal-success">
                                           <p className="course-list-modal-title">
-                                            Mark &quot;{assessment.name}&quot;
-                                            as completed?
+                                            ¿Marcar &quot;{assessment.name}&quot;
+                                            como completada?
                                           </p>
                                           <p className="course-list-modal-description">
-                                            You will be taken to the grade form
-                                            to create the note. Once the grade
-                                            is saved, the activity will be
-                                            considered completed.
+                                            Se te dirigirá al formulario de notas
+                                            para crear la calificación. Una vez que
+                                            se guarde la nota, la actividad se
+                                            considerará completada.
                                           </p>
                                           <div className="course-list-modal-buttons">
                                             <button
@@ -481,14 +481,14 @@ function AssessmentList() {
                                               }
                                               className="course-list-modal-btn-success"
                                             >
-                                              Yes, continue
+                                              Sí, continuar
                                             </button>
                                             <button
                                               type="button"
                                               onClick={cancelAction}
                                               className="course-list-modal-btn-cancel"
                                             >
-                                              Cancel action
+                                              Cancelar acción
                                             </button>
                                           </div>
                                         </div>
@@ -505,13 +505,12 @@ function AssessmentList() {
                                       <td colSpan={4}>
                                         <div className="course-list-modal course-list-modal-danger">
                                           <p className="course-list-modal-title">
-                                            Unmark &quot;{assessment.name}
+                                            ¿Desmarcar &quot;{assessment.name}
                                             &quot;?
                                           </p>
                                           <p className="course-list-modal-description">
-                                            The grade will be deleted and the
-                                            activity will return to pending
-                                            state.
+                                            La nota se eliminará y la actividad
+                                            volverá al estado pendiente.
                                           </p>
                                           <div className="course-list-modal-buttons">
                                             <button
@@ -524,14 +523,14 @@ function AssessmentList() {
                                               }
                                               className="course-list-modal-btn-danger"
                                             >
-                                              Yes, delete grade
+                                              Sí, eliminar nota
                                             </button>
                                             <button
                                               type="button"
                                               onClick={cancelAction}
                                               className="course-list-modal-btn-cancel"
                                             >
-                                              Cancel
+                                              Cancelar
                                             </button>
                                           </div>
                                         </div>
@@ -548,13 +547,13 @@ function AssessmentList() {
                                       <td colSpan={4}>
                                         <div className="course-list-modal course-list-modal-danger">
                                           <p className="course-list-modal-title">
-                                            Delete &quot;{assessment.name}
+                                            ¿Eliminar &quot;{assessment.name}
                                             &quot;?
                                           </p>
                                           <p className="course-list-modal-description">
-                                            This will delete the assessment and
-                                            its related grade data. This cannot
-                                            be undone.
+                                            Esto eliminará la evaluación y sus datos
+                                            relacionados. Esta acción no se puede
+                                            deshacer.
                                           </p>
                                           <div className="course-list-modal-buttons">
                                             <button
@@ -566,14 +565,14 @@ function AssessmentList() {
                                               }
                                               className="course-list-modal-btn-danger"
                                             >
-                                              Yes, delete assessment
+                                              Sí, eliminar evaluación
                                             </button>
                                             <button
                                               type="button"
                                               onClick={cancelAction}
                                               className="course-list-modal-btn-cancel"
                                             >
-                                              Cancel
+                                              Cancelar
                                             </button>
                                           </div>
                                         </div>
@@ -592,7 +591,7 @@ function AssessmentList() {
               )
             ) : (
               <p className="text-sm text-[#425047]">
-                No activities match the selected status.
+                No hay actividades que coincidan con el estado seleccionado.
               </p>
             )}
           </div>

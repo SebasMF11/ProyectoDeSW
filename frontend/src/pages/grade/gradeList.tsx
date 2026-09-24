@@ -97,7 +97,7 @@ function noteList() {
       setCourses([]);
       setCourseGradeMap({});
       setSemesterAverage(null);
-      setErrorMessage("The semester courses could not be loaded");
+      setErrorMessage("No se pudieron cargar los cursos del semestre");
     } finally {
       setLoadingGrades(false);
     }
@@ -125,24 +125,24 @@ function noteList() {
             onValueChange={setSelectedSemester}
           />
         </section>
-        <p className="title">Grades</p>
+        <p className="title">Calificaciones</p>
         {loadingSemesters || loadingGrades ? <p> </p> : null}
         {semesterAverage !== null ? (
           <div>
             <p className="inline-block bg-gray-200 text-gray-600 px-5 py-2 rounded-full text-[15px] font-semibold">
-              Semester average: {semesterAverage.semesterAverage}
+              Promedio del semestre: {semesterAverage.semesterAverage}
             </p>
           </div>
         ) : null}
       </div>
 
-      {loadingSemesters || loadingGrades ? <p>Loading grades...</p> : null}
+      {loadingSemesters || loadingGrades ? <p>Cargando calificaciones...</p> : null}
 
       {!loadingSemesters &&
       !loadingGrades &&
       selectedSemester &&
       courses.length === 0 ? (
-        <p>There are no courses available for the selected semester.</p>
+        <p>No hay cursos disponibles para el semestre seleccionado.</p>
       ) : null}
 
       {!loadingSemesters && !loadingGrades && courses.length > 0 ? (
@@ -161,7 +161,7 @@ function noteList() {
               >
                 <p className="font-semibold">{courseName}</p>
                 <p>
-                  Current grade ({progress?.evaluatedPercentage ?? 0}%/100%)
+                  Nota actual ({progress?.evaluatedPercentage ?? 0}%/100%)
                 </p>
                 <p
                   className={`font-semibold ${

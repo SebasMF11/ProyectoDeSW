@@ -65,7 +65,7 @@ function GradeSimulation() {
         setCurrentSemesterAverage(typeof result === "number" ? result : null);
       } catch (error) {
         console.error(error);
-        setAverageError("The current semester average could not be loaded");
+        setAverageError("No se pudo cargar el promedio actual del semestre");
       } finally {
         setLoadingAverage(false);
       }
@@ -119,7 +119,7 @@ function GradeSimulation() {
       const id = String(Date.now()) + Math.random().toString(16).slice(2, 8);
       list.push({
         id,
-        name: "New simulated",
+        name: "Nuevo simulado",
         grade: undefined,
         percentage: 10,
       });
@@ -164,10 +164,10 @@ function GradeSimulation() {
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.15em] text-[#5f6b64]">
-              Grade simulator
+              Simulador de notas
             </p>
             <h1 className="mt-0.5 text-2xl font-bold text-[#102018] sm:text-3xl">
-              Project your final average
+              Proyecta tu promedio final
             </h1>
           </div>
 
@@ -179,7 +179,7 @@ function GradeSimulation() {
               disabled={!hasSimulationValues}
             >
               <FaRotateLeft size={13} />
-              Clear simulation
+              Limpiar simulación
             </button>
           </div>
         </div>
@@ -187,7 +187,7 @@ function GradeSimulation() {
         <div className="mt-4 grid flex items-center grid-cols-2 gap-3 border-t border-[#e4eae5] pt-4">
           <div className="rounded-2xl bg-[#eef4f0] px-4 py-3 text-center">
             <p className="text-[11px] font-semibold uppercase tracking-wide text-[#5a6a61]">
-              Current average
+              Promedio actual
             </p>
             <p className="mt-1 text-2xl font-semibold text-[#102018]">
               {loadingAverage ? "..." : (currentSemesterAverage ?? "—")}
@@ -195,7 +195,7 @@ function GradeSimulation() {
           </div>
           <div className="rounded-2xl bg-[#ecf7fa] px-4 py-3 text-center">
             <p className="text-[11px] font-semibold uppercase tracking-wide text-[#2d4f5c]">
-              Projected average
+              Promedio proyectado
             </p>
             <p className="mt-1 text-2xl font-bold text-[#065f73]">
               {projection.semesterAverage}
@@ -214,10 +214,10 @@ function GradeSimulation() {
         <div className="mb-5 flex flex-wrap items-end justify-between gap-4">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.15em] text-[#5f6b64]">
-              Scenario builder
+              Generador de escenarios
             </p>
             <h2 className="mt-0.5 text-xl font-bold text-[#102018]">
-              Enter hypothetical grades for pending assessments
+              Ingresa notas hipotéticas para evaluaciones pendientes
             </h2>
           </div>
           <div className="w-full max-w-xs">
@@ -225,14 +225,14 @@ function GradeSimulation() {
               semesters={semesters}
               value={selectedSemester}
               onValueChange={setSelectedSemester}
-              placeholderOptionText="Select a semester"
-              emptyOptionText="No semesters available"
+              placeholderOptionText="Selecciona un semestre"
+              emptyOptionText="No hay semestres disponibles"
             />
           </div>
         </div>
 
         {loadingSemesters || loading ? (
-          <p className="text-sm text-[#53605a]">Loading simulation data...</p>
+          <p className="text-sm text-[#53605a]">Cargando datos de simulación...</p>
         ) : null}
 
         {!loadingSemesters &&
@@ -240,7 +240,7 @@ function GradeSimulation() {
         selectedSemester &&
         courses.length === 0 ? (
           <p className="text-sm text-[#53605a]">
-            There are no active courses available for the selected semester.
+            No hay cursos activos disponibles para el semestre seleccionado.
           </p>
         ) : null}
 
@@ -265,7 +265,7 @@ function GradeSimulation() {
                     <div className="flex gap-2">
                       <div className="rounded-xl border border-[#cdd7cf] bg-white px-3 py-1.5 text-center">
                         <p className="text-[10px] font-semibold uppercase tracking-wide text-[#5a6960]">
-                          Current
+                          Actual
                         </p>
                         <p className="text-base font-bold text-[#102018]">
                           {course.currentGrade}
@@ -273,7 +273,7 @@ function GradeSimulation() {
                       </div>
                       <div className="rounded-xl border border-[#9fd8e8] bg-[#ecf7fa] px-3 py-1.5 text-center">
                         <p className="text-[10px] font-semibold uppercase tracking-wide text-[#46636d]">
-                          Projected
+                          Proyectado
                         </p>
                         <p className="text-base font-bold text-[#0b7f96]">
                           {course.projectedGrade}
@@ -287,19 +287,19 @@ function GradeSimulation() {
                       <thead>
                         <tr className="border-b border-[#e4eae5] bg-white">
                           <th className="px-5 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wide text-[#5f6b64]">
-                            Assessment
+                            Evaluación
                           </th>
                           <th className="px-4 py-2.5 text-center text-[11px] font-semibold uppercase tracking-wide text-[#5f6b64]">
-                            Real grade
+                            Nota real
                           </th>
                           <th className="px-4 py-2.5 text-center text-[11px] font-semibold uppercase tracking-wide text-[#5f6b64]">
-                            Simulated grade
+                            Nota simulada
                           </th>
                           <th className="px-4 py-2.5 text-center text-[11px] font-semibold uppercase tracking-wide text-[#5f6b64]">
-                            Weight %
+                            Peso %
                           </th>
                           <th className="px-5 py-2.5 text-center text-[11px] font-semibold uppercase tracking-wide text-[#5f6b64]">
-                            Contribution
+                            Contribución
                           </th>
                         </tr>
                       </thead>
@@ -336,7 +336,7 @@ function GradeSimulation() {
                                   </span>
                                 ) : (
                                   <span className="rounded-full bg-[#f0f4f1] px-2.5 py-0.5 text-xs font-medium text-[#5d6a62]">
-                                    Pending
+                                    Pendiente
                                   </span>
                                 )}
                               </td>
@@ -368,7 +368,7 @@ function GradeSimulation() {
                                 ) : (
                                   <span className="inline-flex items-center gap-1 text-xs text-[#8fa395]">
                                     <FaLock size={10} />
-                                    Locked
+                                    Bloqueado
                                   </span>
                                 )}
                               </td>
@@ -409,19 +409,19 @@ function GradeSimulation() {
 
                   <div className="flex flex-wrap gap-2 border-t border-[#e4eae5] bg-[#f8faf8] px-5 py-3">
                     <span className="rounded-full border border-[#cdd7cf] bg-white px-3 py-1 text-xs font-semibold text-[#5d6a62]">
-                      Evaluated{" "}
+                      Evaluado{" "}
                       <span className="text-[#102018]">
                         {course.evaluatedPercentage}%
                       </span>
                     </span>
                     <span className="rounded-full border border-[#9fd8e8] bg-[#ecf7fa] px-3 py-1 text-xs font-semibold text-[#46636d]">
-                      Simulated{" "}
+                      Simulado{" "}
                       <span className="text-[#102018]">
                         {course.simulatedPercentage}%
                       </span>
                     </span>
                     <span className="rounded-full border border-[#d5c9be] bg-[#f7f0ea] px-3 py-1 text-xs font-semibold text-[#6f5c50]">
-                      Remaining{" "}
+                      Restante{" "}
                       <span className="text-[#102018]">
                         {course.remainingPercentage}%
                       </span>
@@ -431,7 +431,7 @@ function GradeSimulation() {
                   <div className="border-t border-[#e4eae5] px-5 py-4">
                     <div className="mb-3 flex items-center justify-between">
                       <p className="text-[11px] font-semibold uppercase tracking-wide text-[#5f6b64]">
-                        Simulated extras
+                        Extras simulados
                       </p>
                       <button
                         type="button"
@@ -439,25 +439,25 @@ function GradeSimulation() {
                         onClick={() => addSimulatedExtra(course.courseId)}
                       >
                         <FaPlus size={10} />
-                        Add assessment
+                        Agregar evaluación
                       </button>
                     </div>
 
                     {extras.length === 0 ? (
                       <p className="text-xs text-[#8fa395]">
-                        No extra assessments added yet.
+                        Aún no se agregan evaluaciones extras.
                       </p>
                     ) : (
                       <div className="space-y-2">
                         <div className="grid grid-cols-[1fr_80px_90px_36px] gap-2">
                           <p className="text-[11px] font-semibold uppercase tracking-wide text-[#5f6b64]">
-                            Name
+                            Nombre
                           </p>
                           <p className="text-center text-[11px] font-semibold uppercase tracking-wide text-[#5f6b64]">
-                            Weight %
+                            Peso %
                           </p>
                           <p className="text-center text-[11px] font-semibold uppercase tracking-wide text-[#5f6b64]">
-                            Grade
+                            Nota
                           </p>
                           <span />
                         </div>
@@ -516,7 +516,7 @@ function GradeSimulation() {
                               onClick={() =>
                                 removeSimulatedExtra(course.courseId, extra.id)
                               }
-                              aria-label="Remove extra assessment"
+                              aria-label="Eliminar evaluación extra"
                             >
                               <FaTrash
                                 size={14}
@@ -536,7 +536,7 @@ function GradeSimulation() {
         ) : null}
       </section>
 
-      <FloatingActionMenu ariaLabel="Grade simulation actions" />
+      <FloatingActionMenu ariaLabel="Acciones del simulador de notas" />
     </main>
   );
 }

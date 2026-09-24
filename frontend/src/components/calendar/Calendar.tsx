@@ -9,11 +9,12 @@ import {
   addMonths,
   subMonths,
 } from "date-fns";
+import { es } from "date-fns/locale";
 import { FiChevronLeft, FiChevronRight } from "react-icons/fi";
 import type { CalendarProps } from "./calendarTypes";
 import DayCell from "./DayCell";
 
-const DAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+const DAY_LABELS = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
 
 export default function Calendar({
   onSelectDate,
@@ -58,7 +59,7 @@ export default function Calendar({
           </span>
 
           <span className="text-[28px] font-medium text-gray-800 text-center capitalize">
-            {format(currentMonth, "MMMM")}
+            {format(currentMonth, "MMMM", { locale: es })}
           </span>
         </div>
         <button

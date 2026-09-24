@@ -1,502 +1,141 @@
-# 📚 PoliPlan: Academic Management for the Politecnico JIC
+# 📚 PoliPlan: Sistema Integral de Gestión Académica
 
-Full academic management system developed using **Node.js/Express** (backend) y **React + TypeScript** (frontend).
+Este repositorio corresponde a la versión actual del proyecto PoliPlan, una aplicación web para la planificación, administración y seguimiento académico de estudiantes. La documentación fue revisada y alineada con la estructura real del código existente en backend, frontend y servicios de datos.
 
-# 🎯 Project description
+## 🎯 Objetivo del proyecto
 
-## Research question
+PoliPlan busca ayudar a estudiantes a organizar su semestre, administrar cursos, registrar evaluaciones, controlar calificaciones y consultar reportes académicos de forma centralizada y consistente.
 
-How can a web-based academic planning application improve the organization and follow-up of the academic performance of students at the Politecnico JIC?
+## ✅ Funcionalidades implementadas en el repositorio actual
 
-## Introduction
+El proyecto ya incluye, al menos, los siguientes módulos:
 
-Nowadays, many students at the Politecnico JIC plan their semesters using a variety of tools such as physical diaries, notes on their mobile phones or independent files. This situation makes it difficult to organize subjects, remember important dates (mid-term exams, workshops, assignments) and keep proper record of academic performance.
+- Autenticación y registro de estudiantes con Supabase Auth.
+- Perfil y configuración del estudiante.
+- Gestión de semestres académicos.
+- Catálogo universitario y carreras/facultades.
+- Gestión de cursos por semestre.
+- Matrícula transaccional con validación de crédito máximo, prerrequisitos y solapamiento horario.
+- Evaluaciones y días académicos.
+- Registro de calificaciones.
+- Reporte académico de boletín/GPA.
+- Reporte de horario semanal y agenda de evaluaciones.
 
-## Main objective
+## 🏗️ Stack actual
 
-Using the SMART methodology, develop a web application called PoliPlan that enables students at the Politecnico JIC to plan, organize and follow up on their activities and academic performance during the semester.
+- Backend: Node.js + Express
+- Frontend: React + TypeScript + Vite
+- Base de datos y autenticación: Supabase (PostgreSQL + Auth)
+- HTTP client: Axios
+- Enrutamiento frontend: React Router
+- Pruebas: Node test runner + Vitest/Supertest en la capa de negocio
 
-## Specific objectives
+## 🧭 Estructura real del proyecto
 
-- Implement solutions that align with students' real needs, taking into account how the schedule is currently managed.
-- Identify the main problems students face in their current scheduling process, such as difficulties in updating schedules and potential mistakes when entering their information.
-- Analyse how current schedules are managed, in order to understand the weaknesses in the process of adding, editing and removing courses from a student's schedule in each semester.
-
-## Scope
-
-The PoliPlan system will enable students to:
-
-- Register and manage their subjects.
-- Set academic schedules.
-- Record dates for mid-term exams, workshops, assignments and final exams.
-- Track their grades throughout the semester.
-- View their academic schedule on a web interface.
-
-This phase of the project does **NOT** include:
-
-- Integration with official institutional systems.
-- Management of academic enrolment.
-- Native mobile app.
-- Administrative features for teaching staff.
-
-## Solution
-
-A full-featured app where students can register their courses, class schedules, exam dates, assignments and mid-term exams. The system allows students to track their grades, taking into account the two mandatory mid-term exams and the overall academic term.
-
----
-
-# 🏗️ Project Architecture
-
-## Conceptual Diagram
-
-<img width="1195" height="1315" alt="Conceptual Diagram PoliPlan" src="https://github.com/user-attachments/assets/97233703-d1a9-4ff0-bc61-f4e143de9c1a" />
-
-## Architectural Pattern
-
-We chose the Layered Architecture because it allows a strict separation of responsibilities, which is crucial for a system that handles various flows of academic data (schedules, grades and dates).
-The main reasons for this choice are:
-
-- **Frontend and Backend Decoupling:** Using React for the view and Node.js for the logic, the layered architecture allows the backend to function as a independent API REST. -**Maintainability and scalability:** By separating the business logic (services) from data persistence (repositories), anything that changes in the way that Politecnico JIC assesses students (such as how mandatory midterms are calculated) can be implemented in one place without affecting the rest of the system.
-- **Good code organization practices:**
-  - Controllers: These are only responsible for receiving student requests and validating input data.
-  - Services: This is where PoliPlan’s “logic” resides, processing planning and tracking academic performance.
-  - Repositories: These manage communication exclusively with PostgreSQL, isolating SQL queries from the rest of the application.
-- **Facility for Testing:** This structure allows you to perform unit tests on the logic of the services without needing the database or the interface to be connected, ensuring more robust software.
-
-PoliPlan has evolved towards a cleaner layered architecture, where the ‘View’ is an independent project in React and the ‘Model’ is managed through specialised Repositories and Services.
-
-## Layered Architecture
-
-### Project structure
-
-```
+```text
 ProyectoDeSW/
 ├── backend/
 │   ├── package.json
-│   └── src/
-│       ├── app.js                    ← Configuración Express
-│       ├── index.js                  ← Servidor local:3000
-│       ├── config/
-│       │   └── supabase.js          ← Cliente Supabase
-│       ├── routes/                   ← Endpoints API
-│       │   ├── StudentRoutes.js
-│       │   ├── CourseRoutes.js
-│       │   ├── SemesterRoutes.js
-│       │   ├── GradeRoutes.js
-│       │   ├── AssessmentRoutes.js
-│       │   └── DayRoutes.js
-│       ├── controllers/              ← Maneja HTTP requests
-│       │   ├── StudentController.js
-│       │   ├── CourseController.js
-│       │   └── ...
-│       ├── services/                 ← Lógica de negocio
-│       │   ├── StudentService.js
-│       │   ├── CourseService.js
-│       │   └── ...
-│       ├── middlewares/              ← Validaciones
-│       │   └── authMiddleware.js    ← Valida JWT
-│       └── utils/
-│
+│   ├── src/
+│   │   ├── app.js
+│   │   ├── index.js
+│   │   ├── config/
+│   │   ├── controllers/
+│   │   ├── middlewares/
+│   │   ├── routes/
+│   │   ├── services/
+│   │   └── tests/
+│   └── tests/
 ├── frontend/
 │   ├── package.json
-│   ├── vite.config.ts              ← Build config
-│   ├── index.html
-│   └── src/
-│       ├── main.tsx                 ← Entry point
-│       ├── App.tsx                  ← Root component
-│       ├── index.css                ← Estilos globales
-│       ├── routers/
-│       │   ├── AppRouters.tsx       ← Definición de rutas
-│       │   └── ProtectedRouters.tsx ← Wrapper de seguridad
-│       ├── pages/                   ← Páginas principales
-│       │   ├── Home.tsx
-│       │   ├── student/
-│       │   │   ├── Auth.tsx
-│       │   │   ├── Register.tsx
-│       │   │   ├── profile.tsx
-│       │   │   └── settings.tsx
-│       │   ├── course/
-│       │   │   ├── course.tsx       ← Crear/editar
-│       │   │   ├── courseList.tsx   ← Listar
-│       │   │   └── day.tsx
-│       │   ├── grade/
-│       │   │   ├── grade.tsx
-│       │   │   └── gradeList.tsx
-│       │   ├── assessment/
-│       │   │   ├── assessment.tsx
-│       │   │   └── assessmentList.tsx
-│       │   └── semester.tsx
-│       ├── components/              ← Componentes reutilizables
-│       │   ├── navbar.tsx
-│       │   ├── menu.tsx
-│       │   └── calendar/
-│       │       └── Calendar.tsx
-│       ├── hooks/                   ← Custom hooks
-│       │   └── useAuth.tsx         ← Gestiona sesión
-│       ├── api/                     ← Clientes HTTP
-│       │   ├── httpClient.ts       ← Axios core (+ JWT interceptor)
-│       │   ├── course.ts
-│       │   ├── students.api.ts
-│       │   ├── grade.ts
-│       │   ├── semester.ts
-│       │   ├── assessment.api.ts
-│       │   └── day.api.ts
-│       ├── integrations/             ← Librerías externas
-│       │   └── supabase.tsx         ← Cliente Supabase
-│       └── styles/                  ← Estilos componentes
-│
-├── README.md                         ← Documentación principal
-├── ARCHITECTURE.md                   ← Flujos técnicos detallados
-├── GUIDE.md                          ← Guía de desarrollo
-└── .env.example                      ← Variables de entorno (template)
+│   ├── src/
+│   │   ├── api/
+│   │   ├── components/
+│   │   ├── hooks/
+│   │   ├── integrations/
+│   │   ├── pages/
+│   │   ├── routers/
+│   │   ├── styles/
+│   │   ├── utils/
+│   │   ├── App.tsx
+│   │   └── main.tsx
+├── docs/
+├── specs/
+├── ARCHITECTURE.md
+├── GUIDE.md
+├── QUICK_REFERENCE.md
+├── README.md
+├── render.yaml
+└── .gitignore
 ```
 
-### Backend: MVC Structure
+## 🔐 Rutas principales reales del backend
 
-```
-REQUEST
-  │
-  ▼
-ROUTES (studentRoutes.js)
-  └─ Definir endpoints: POST /student/login, GET /student/view
-  │
-  ▼
-MIDDLEWARES (authMiddleware.js)
-  └─ Validar JWT token
-  │
-  ▼
-CONTROLLERS (StudentController.js)
-  └─ Recibir req.body
-  └─ Validar datos (400 si inválido)
-  └─ Llamar Service
-  └─ Manejo errores
-  └─ Response JSON
-  │
-  ▼
-SERVICES (StudentService.js)
-  └─ Lógica de negocio
-  └─ Interactuar con Supabase
-  └─ Retornar datos
-  │
-  ▼
-SUPABASE
-  └─ Base de datos
-  └─ Auth service
-  │
-  ▼
-RESPONSE JSON back to client
-```
+El backend actual registra estas rutas en `backend/src/app.js`:
 
-### Frontend: Component Structure
+- `/student` → login, registro, perfil y actualización del estudiante
+- `/semester` → gestión de semestres
+- `/course` → cursos por estudiante/semestre
+- `/assessment` → evaluaciones y tareas
+- `/day` → horarios/días del curso
+- `/grade` → calificaciones
+- `/catalog` → catálogo académico, facultades, carreras y materias
+- `/enrollment` → validación y procesamiento transaccional de matrícula
+- `/reports` → boletín y horario semanal
 
-```
-App.tsx (root)
-  │
-  ▼
-AppRouters.tsx (route configuration)
-  │
-  ├─ PUBLIC: /auth, /register
-  │   └─ Auth.tsx (login page)
-  │   └─ Register.tsx (signup page)
-  │
-  └─ PROTECTED: /home, /course-list, /grade, etc.
-      └─ ProtectedRouters wrapper
-          ├─ Checks useAuth() hook
-          ├─ Shows Navbar if authenticated
-          └─ Page Component
-              ├─ useForm hook (React Hook Form)
-              ├─ useEffect (fetch data)
-              ├─ httpClient calls (API requests)
-              └─ JSX rendering
-```
+## 🌐 Rutas principales del frontend
 
-**Backend (Node.js + Express)**
+La aplicación actual define rutas protegidas y públicas en `frontend/src/routers/AppRouters.tsx`, incluyendo:
 
-- **Framework**: Express.js
-- **Authentication**: Supabase Auth (JWT)
-- **Database**: Supabase (PostgreSQL)
-- **Pattern**: MVC in layers (Routes → Controllers → Services → DB)
+- `/auth` y `/register`
+- `/home`
+- `/profile` y `/settings`
+- `/semester`
+- `/course-list` y `/course`
+- `/day`
+- `/university-catalog`
+- `/enrollment`
+- `/assessment-list` y `/assessment`
+- `/grade-list`, `/grade-simulation` y `/grade`
+- `/reports/grades` y `/reports/schedule`
 
-**Endpoints principales:**
-
-- `POST /student/auth` - Student's register
-- `POST /student/login` - Authentication
-- `POST /semester/create` - Create a semester
-- `POST /course/create` - Create a course
-- `POST /assessment` - Create an assessment
-- `GET /grade/view/course/:courseId` - List grades for a course
-
-**Frontend (React + TypeScript)**
-
-- **Framework**: React 19 + Vite
-- **Routing**: React Router 7
-- **Authentication**: Supabase Auth
-- **HTTP Client**: Axios with JWT interceptor
-- **Styles**: Tailwind CSS + local component styles
-
----
-
-# 📊 Data model - Relations
-
-```
-STUDENT
-├─ student_id UUID PK, default auth.uid()
-├─ name
-├─ last_name
-├─ email UNIQUE
-├─ created_at
-└─ career_id FK → career.career_id
-
-CAREER
-├─ career_id UUID PK
-└─ name UNIQUE
-
-FACULTY
-├─ faculty_id UUID PK
-└─ name UNIQUE
-
-COURSES (catalog)
-├─ courses_id UUID PK
-├─ name UNIQUE
-├─ faculty_id FK → faculty.faculty_id
-└─ prerequisito FK → courses.courses_id
-
-COURSES_PER_CAREER
-├─ id UUID PK
-├─ career_id FK → career.career_id
-└─ courses_id FK → courses.courses_id
-
-SEMESTER
-├─ semester_id UUID PK
-├─ name
-├─ start_date
-├─ end_date
-├─ student_id FK → student.student_id
-├─ midterm_week daterange
-└─ final_exam_week daterange
-
-COURSE
-├─ course_id UUID PK
-├─ credits integer
-├─ teacher nullable
-├─ color
-├─ status
-├─ semester_id FK → semester.semester_id
-└─ courses_id FK → courses.courses_id
-
-DAY
-├─ day_id UUID PK
-├─ day_of_week
-├─ start_time
-├─ end_time
-├─ classroom nullable
-└─ course_id FK → course.course_id
-
-ASSESSMENT
-├─ assessment_id UUID PK
-├─ type
-├─ due_date timestamptz
-├─ name
-├─ course_id FK → course.course_id
-└─ percentage real
-
-GRADE
-├─ grade_id UUID PK
-├─ value real nullable
-└─ assessment_id FK + UNIQUE → assessment.assessment_id
-```
-
----
-
-# 📋 Main Entities
-
-### Student
-
-```javascript
-{
-  student_id: string (UUID),
-  name: string,
-  lastName: string,
-  email: string (único),
-  created_at: timestamp,
-  career_id: string (FK)
-}
-```
-
-### Semester
-
-```javascript
-{
-  semester_id: string (UUID),
-  name: string,
-  start_date: date,
-  end_date: date,
-  midterm_week: daterange,
-  final_exam_week: daterange
-}
-```
-
-### Course
-
-```javascript
-{
-  course_id: string (UUID),
-  courses_id: string (FK),
-  teacher: string,
-  credits: number,
-  color: string (hex),
-  status: string,
-  semester_id: string (FK)
-}
-```
-
-### Assessment
-
-```javascript
-{
-  assessment_id: string (UUID),
-  name: string,
-  type: string,
-  due_date: timestamptz,
-  percentage: number,
-  course_id: string (FK)
-}
-```
-
-### Grade
-
-```javascript
-{
-  grade_id: string (UUID),
-  value: number,
-  assessment_id: string (FK, unique)
-}
-```
-
-### Day
-
-```javascript
-{
-  day_id: string (UUID),
-  course_id: string (FK),
-  day_of_week: string,
-  start_time: time,
-  end_time: time,
-  classroom: string
-}
-```
-
----
-
-# 🔧Technologies Used / Tools
-
-- **Frontend:** React + TypeScript with Vite.
-- **Backend:** Node.js + Express.
-- **Database:** PostgreSQL, using Supabase as the hosting platform.
-- **Design:** Figma for prototyping.
-- **Technical Documentation:** Lucidchart for UML diagrams.
-
-## Date handling (frontend)
-
-- The frontend uses a small centralized date utility located at `frontend/src/utils/date.ts`.
-- Purpose: normalize parsing and formatting of date-only strings (e.g. `YYYY-MM-DD`) and ISO datetimes at midnight to avoid timezone-related off-by-one issues when constructing `Date` objects in JavaScript.
-- Exposed helpers:
-  - `parseDateToLocal(dateString?: string): Date | null` — safely parse date-only and ISO midnight strings as local dates.
-  - `formatDateLocal(dateString?: string, options?): string` — format a date for display. The current default locale is `en-US` (English). You can pass `Intl.DateTimeFormat` options to customize the output.
-  - `formatDateForInput(dateString?: string): string` — returns an `YYYY-MM-DD` value suitable for `<input type="date">`.
-  - `getLocalDateKey(date: Date): string` — returns a `YYYY-MM-DD` key for comparisons and grouping.
-- Recommended usage:
-  - Use `parseDateToLocal` whenever converting date strings that come from the backend into `Date` objects for comparisons or sorting.
-  - Use `formatDateLocal` for UI display so all components present dates consistently.
-  - Avoid `new Date('YYYY-MM-DD')` directly — it is parsed as UTC and can shift to the previous day in some time zones.
-- Next steps (suggested): make the default locale configurable and add unit tests for `parseDateToLocal` to ensure consistent behavior across environments.
-
----
-
-# 📄Requirements
-
-To run this project locally, make sure you have installed:
-
-- Node.js (LTS version recommended).
-- NPM or Yarn for package management.
-- A Supabase account for the PostgreSQL database.
-
----
-
-# 📖 Guide
-
-## Installation
-
-### 1. Clone and Install
-
-```bash
-# Clonar repositorio
-cd ProyectoDeSW
-
-# Backend
-cd backend
-npm install
-
-# Frontend (en otra terminal)
-cd ../frontend
-npm install
-```
-
-### 2. Set environment variables
-
-Create `backend/.env`:
-
-```env
-PORT=3000
-SUPABASE_URL=https://tuproyecto.supabase.co
-SUPABASE_ANON_KEY=eyJhbGc...
-SUPABASE_SERVICE_ROLE_KEY=eyJhbGc...
-```
-
-Obtain keys de: https://app.supabase.com → Settings → API
-
-### 3. Start Servers
-
-```bash
-# Terminal 1: Backend
-cd backend
-npm run dev
-
-# Terminal 2: Frontend
-cd frontend
-npm run dev
-```
-
-- Backend: http://localhost:3000
-- Frontend: http://localhost:5173
-
----
-
-## 🚀 Execution
+## 🧪 Cómo ejecutar el proyecto
 
 ### Backend
 
 ```bash
 cd backend
 npm install
-npm run dev  # o npm start
+npm run dev
 ```
-
-- Server at http://localhost:3000
 
 ### Frontend
 
 ```bash
 cd frontend
 npm install
-npm run dev  # Vite dev server
+npm run dev
 ```
 
-- Application in http://localhost:5173
+### Variables de entorno
 
-### Environment Variables
+Crear un archivo `backend/.env` con algo similar a:
 
-Create file `.env` in backend:
+```env
+PORT=3000
+SUPABASE_URL=https://tu-proyecto.supabase.co
+SUPABASE_ANON_KEY=tu-anon-key
+SUPABASE_SERVICE_ROLE_KEY=tu-service-role-key
+CLIENT_URL=http://localhost:5173
+```
+
+## 📌 Nota de documentación
+
+La documentación inicial del proyecto describía una visión conceptual del sistema. La versión actual del repositorio incorpora módulos adicionales como catálogo universitario, matrícula transaccional y reportes oficiales, por lo que esta guía refleja el estado real del código vigente.
+
+---
+
+Última actualización: 2026-09-24
 
 ```
 PORT=3000
