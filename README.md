@@ -28,7 +28,7 @@ El proyecto ya incluye, al menos, los siguientes módulos:
 - Base de datos y autenticación: Supabase (PostgreSQL + Auth)
 - HTTP client: Axios
 - Enrutamiento frontend: React Router
-- Pruebas: Node test runner + Vitest/Supertest en la capa de negocio
+- Pruebas: Node.js Test Runner (`node:test`) + `node:assert` con cobertura V8
 
 ## 🧭 Estructura real del proyecto
 
