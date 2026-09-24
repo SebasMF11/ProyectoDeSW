@@ -1,5 +1,10 @@
 const supabase = require("../config/supabase");
 
+const getGradeRecord = (assessment) =>
+  Array.isArray(assessment.grade)
+    ? (assessment.grade[0] ?? null)
+    : (assessment.grade ?? null);
+
 exports.getCourseByNameAndSemester = async (
   courseName,
   semesterName,
@@ -121,7 +126,7 @@ exports.getBySemester = async (semester_id, student_id) => {
   const { data, error } = await supabase
     .from("assessment")
     .select(
-      "assessment_id, name, type, due_date, percentage, course!inner(courses!inner(name), semester!inner(semester_id, student_id))",
+      "assessment_id, name, type, due_date, percentage, course!inner(color, courses!inner(name), semester!inner(semester_id, student_id)), grade:grade(grade_id, value)",
     )
     .eq("course.semester.semester_id", semester_id)
     .eq("course.semester.student_id", student_id)
@@ -132,7 +137,16 @@ exports.getBySemester = async (semester_id, student_id) => {
     throw error;
   }
 
-  return data;
+  const getGradeRecord = (assessment) =>
+    Array.isArray(assessment.grade)
+      ? (assessment.grade[0] ?? null)
+      : (assessment.grade ?? null);
+
+  return data.map((assessment) => ({
+    ...assessment,
+    has_grade: Boolean(getGradeRecord(assessment)),
+    grade_value: getGradeRecord(assessment)?.value ?? null,
+  }));
 };
 
 exports.update = async (assessmentId, student_id, fields) => {
@@ -223,7 +237,7 @@ exports.getAssessmentsByDay = async (date, student_id) => {
   const { data, error } = await supabase
     .from("assessment")
     .select(
-      "assessment_id, name, type, due_date, percentage, course!inner(color, courses!inner(name), semester!inner(student_id))",
+      "assessment_id, name, type, due_date, percentage, course!inner(color, courses!inner(name), semester!inner(student_id)), grade:grade(grade_id, value)",
     )
     .gte("due_date", dayStart)
     .lte("due_date", dayEnd)
@@ -235,7 +249,11 @@ exports.getAssessmentsByDay = async (date, student_id) => {
     throw error;
   }
 
-  return data;
+  return data.map((assessment) => ({
+    ...assessment,
+    has_grade: Boolean(getGradeRecord(assessment)),
+    grade_value: getGradeRecord(assessment)?.value ?? null,
+  }));
 };
 
 exports.getAssessmentsByMonth = async (year, month, student_id) => {
@@ -247,7 +265,7 @@ exports.getAssessmentsByMonth = async (year, month, student_id) => {
   const { data, error } = await supabase
     .from("assessment")
     .select(
-      "assessment_id, name, type, due_date, percentage, course!inner(color, courses!inner(name), semester!inner(student_id))",
+      "assessment_id, name, type, due_date, percentage, course!inner(color, courses!inner(name), semester!inner(student_id)), grade:grade(grade_id, value)",
     )
     .gte("due_date", startDate)
     .lt("due_date", endDate)
@@ -259,5 +277,9 @@ exports.getAssessmentsByMonth = async (year, month, student_id) => {
     throw error;
   }
 
-  return data;
+  return data.map((assessment) => ({
+    ...assessment,
+    has_grade: Boolean(getGradeRecord(assessment)),
+    grade_value: getGradeRecord(assessment)?.value ?? null,
+  }));
 };

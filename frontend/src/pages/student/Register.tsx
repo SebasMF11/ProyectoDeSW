@@ -43,15 +43,14 @@ const Register = () => {
     try {
       setErrorMessage("");
       if (values.password !== values.password2) {
-        setErrorMessage("Las contraseñas no coinciden");
+        setErrorMessage("Passwords do not match");
         return;
       }
-      const res = await authRequest(values);
-      console.log(res);
+      await authRequest(values);
       navigate("/auth");
     } catch (error: any) {
       setErrorMessage(
-        error?.response?.data?.error || "Error al registrar usuario",
+        error?.response?.data?.error || "User registration failed",
       );
     }
   });
@@ -60,7 +59,7 @@ const Register = () => {
     <div className="relative min-h-screen flex items-center justify-center">
       <img
         src={fondoUrl}
-        alt="fondo"
+        alt="background"
         className="absolute inset-0 w-full h-full object-cover"
       />
       <div className="absolute inset-0 bg-black/40"></div>
@@ -100,7 +99,9 @@ const Register = () => {
               defaultValue=""
             >
               <option value="" disabled>
-                {careers.length > 0 ? "Select your career" : "Loading careers..."}
+                {careers.length > 0
+                  ? "Select your career"
+                  : "Loading careers..."}
               </option>
               {careers.map((career) => (
                 <option key={career.career_id} value={career.career_id}>
@@ -121,7 +122,7 @@ const Register = () => {
               {...register("password2", {
                 required: true,
                 validate: (value) =>
-                  value === password || "Las contraseñas no coinciden",
+                  value === password || "Passwords do not match",
               })}
               className="w-full px-4 py-3 rounded-full text-gray-700 bg-white/70 outline-none"
             />
@@ -130,7 +131,7 @@ const Register = () => {
               type="submit"
               className="bg-green-500 hover:bg-green-600 text-white rounded-full px-6 py-4 font-semibold transition mx-auto block"
             >
-              Registrarse
+              Sign up
             </button>
 
             <p className="text-sm text-gray-900">

@@ -1,12 +1,16 @@
-import { useNavigate } from "react-router";
+import { useNavigate, useLocation } from "react-router";
 import { useForm } from "react-hook-form";
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { assessmentCreateRequest } from "../../api/assessment.api";
+import {
+  assessmentCreateRequest,
+  assessmentUpdateRequest,
+} from "../../api/assessment.api";
 import { semesterViewRequest } from "../../api/semester";
 import { courseBySemesterRequest } from "../../api/course";
 import SemesterSelect from "../../components/SemesterSelect";
 import CourseSelect, { type Course } from "../../components/CourseSelect";
+import { formatDateForInput } from "../../utils/date";
 
 type Semester = {
   semester_id: string;
@@ -26,11 +30,17 @@ const assessmentTypes = [
 
 const assessment = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [errorMessage, setErrorMessage] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [semesters, setSemesters] = useState<Semester[]>([]);
   const [courses, setCourses] = useState<Course[]>([]);
   const { register, handleSubmit, watch, setValue } = useForm();
+  const editAssessment = (location.state as any)?.assessment;
+  const isEditing = !!editAssessment;
+  const editAssessmentId = editAssessment?.assessment_id;
   const selectedSemesterName = watch("semesterName");
+  const selectedCourseName = watch("courseName");
   const selectedSemesterData = semesters.find(
     (semester) => semester.name === selectedSemesterName,
   );
@@ -41,7 +51,7 @@ const assessment = () => {
         const { data } = await semesterViewRequest();
         const list = Array.isArray(data) ? data : [];
         setSemesters(list);
-        if (list.length > 0) {
+        if (list.length > 0 && !isEditing) {
           setValue("semesterName", list[0].name);
         }
       } catch (error) {
@@ -50,36 +60,98 @@ const assessment = () => {
       }
     };
     loadSemesters();
-  }, [setValue]);
+  }, [isEditing, setValue]);
+
+  useEffect(() => {
+    if (!isEditing) return;
+    // Prefill form values from router state when editing
+    try {
+      const locationState = (location.state as any) || {};
+      const prefilledSemesterName =
+        editAssessment?.semesterName || locationState.semesterName || "";
+      const prefilledCourseName =
+        editAssessment?.courseName ||
+        editAssessment?.course?.courses?.name ||
+        locationState.courseName ||
+        "";
+
+      setValue("semesterName", prefilledSemesterName);
+      setValue("courseName", prefilledCourseName);
+      setValue(
+        "assessmentName",
+        editAssessment.name || editAssessment.assessmentName || "",
+      );
+
+      // due_date may be full ISO; convert to YYYY-MM-DD for input[type=date]
+      const rawDue = editAssessment.due_date || editAssessment.dueDate || "";
+      setValue("dueDate", formatDateForInput(rawDue));
+      setValue("type", editAssessment.type || "");
+      setValue("percentage", editAssessment.percentage ?? "");
+    } catch (e) {
+      console.error("Error pre-filling assessment form:", e);
+    }
+  }, [isEditing, editAssessment, setValue]);
 
   useEffect(() => {
     const loadCoursesBySemester = async () => {
       if (!selectedSemesterName) {
         setCourses([]);
-        setValue("courseName", "");
+        if (!isEditing) {
+          setValue("courseName", "");
+        }
         return;
       }
       try {
         const { data } = await courseBySemesterRequest(selectedSemesterName);
-        setCourses(
-          Array.isArray(data?.courses) ? data.courses : [],
-        );
-        setValue("courseName", "");
+        setCourses(Array.isArray(data?.courses) ? data.courses : []);
+        if (!isEditing) {
+          setValue("courseName", "");
+        } else if (editAssessment?.courseName) {
+          setValue("courseName", editAssessment.courseName);
+        }
       } catch (error) {
         console.error(error);
         setCourses([]);
-        setValue("courseName", "");
+        if (!isEditing) {
+          setValue("courseName", "");
+        }
       }
     };
     loadCoursesBySemester();
-  }, [selectedSemesterName, setValue]);
+  }, [editAssessment?.courseName, isEditing, selectedSemesterName, setValue]);
 
   const onSubmit = handleSubmit(async (values) => {
+    if (isSubmitting) {
+      return;
+    }
+
     try {
+      setIsSubmitting(true);
       setErrorMessage("");
-      const res = await assessmentCreateRequest(values);
-      console.log(res);
-      navigate("/assessment-list");
+      if (isEditing && editAssessmentId) {
+        const payload = {
+          assessmentName: values.assessmentName,
+          type: values.type,
+          dueDate: values.dueDate,
+          percentage: values.percentage,
+        };
+        await assessmentUpdateRequest(editAssessmentId, payload);
+        navigate("/assessment-list", {
+          state: {
+            refreshAssessmentData: true,
+            semesterName: values.semesterName,
+          },
+        });
+        return;
+      }
+
+      await assessmentCreateRequest(values);
+      navigate("/assessment-list", {
+        state: {
+          refreshAssessmentData: true,
+          semesterName: values.semesterName,
+        },
+      });
     } catch (error) {
       if (axios.isAxiosError(error)) {
         const apiMessage = error.response?.data?.error;
@@ -87,6 +159,8 @@ const assessment = () => {
         return;
       }
       setErrorMessage("An unexpected error occurred");
+    } finally {
+      setIsSubmitting(false);
     }
   });
 
@@ -101,8 +175,8 @@ const assessment = () => {
             semesters={semesters}
             placeholderOptionText="Select a semester"
             emptyOptionText="No semesters available"
+            value={selectedSemesterName || ""}
             selectProps={{
-              defaultValue: "",
               ...register("semesterName", { required: true }),
             }}
           />
@@ -110,15 +184,17 @@ const assessment = () => {
           <CourseSelect
             courses={courses}
             placeholderOptionText={
-              selectedSemesterName ? "Select a course" : "Select a semester first"
+              selectedSemesterName
+                ? "Select a course"
+                : "Select a semester first"
             }
             emptyOptionText={
               selectedSemesterName
                 ? "No courses in this semester"
                 : "Select a semester first"
             }
+            value={selectedCourseName || ""}
             selectProps={{
-              defaultValue: "",
               ...register("courseName", { required: true }),
             }}
           />
@@ -173,7 +249,15 @@ const assessment = () => {
             <p className="text-[25px] text-[#3d483f]">%</p>
           </div>
 
-          <button type="submit">Create</button>
+          <button type="submit" disabled={isSubmitting}>
+            {isSubmitting
+              ? isEditing
+                ? "Updating..."
+                : "Creating..."
+              : isEditing
+                ? "Update"
+                : "Create"}
+          </button>
         </form>
       </div>
     </div>

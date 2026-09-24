@@ -5,16 +5,22 @@ interface RawAssessment {
   assessment_id: string;
   name: string;
   type: string;
-  due_date: string; // timestamptz — puede venir como ISO string
+  due_date: string;
   course: {
     courses: { name: string };
     color: string;
   };
   percentage: number;
+  has_grade?: boolean;
+}
+
+export interface CalendarAssessmentDot {
+  color: string;
+  hasGrade: boolean;
 }
 
 interface UseAssessmentsReturn {
-  assessments: Record<string, string[]>; // { "YYYY-MM-DD": ["#color1", "#color2"] }
+  assessments: Record<string, CalendarAssessmentDot[]>;
   isLoading: boolean;
   error: string | null;
 }
@@ -23,7 +29,9 @@ export function useAssessments(
   year: number,
   month: number,
 ): UseAssessmentsReturn {
-  const [assessments, setAssessments] = useState<Record<string, string[]>>({});
+  const [assessments, setAssessments] = useState<
+    Record<string, CalendarAssessmentDot[]>
+  >({});
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -32,9 +40,9 @@ export function useAssessments(
       try {
         setIsLoading(true);
         setError(null);
-        const response = await assessmentsByMonthRequest(year, month);
 
-        const assessmentsByDate: Record<string, string[]> = {};
+        const response = await assessmentsByMonthRequest(year, month);
+        const assessmentsByDate: Record<string, CalendarAssessmentDot[]> = {};
 
         if (
           response.data.assessments &&
@@ -42,7 +50,7 @@ export function useAssessments(
         ) {
           response.data.assessments.forEach((assessment: RawAssessment) => {
             const color = assessment.course?.color;
-            // due_date es timestamptz, normalizar a YYYY-MM-DD
+            const hasGrade = Boolean(assessment.has_grade);
             const dateKey = assessment.due_date
               ? assessment.due_date.split("T")[0]
               : null;
@@ -52,7 +60,7 @@ export function useAssessments(
             if (!assessmentsByDate[dateKey]) {
               assessmentsByDate[dateKey] = [];
             }
-            assessmentsByDate[dateKey].push(color);
+            assessmentsByDate[dateKey].push({ color, hasGrade });
           });
         }
 

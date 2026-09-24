@@ -3,11 +3,13 @@ import { assessmentsByDayRequest } from "../api/assessment.api";
 import { format } from "date-fns";
 
 export interface Assessment {
-  assessment_id: number;
+  assessment_id: string;
   assessment_name: string;
   type: string;
   due_date: string;
   percentage: number;
+  has_grade?: boolean;
+  grade_value?: number | null;
   course: {
     course_name: string;
     color?: string;
@@ -20,7 +22,9 @@ interface UseAssessmentsReturn {
   error: string | null;
 }
 
-export function useAssessmentsByDay(selectedDate: Date): UseAssessmentsReturn {
+export function useAssessmentsByDay(
+  selectedDate: Date,
+): UseAssessmentsReturn {
   const [assessments, setAssessments] = useState<Assessment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -45,6 +49,8 @@ export function useAssessmentsByDay(selectedDate: Date): UseAssessmentsReturn {
               type: a.type,
               due_date: a.due_date,
               percentage: a.percentage,
+              has_grade: Boolean(a.has_grade),
+              grade_value: a.grade_value ?? null,
               course: {
                 course_name: a.course?.courses?.name ?? "",
                 color: a.course?.color ?? undefined,

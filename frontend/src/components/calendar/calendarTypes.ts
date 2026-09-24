@@ -1,4 +1,3 @@
-//Esto define la forma de los objetos Esto ayuda a garantizar que los datos se manejen de manera consistente en toda la aplicación.
 export interface ExamWeek {
   start: Date;
   end: Date;
@@ -6,6 +5,8 @@ export interface ExamWeek {
 
 export interface CalendarProps {
   onSelectDate?: (date: Date) => void;
+  assessments?: Record<string, Array<{ color: string; hasGrade: boolean }>>;
+  isLoading?: boolean;
 }
 
 export interface DayCellProps {
@@ -13,6 +14,6 @@ export interface DayCellProps {
   selected: Date;
   currentMonth: Date;
   onSelect: (day: Date) => void;
-  assessments?: Record<string, string[]>; // { "YYYY-MM-DD": ["#color1", ...] }
+  assessments?: Record<string, Array<{ color: string; hasGrade: boolean }>>;
   isLoading?: boolean;
 }

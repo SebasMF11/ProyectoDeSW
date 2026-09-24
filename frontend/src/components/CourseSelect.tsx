@@ -6,6 +6,7 @@ export type Course = {
   teacher?: string;
   credits?: number;
   color?: string;
+  status?: string;
 };
 
 type CourseSelectProps = {
@@ -30,6 +31,9 @@ function CourseSelect({
   selectProps,
 }: CourseSelectProps) {
   const hasControlledValue = value !== undefined;
+  const availableCourses = courses.filter(
+    (c) => (c.status || "").toLowerCase() !== "completed",
+  );
 
   const handleChange = (event: ChangeEvent<HTMLSelectElement>) => {
     selectProps?.onChange?.(event);
@@ -48,17 +52,17 @@ function CourseSelect({
         {...(hasControlledValue ? { value } : {})}
         onChange={handleChange}
       >
-        {courses.length > 0 && placeholderOptionText ? (
+        {availableCourses.length > 0 && placeholderOptionText ? (
           <option value="" disabled>
             {placeholderOptionText}
           </option>
         ) : null}
 
-        {courses.length === 0 ? (
+        {availableCourses.length === 0 ? (
           <option value="">{emptyOptionText}</option>
         ) : null}
 
-        {courses.map((course) => (
+        {availableCourses.map((course) => (
           <option key={course.course_id} value={course.courses.name}>
             {course.courses.name}
           </option>

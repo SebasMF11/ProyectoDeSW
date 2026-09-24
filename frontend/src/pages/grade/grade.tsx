@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router";
+import { useLocation } from "react-router";
 import { useForm, Controller } from "react-hook-form";
 import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
@@ -14,6 +15,7 @@ import AssessmentSelect, {
 
 const grade = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [errorMessage, setErrorMessage] = useState("");
   const { semesters, semesterError, latestSemesterName } = useSemesters();
   const [courses, setCourses] = useState<Course[]>([]);
@@ -22,6 +24,15 @@ const grade = () => {
   const semesterRegister = register("semesterName", { required: true });
   const selectedSemesterName = watch("semesterName");
   const selectedCourseName = watch("courseName");
+  const selectedAssessmentName = watch("assessmentName");
+  const prefillState = location.state as
+    | {
+        semesterName?: string;
+        courseName?: string;
+        assessmentName?: string;
+        redirectTo?: string;
+      }
+    | undefined;
 
   const selectedSemester = useMemo(
     () => semesters.find((semester) => semester.name === selectedSemesterName),
@@ -32,16 +43,22 @@ const grade = () => {
   const filteredAssessments = useMemo(
     () =>
       assessments.filter(
-        (assessment) =>
-          assessment.course?.courses?.name === selectedCourseName,
+        (assessment) => assessment.course?.courses?.name === selectedCourseName,
       ),
     [assessments, selectedCourseName],
   );
 
   useEffect(() => {
-    if (!latestSemesterName || selectedSemesterName) return;
+    if (selectedSemesterName) return;
+
+    if (prefillState?.semesterName) {
+      setValue("semesterName", prefillState.semesterName);
+      return;
+    }
+
+    if (!latestSemesterName) return;
     setValue("semesterName", latestSemesterName);
-  }, [latestSemesterName, selectedSemesterName, setValue]);
+  }, [latestSemesterName, prefillState, selectedSemesterName, setValue]);
 
   useEffect(() => {
     const loadCourses = async () => {
@@ -54,15 +71,20 @@ const grade = () => {
       try {
         const { data } = await courseBySemesterRequest(selectedSemesterName);
         setCourses(Array.isArray(data?.courses) ? data.courses : []);
+        if (prefillState?.courseName) {
+          setValue("courseName", prefillState.courseName);
+        }
       } catch (error) {
         console.error(error);
         setCourses([]);
       }
-      setValue("courseName", "");
+      if (!prefillState?.courseName) {
+        setValue("courseName", "");
+      }
       setValue("assessmentName", "");
     };
     loadCourses();
-  }, [selectedSemesterName, setValue]);
+  }, [prefillState?.courseName, selectedSemesterName, setValue]);
 
   useEffect(() => {
     const loadAssessments = async () => {
@@ -78,45 +100,58 @@ const grade = () => {
         setAssessments(
           Array.isArray(data?.assessments) ? data.assessments : [],
         );
+        if (prefillState?.assessmentName) {
+          setValue("assessmentName", prefillState.assessmentName);
+        }
       } catch (error) {
         console.error(error);
         setAssessments([]);
       }
-      setValue("assessmentName", "");
+      if (!prefillState?.assessmentName) {
+        setValue("assessmentName", "");
+      }
     };
     loadAssessments();
-  }, [selectedSemester, setValue]);
+  }, [prefillState?.assessmentName, selectedSemester, setValue]);
 
   const onSubmit = handleSubmit(async (values) => {
     try {
       setErrorMessage("");
       const res = await gradeCreateRequest(values);
       console.log(res);
-      navigate("/grade-list");
+      navigate(prefillState?.redirectTo || "/grade-list", {
+        state:
+          prefillState?.redirectTo === "/assessment-list"
+            ? {
+                refreshAssessmentData: true,
+                semesterName: prefillState?.semesterName,
+              }
+            : undefined,
+      });
     } catch (error) {
       if (axios.isAxiosError(error)) {
         const apiMessage = error.response?.data?.error;
-        setErrorMessage(apiMessage || "No se pudo crear la nota");
+        setErrorMessage(apiMessage || "The grade could not be created");
         return;
       }
-      setErrorMessage("Ocurrio un error inesperado");
+      setErrorMessage("An unexpected error occurred");
     }
   });
 
   return (
     <div>
       <div className="formContainer">
-        <p className="title">Registrar nota</p>
+        <p className="title">Register grade</p>
         {errorMessage || semesterError ? (
           <p>{errorMessage || semesterError}</p>
         ) : null}
         <form onSubmit={onSubmit} className="formLayout">
           <SemesterSelect
             semesters={semesters}
-            placeholderOptionText="Selecciona un semestre"
-            emptyOptionText="No hay semestres registrados"
+            placeholderOptionText="Select a semester"
+            emptyOptionText="No semesters registered"
+                value={selectedSemesterName || ""}
             selectProps={{
-              defaultValue: "",
               ...semesterRegister,
             }}
           />
@@ -125,16 +160,16 @@ const grade = () => {
             courses={courses}
             placeholderOptionText={
               selectedSemesterName
-                ? "Selecciona un curso"
-                : "Primero selecciona un semestre"
+                ? "Select a course"
+                : "Select a semester first"
             }
             emptyOptionText={
               selectedSemesterName
-                ? "No hay cursos en este semestre"
-                : "Primero selecciona un semestre"
+                ? "No courses in this semester"
+                : "Select a semester first"
             }
+            value={selectedCourseName || ""}
             selectProps={{
-              defaultValue: "",
               ...register("courseName", { required: true }),
             }}
           />
@@ -143,16 +178,16 @@ const grade = () => {
             assessments={filteredAssessments}
             placeholderOptionText={
               selectedCourseName
-                ? "Selecciona una actividad"
-                : "Primero selecciona un curso"
+                ? "Select an assessment"
+                : "Select a course first"
             }
             emptyOptionText={
               selectedCourseName
-                ? "No hay actividades para este curso"
-                : "Primero selecciona un curso"
+                ? "No assessments for this course"
+                : "Select a course first"
             }
+            value={selectedAssessmentName || ""}
             selectProps={{
-              defaultValue: "",
               ...register("assessmentName", { required: true }),
             }}
           />
@@ -164,7 +199,7 @@ const grade = () => {
             render={({ field: { onChange, onBlur, ref, value } }) => (
               <input
                 className="formControl"
-                placeholder="Nota (0.0 - 5.0)"
+                placeholder="Grade (0.0 - 5.0)"
                 type="number"
                 step="0.1"
                 min={0}
@@ -180,7 +215,7 @@ const grade = () => {
             )}
           />
 
-          <button type="submit">Registrar</button>
+          <button type="submit">Register</button>
         </form>
       </div>
     </div>

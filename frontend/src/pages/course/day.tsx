@@ -3,17 +3,13 @@ import { useForm, Controller } from "react-hook-form";
 import { dayCreateRequest } from "../../api/day.api";
 import { semesterViewRequest } from "../../api/semester";
 import { courseBySemesterRequest } from "../../api/course";
+import CourseSelect, { type Course } from "../../components/CourseSelect";
 import axios from "axios";
 import { useEffect, useState } from "react";
 
 type Semester = {
   semester_id: string;
   name: string;
-};
-
-type Course = {
-  course_id: string;
-  courses: { name: string };
 };
 
 const dayOptions = [
@@ -56,9 +52,7 @@ const Day = () => {
       }
       try {
         const { data } = await courseBySemesterRequest(selectedSemesterName);
-        setCourses(
-          Array.isArray(data?.courses) ? data.courses : [],
-        );
+        setCourses(Array.isArray(data?.courses) ? data.courses : []);
       } catch (error) {
         console.error(error);
         setCourses([]);
@@ -71,13 +65,12 @@ const Day = () => {
   const onSubmit = handleSubmit(async (values) => {
     try {
       setErrorMessage("");
-      const res = await dayCreateRequest(values);
-      console.log(res);
+      await dayCreateRequest(values);
       navigate("/course-list");
     } catch (error) {
       if (axios.isAxiosError(error)) {
         const apiMessage = error.response?.data?.error;
-        setErrorMessage(apiMessage || "Could not create the day");
+        setErrorMessage(apiMessage || "Could not create the schedule day");
         return;
       }
       setErrorMessage("An unexpected error occurred");
@@ -93,7 +86,7 @@ const Day = () => {
 
           {/* Semestre */}
           <label className="formText" htmlFor="day-semester">
-            Semestre
+            Semester
           </label>
           <select
             id="day-semester"
@@ -114,32 +107,28 @@ const Day = () => {
           </select>
 
           {/* Curso */}
-          <label className="formText" htmlFor="day-course">
-            Curso
-          </label>
-          <select
+          <CourseSelect
             id="day-course"
-            className="formControl"
-            defaultValue=""
-            {...register("courseName", { required: true })}
-          >
-            <option value="" disabled>
-              {selectedSemesterName
-                ? courses.length > 0
-                  ? "Select a course"
-                  : "No courses in this semester"
-                : "Select a semester first"}
-            </option>
-            {courses.map((course) => (
-              <option key={course.course_id} value={course.courses.name}>
-                {course.courses.name}
-              </option>
-            ))}
-          </select>
+            courses={courses}
+            placeholderOptionText={
+              selectedSemesterName
+                ? "Select a course"
+                : "Select a semester first"
+            }
+            emptyOptionText={
+              selectedSemesterName
+                ? "No courses in this semester"
+                : "Select a semester first"
+            }
+            selectProps={{
+              defaultValue: "",
+              ...register("courseName", { required: true }),
+            }}
+          />
 
           {/* Día de la semana */}
           <label className="formText" htmlFor="day-of-week">
-            Día de la semana
+            Day of the week
           </label>
           <select
             id="day-of-week"

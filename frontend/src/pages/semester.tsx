@@ -3,6 +3,7 @@ import { useForm } from "react-hook-form";
 import { semesterCreateRequest, semesterViewRequest } from "../api/semester";
 import axios from "axios";
 import { useEffect, useState } from "react";
+import { parseDateToLocal } from "../utils/date";
 
 type SemesterItem = {
   semester_id: string;
@@ -16,10 +17,12 @@ const overlaps = (
   endDate: string,
   existing: SemesterItem,
 ) => {
-  const start = new Date(`${startDate}T00:00:00Z`);
-  const end = new Date(`${endDate}T00:00:00Z`);
-  const existingStart = new Date(`${existing.start_date}T00:00:00Z`);
-  const existingEnd = new Date(`${existing.end_date}T00:00:00Z`);
+  const start = parseDateToLocal(startDate) ?? new Date(startDate);
+  const end = parseDateToLocal(endDate) ?? new Date(endDate);
+  const existingStart =
+    parseDateToLocal(existing.start_date) ?? new Date(existing.start_date);
+  const existingEnd =
+    parseDateToLocal(existing.end_date) ?? new Date(existing.end_date);
   return start < existingEnd && end > existingStart;
 };
 
@@ -51,15 +54,13 @@ const Semester = () => {
       const { startDate, endDate, midtermWeek } = values;
 
       if (startDate > endDate) {
-        setErrorMessage(
-          "La fecha de inicio no puede ser mayor que la fecha de fin",
-        );
+        setErrorMessage("The start date cannot be later than the end date");
         return;
       }
 
       if (midtermWeek < startDate || midtermWeek > endDate) {
         setErrorMessage(
-          "La fecha de inicio de parciales debe estar entre inicio y fin del semestre",
+          "The midterm start date must be between the semester start and end dates",
         );
         return;
       }
@@ -70,21 +71,20 @@ const Semester = () => {
 
       if (overlappingSemester) {
         setErrorMessage(
-          `Las fechas del semestre se sobreponen con "${overlappingSemester.name}"`,
+          `The semester dates overlap with "${overlappingSemester.name}"`,
         );
         return;
       }
 
-      const res = await semesterCreateRequest(values);
-      console.log(res);
+      await semesterCreateRequest(values);
       navigate("/home");
     } catch (error) {
       if (axios.isAxiosError(error)) {
         const apiMessage = error.response?.data?.error;
-        setErrorMessage(apiMessage || "No se pudo crear el semestre");
+        setErrorMessage(apiMessage || "The semester could not be created");
         return;
       }
-      setErrorMessage("Ocurrio un error inesperado");
+      setErrorMessage("An unexpected error occurred");
     }
   });
 
@@ -100,7 +100,7 @@ const Semester = () => {
             className="formControl"
             {...register("semesterName", { required: true })}
           />
-          <p className="formText">Fecha de inicio</p>
+          <p className="formText">Start date</p>
           <input
             type="date"
             className="formControl"
@@ -126,7 +126,7 @@ const Semester = () => {
 
         {semesters.length > 0 && (
           <div className="mt-6">
-            <p className="formText font-semibold mb-2">Semestres existentes</p>
+            <p className="formText font-semibold mb-2">Existing semesters</p>
             <ul className="flex flex-col gap-2">
               {semesters.map((s) => (
                 <li key={s.semester_id} className="border rounded p-2 text-sm">

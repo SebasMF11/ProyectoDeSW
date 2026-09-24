@@ -101,7 +101,7 @@ Agregar en `backend/src/services/CourseService.js`:
  */
 exports.createSpecial = async (student_id, payload) => {
   // Validar datos
-  if (!payload.courseName) throw new Error("courseName required");
+  if (!payload.courses_id) throw new Error("courses_id required");
 
   // Consultar BD
   const { data, error } = await supabase

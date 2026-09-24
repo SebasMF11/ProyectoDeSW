@@ -4,7 +4,7 @@ exports.getAll = async (student_id) => {
   const { data, error } = await supabase
     .from("course")
     .select(
-      "course_id, teacher, credits, color, courses!inner(name), semester!inner(student_id)",
+      "course_id, courses_id, teacher, credits, color, status, courses!inner(name), semester!inner(student_id)",
     )
     .eq("semester.student_id", student_id)
     .eq("status", "active");
@@ -20,9 +20,10 @@ exports.getAll = async (student_id) => {
 exports.getBySemester = async (semester_id) => {
   const { data, error } = await supabase
     .from("course")
-    .select("course_id, teacher, credits, color, courses!inner(name)")
-    .eq("semester_id", semester_id)
-    .eq("status", "active");
+    .select(
+      "course_id, courses_id, teacher, credits, color, status, courses!inner(name, prerequisito, prerequisite_course:courses!prerequisito(courses_id, name))",
+    )
+    .eq("semester_id", semester_id);
 
   if (error) {
     console.error(error);
@@ -48,7 +49,9 @@ exports.create = async (course) => {
   const { data, error } = await supabase
     .from("course")
     .insert([course])
-    .select("course_id, teacher, credits, color, courses!inner(name)");
+    .select(
+      "course_id, courses_id, teacher, credits, color, status, courses!inner(name, prerequisito, prerequisite_course:courses!prerequisito(courses_id, name))",
+    );
 
   if (error) {
     console.error(error);
@@ -111,7 +114,9 @@ exports.updateCourse = async (courseId, student_id, fields) => {
     .from("course")
     .update(fields)
     .eq("course_id", courseId)
-    .select("course_id, teacher, credits, color, courses!inner(name)");
+    .select(
+      "course_id, courses_id, teacher, credits, color, status, courses!inner(name, prerequisito, prerequisite_course:courses!prerequisito(courses_id, name))",
+    );
 
   if (error) {
     console.error(error);
@@ -135,7 +140,9 @@ exports.updateStatus = async (courseId, student_id, status) => {
     .from("course")
     .update({ status })
     .eq("course_id", courseId)
-    .select("course_id, teacher, credits, color, status, courses!inner(name)");
+    .select(
+      "course_id, courses_id, teacher, credits, color, status, courses!inner(name, prerequisito, prerequisite_course:courses!prerequisito(courses_id, name))",
+    );
 
   if (error) {
     console.error(error);

@@ -1,0 +1,109 @@
+.floating-action-menu {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 1200;
+}
+
+.floating-action-menu__overlay {
+  position: fixed;
+  inset: 0;
+  border: 0;
+  background: transparent;
+  cursor: default;
+}
+
+.floating-action-menu__content {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 12px;
+}
+
+.floating-action-menu__panel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 10px;
+  border-radius: 20px;
+  background: rgba(233, 233, 233, 0.96);
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.18);
+  min-width: 220px;
+}
+
+.floating-action-menu__item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 12px;
+  border: 0;
+  border-radius: 999px;
+  padding: 14px 18px;
+  background: #0b9b55;
+  color: #ffffff;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 500;
+  text-align: left;
+  transition: transform 0.2s ease, background-color 0.2s ease;
+}
+
+.floating-action-menu__item:hover {
+  background: #0a8c4c;
+  transform: translateY(-1px);
+}
+
+.floating-action-menu__item-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+}
+
+.floating-action-menu__toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 70px;
+  height: 70px;
+  border: 0;
+  border-radius: 50%;
+  background: #0b9b55;
+  color: #ffffff;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.22);
+  cursor: pointer;
+  transition: transform 0.2s ease, background-color 0.2s ease;
+}
+
+.floating-action-menu__toggle:hover {
+  background: #0a8c4c;
+  transform: scale(1.04);
+}
+
+.floating-action-menu__toggle-icon {
+  width: 24px;
+  height: 24px;
+  transition: transform 0.2s ease;
+}
+
+.floating-action-menu[data-open="true"] .floating-action-menu__toggle-icon {
+  transform: rotate(45deg);
+}
+
+@media (max-width: 640px) {
+  .floating-action-menu {
+    right: 16px;
+    bottom: 16px;
+  }
+
+  .floating-action-menu__panel {
+    min-width: 200px;
+  }
+
+  .floating-action-menu__toggle {
+    width: 64px;
+    height: 64px;
+  }
+}

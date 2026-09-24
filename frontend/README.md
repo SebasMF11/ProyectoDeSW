@@ -17,9 +17,9 @@ If you are developing a production application, we recommend updating the config
 
 ```js
 export default defineConfig([
-  globalIgnores(['dist']),
+  globalIgnores(["dist"]),
   {
-    files: ['**/*.{ts,tsx}'],
+    files: ["**/*.{ts,tsx}"],
     extends: [
       // Other configs...
 
@@ -34,40 +34,61 @@ export default defineConfig([
     ],
     languageOptions: {
       parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
+        project: ["./tsconfig.node.json", "./tsconfig.app.json"],
         tsconfigRootDir: import.meta.dirname,
       },
       // other options...
     },
   },
-])
+]);
 ```
 
 You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
 
 ```js
 // eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+import reactX from "eslint-plugin-react-x";
+import reactDom from "eslint-plugin-react-dom";
 
 export default defineConfig([
-  globalIgnores(['dist']),
+  globalIgnores(["dist"]),
   {
-    files: ['**/*.{ts,tsx}'],
+    files: ["**/*.{ts,tsx}"],
     extends: [
       // Other configs...
       // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
+      reactX.configs["recommended-typescript"],
       // Enable lint rules for React DOM
       reactDom.configs.recommended,
     ],
     languageOptions: {
       parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
+        project: ["./tsconfig.node.json", "./tsconfig.app.json"],
         tsconfigRootDir: import.meta.dirname,
       },
       // other options...
     },
   },
-])
+]);
 ```
+
+## Date utilities (project-specific)
+
+This project includes a small date utility to normalize parsing and formatting across the frontend:
+
+- Location: `src/utils/date.ts`
+- Main helpers:
+  - `parseDateToLocal(dateString?: string): Date | null` — parse `YYYY-MM-DD` and `YYYY-MM-DDT00:00:00Z` as local dates to avoid UTC shifts.
+  - `formatDateLocal(dateString?: string, options?): string` — format for display. The default locale is currently `en-US`.
+  - `formatDateForInput(dateString?: string): string` — produce `YYYY-MM-DD` strings for `<input type="date">`.
+
+Example:
+
+```ts
+import { formatDateLocal, parseDateToLocal } from "./utils/date";
+
+const uiLabel = formatDateLocal("2026-06-10"); // e.g. "June 10"
+const parsed = parseDateToLocal("2026-06-10"); // Date object at local midnight
+```
+
+If you need a different locale (for example `en-GB`), update `formatDateLocal` or pass explicit `Intl.DateTimeFormat` options when calling it.

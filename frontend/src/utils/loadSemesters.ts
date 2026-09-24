@@ -1,8 +1,8 @@
 import { semesterViewRequest } from "../api/semester";
 
 export type Semester = {
-  semester_id: number;
-  semester_name: string;
+  semester_id: string;
+  name: string;
   start_date?: string;
   end_date?: string;
 };
